@@ -1,7 +1,5 @@
 package main
 
-//go:generate go run github.com/99designs/gqlgen
-
 import (
 	"log"
 	"net/http"
@@ -9,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/gorilla/handlers"
-	"github.com/sjanota/budget/pkg/resolver"
-	"github.com/sjanota/budget/pkg/schema"
+	"github.com/sjanota/budget/backend/pkg/resolver"
+	"github.com/sjanota/budget/backend/pkg/schema"
 )
 
 const defaultPort = "8080"

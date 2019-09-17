@@ -4,7 +4,7 @@
 # for detailed .gqlgen.yml documentation.
 
 schema:
-  - "schema/*.graphql"
+  - ../schema.graphql
 exec:
   filename: pkg/schema/generated.go
 model:
@@ -13,4 +13,4 @@ resolver:
   filename: pkg/resolver/resolver.go
   type: Resolver
 autobind:
-  - github.com/sjanota/budget/pkg/models
+  - github.com/sjanota/budget/backend/pkg/models

@@ -1,12 +1,12 @@
 package resolver
 
+//go:generate go run github.com/99designs/gqlgen
+
 import (
 	"context"
-	"github.com/sjanota/budget/pkg/models"
-	"github.com/sjanota/budget/pkg/schema"
+	"github.com/sjanota/budget/backend/pkg/models"
+	"github.com/sjanota/budget/backend/pkg/schema"
 )
-
-// THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 type Resolver struct{}
 

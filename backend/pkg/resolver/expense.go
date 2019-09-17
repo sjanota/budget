@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"github.com/sjanota/budget/pkg/models"
+	"github.com/sjanota/budget/backend/pkg/models"
 )
 
 type expenseResolver struct{ *Resolver }

@@ -1,4 +1,4 @@
-module github.com/sjanota/budget
+module github.com/sjanota/budget/backend
 
 go 1.13
 
