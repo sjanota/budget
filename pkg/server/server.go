@@ -8,8 +8,9 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/handler"
-	"github.com/sjanota/budget/pkg/schema"
+	"github.com/gorilla/handlers"
 	"github.com/sjanota/budget/pkg/resolver"
+	"github.com/sjanota/budget/pkg/schema"
 )
 
 const defaultPort = "8080"
@@ -21,7 +22,13 @@ func main() {
 	}
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
-	http.Handle("/query", handler.GraphQL(schema.NewExecutableSchema(schema.Config{Resolvers: &resolver.Resolver{}})))
+
+	h := handlers.CORS(
+		handlers.AllowedHeaders([]string{"content-type"}),
+	)(
+		handler.GraphQL(schema.NewExecutableSchema(schema.Config{Resolvers: &resolver.Resolver{}})),
+	)
+	http.Handle("/query", h)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
