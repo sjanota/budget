@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sjanota/budget/backend/pkg/storage"
 	"log"
 	"net/http"
 	"os"
@@ -19,17 +20,24 @@ func main() {
 		port = defaultPort
 	}
 
-	mongoUrl := os.Getenv("MONGODB_URL")
-	if mongoUrl == "" {
-		log.Fatal("Missing required MONGODB_URL env")
+	mongoUri := os.Getenv("MONGODB_URI")
+	if mongoUri == "" {
+		log.Fatal("Missing required MONGODB_URI env")
 	}
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 
+	storage, err := storage.New(mongoUri)
+	if err != nil {
+		log.Fatalf("Couldn't create storate: %s", err)
+	}
+
+	resolver := &resolver.Resolver{Storage: storage}
+
 	h := handlers.CORS(
 		handlers.AllowedHeaders([]string{"content-type"}),
 	)(
-		handler.GraphQL(schema.NewExecutableSchema(schema.Config{Resolvers: &resolver.Resolver{}})),
+		handler.GraphQL(schema.NewExecutableSchema(schema.Config{Resolvers: resolver})),
 	)
 	http.Handle("/query", h)
 
