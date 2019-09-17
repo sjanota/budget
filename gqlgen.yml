@@ -1,0 +1,16 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+  - "schema/*.graphql"
+exec:
+  filename: pkg/schema/generated.go
+model:
+  filename: pkg/models/generated.go
+resolver:
+  filename: pkg/resolver/resolver.go
+  type: Resolver
+autobind:
+  - github.com/sjanota/budget/pkg/models

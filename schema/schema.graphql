@@ -1,0 +1,69 @@
+scalar MoneyAmount
+scalar Date
+
+enum Direction {
+    IN
+    OUT
+    BOTH
+}
+
+type Expense {
+    id: ID!
+
+    title: String!
+    location: String
+    entries: [ExpenseEntry!]!
+    total: MoneyAmount
+    date: Date
+    account: Account
+}
+
+type ExpenseEntry {
+    title: String!
+    category: Category!
+    amount: MoneyAmount!
+}
+
+type Category {
+    id: String!
+    name: String!
+    description: String
+    envelope: Envelope!
+    expenses(since: Date, until: Date): [Expense!]!
+}
+
+type Account {
+    id: String!
+    name: String!
+    available: MoneyAmount!
+    expenses(since: Date, until: Date): [Expense!]!
+    transfers(since: Date, until: Date, direction: Direction = BOTH): [Transfer!]!
+}
+
+type Envelope {
+    id: ID!
+    name: String!
+    available: MoneyAmount!
+    expenses(since: Date, until: Date): [Expense!]!
+    budgetPlans(since: Date, until: Date, direction: Direction = BOTH): [BudgetPlan!]!
+}
+
+type Transfer {
+    id: ID!
+    date: Date
+    from: Account
+    to: Account
+    amount: MoneyAmount!
+}
+
+type BudgetPlan {
+    id: ID!
+    date: Date
+    from: Envelope
+    to: Account
+    amount: MoneyAmount!
+}
+
+type Query {
+    expenses(since: Date, until: Date): [Expense!]!
+}
