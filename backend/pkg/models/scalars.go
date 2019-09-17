@@ -11,9 +11,9 @@ import (
 type MoneyAmount float32
 
 func (ma *MoneyAmount) UnmarshalGQL(v interface{}) error {
-	i, ok := v.(float32)
+	i, ok := v.(float64)
 	if !ok {
-		return errors.New("MoneyAmount must be Int")
+		return errors.New("MoneyAmount must be float")
 	}
 	*ma = MoneyAmount(i)
 	return nil

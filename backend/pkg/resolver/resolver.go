@@ -13,6 +13,14 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+func (r *Resolver) ExpenseEntry() schema.ExpenseEntryResolver {
+	return &expenseEntryResolver{r}
+}
+
+func (r *Resolver) Mutation() schema.MutationResolver {
+	return &mutationResolver{r}
+}
+
 func (r *Resolver) Category() schema.CategoryResolver {
 	return &categoryResolver{r}
 }
@@ -31,4 +39,9 @@ func (r *queryResolver) Expenses(ctx context.Context, since *string, until *stri
 	return r.Storage.Expenses().FindAll(ctx)
 }
 
+type mutationResolver struct{ *Resolver }
+
+func (r *mutationResolver) AddExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses().InsertOne(ctx, input)
+}
 

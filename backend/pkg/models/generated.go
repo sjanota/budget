@@ -34,10 +34,19 @@ type Envelope struct {
 	BudgetPlans []*BudgetPlan      `json:"budgetPlans"`
 }
 
-type ExpenseEntry struct {
-	Title    string      `json:"title"`
-	Category *Category   `json:"category"`
-	Amount   MoneyAmount `json:"amount"`
+type ExpenseEntryInput struct {
+	Title      string             `json:"title"`
+	CategoryID primitive.ObjectID `json:"categoryID"`
+	Amount     MoneyAmount        `json:"amount"`
+}
+
+type ExpenseInput struct {
+	Title     string               `json:"title"`
+	Location  *string              `json:"location"`
+	Entries   []*ExpenseEntryInput `json:"entries"`
+	Total     MoneyAmount          `json:"total"`
+	Date      *string              `json:"date"`
+	AccountID *primitive.ObjectID  `json:"AccountID"`
 }
 
 type Transfer struct {

@@ -9,11 +9,10 @@ enum Direction {
 
 type Expense {
     id: ID!
-
     title: String!
     location: String
     entries: [ExpenseEntry!]!
-    total: MoneyAmount
+    total: MoneyAmount!
     date: Date
     account: Account
 }
@@ -66,4 +65,23 @@ type BudgetPlan {
 
 type Query {
     expenses(since: Date, until: Date): [Expense!]!
+}
+
+input ExpenseInput {
+    title: String!
+    location: String
+    entries: [ExpenseEntryInput!]!
+    total: MoneyAmount!
+    date: Date
+    AccountID: ID
+}
+
+input ExpenseEntryInput {
+    title: String!
+    categoryID: ID!
+    amount: MoneyAmount!
+}
+
+type Mutation {
+    addExpense(input: ExpenseInput): Expense
 }
