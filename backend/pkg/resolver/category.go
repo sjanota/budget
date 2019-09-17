@@ -9,7 +9,7 @@ type categoryResolver struct{ *Resolver }
 
 func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error) {
 	return &models.Envelope{
-		ID:          "123",
+		ID:          obj.EnvelopeID,
 		Name:        "123",
 		Available:   1.23,
 		Expenses:    nil,

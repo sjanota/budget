@@ -6,6 +6,7 @@ import (
 	"context"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Resolver struct{}
@@ -25,10 +26,10 @@ func (r *Resolver) Query() schema.QueryResolver {
 type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error) {
-	account := "account"
+	account := primitive.NewObjectID()
 	return []*models.Expense{
 		{
-			ID:        "bla",
+			ID:        primitive.NewObjectID(),
 			Title:     "bla",
 			Location:  nil,
 			Entries:   nil,

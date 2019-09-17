@@ -6,30 +6,32 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Account struct {
-	ID        string      `json:"id"`
-	Name      string      `json:"name"`
-	Available MoneyAmount `json:"available"`
-	Expenses  []*Expense  `json:"expenses"`
-	Transfers []*Transfer `json:"transfers"`
+	ID        primitive.ObjectID `json:"id"`
+	Name      string             `json:"name"`
+	Available MoneyAmount        `json:"available"`
+	Expenses  []*Expense         `json:"expenses"`
+	Transfers []*Transfer        `json:"transfers"`
 }
 
 type BudgetPlan struct {
-	ID     string      `json:"id"`
-	Date   *string     `json:"date"`
-	From   *Envelope   `json:"from"`
-	To     *Account    `json:"to"`
-	Amount MoneyAmount `json:"amount"`
+	ID     primitive.ObjectID `json:"id"`
+	Date   *string            `json:"date"`
+	From   *Envelope          `json:"from"`
+	To     *Account           `json:"to"`
+	Amount MoneyAmount        `json:"amount"`
 }
 
 type Envelope struct {
-	ID          string        `json:"id"`
-	Name        string        `json:"name"`
-	Available   MoneyAmount   `json:"available"`
-	Expenses    []*Expense    `json:"expenses"`
-	BudgetPlans []*BudgetPlan `json:"budgetPlans"`
+	ID          primitive.ObjectID `json:"id"`
+	Name        string             `json:"name"`
+	Available   MoneyAmount        `json:"available"`
+	Expenses    []*Expense         `json:"expenses"`
+	BudgetPlans []*BudgetPlan      `json:"budgetPlans"`
 }
 
 type ExpenseEntry struct {
@@ -39,11 +41,11 @@ type ExpenseEntry struct {
 }
 
 type Transfer struct {
-	ID     string      `json:"id"`
-	Date   *string     `json:"date"`
-	From   *Account    `json:"from"`
-	To     *Account    `json:"to"`
-	Amount MoneyAmount `json:"amount"`
+	ID     primitive.ObjectID `json:"id"`
+	Date   *string            `json:"date"`
+	From   *Account           `json:"from"`
+	To     *Account           `json:"to"`
+	Amount MoneyAmount        `json:"amount"`
 }
 
 type Direction string

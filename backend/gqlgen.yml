@@ -14,3 +14,6 @@ resolver:
   type: Resolver
 autobind:
   - github.com/sjanota/budget/backend/pkg/models
+models:
+  ID:
+    model: github.com/sjanota/budget/backend/pkg/models.ID

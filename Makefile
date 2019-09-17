@@ -10,3 +10,6 @@ mongo-docker:
 
 api-dev:
 	cd backend; $(shell make mongo-docker); go run ./cmd/api/main.go
+
+generate:
+	cd backend; go generate ./...
