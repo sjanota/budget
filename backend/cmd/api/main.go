@@ -19,6 +19,11 @@ func main() {
 		port = defaultPort
 	}
 
+	mongoUrl := os.Getenv("MONGODB_URL")
+	if mongoUrl == "" {
+		log.Fatal("Missing required MONGODB_URL env")
+	}
+
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 
 	h := handlers.CORS(
