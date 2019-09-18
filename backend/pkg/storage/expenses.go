@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/storage/collections"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -83,7 +82,6 @@ func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan models.ExpenseEv
 			delete(r.watchers, events)
 		}()
 		<-ctx.Done()
-		fmt.Println("<-ctx.Done()")
 	}()
 	return events, nil
 }

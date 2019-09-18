@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/websocket"
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"log"
 	"net/http"
@@ -41,7 +42,16 @@ func main() {
 		handler.GraphQL(
 			schema.NewExecutableSchema(schema.Config{Resolvers: resolver}),
 			handler.WebsocketKeepAliveDuration(10*time.Second),
+			handler.WebsocketUpgrader(
+				websocket.Upgrader{
+					ReadBufferSize:  1024,
+					WriteBufferSize: 1024,
+					CheckOrigin: func(r *http.Request) bool {
+						return true
+					},
+				},
 			),
+		),
 	)
 	http.Handle("/query", h)
 

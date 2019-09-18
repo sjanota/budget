@@ -3,31 +3,73 @@ import {useQuery} from "@apollo/react-hooks";
 import {gql} from 'apollo-boost';
 
 
-const GET_EXPENSES = gql`
-    query {
-        expenses {
+const EXPENSE_FRAGMENT = gql`
+    fragment ExpensesDetails on Expense {
+        id
+        title
+        date
+        total
+        location
+        account {
             id
+            name
+            available
+        }
+        entries {
             title
-            date
-            total
-            location
-            account {
+            amount
+            category {
                 id
                 name
-                available
             }
-            entries {
-                category {
-                    expenses(since: "123") {
-                        total
-                    }
+        }
+    }
+`;
+
+const QUERY_EXPENSES = gql`
+    query QueryExpenses {
+        expenses {
+            ...ExpensesDetails
+        }
+    }
+    ${EXPENSE_FRAGMENT}
+`;
+
+const SUBSCRIBE_EXPENSES = gql`
+    subscription WatchExpenses {
+        expenses {
+            type
+            ... on ExpenseAdded {
+                expense {
+                    ...ExpensesDetails
                 }
             }
         }
-    }`;
+    }
+    ${EXPENSE_FRAGMENT}
+`;
 
 function App() {
-  const {loading, error, data} = useQuery(GET_EXPENSES);
+  const {loading, error, data, subscribeToMore} = useQuery(QUERY_EXPENSES);
+
+  React.useEffect(() => {
+    return subscribeToMore({
+      document: SUBSCRIBE_EXPENSES,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        switch (subscriptionData.data.expenses.type) {
+          case "ADDED": {
+            const newExpense = subscriptionData.data.expenses.expense;
+            return {expenses: [...prev.expenses, newExpense]};
+          }
+          default:
+            return prev;
+        }
+      },
+      onError: console.error
+    });
+  }, [subscribeToMore]);
+
 
   if (loading) return <p>Loading...</p>;
   if (error) {
