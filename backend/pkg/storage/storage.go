@@ -40,4 +40,10 @@ func New(uri string) (*Storage, error) {
 	}, nil
 }
 
+func (s *Storage) Drop(ctx context.Context) error {
+	return s.db.Drop(ctx)
+}
 
+func (s *Storage) Init(ctx context.Context) error {
+	return nil
+}

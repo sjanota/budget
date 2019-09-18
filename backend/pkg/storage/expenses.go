@@ -12,7 +12,7 @@ type ExpensesRepository struct {
 
 func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, error) {
 	var result []*models.Expense
-	err := r.Find(ctx, doc{}, func(d decodeFunc) error {
+	err := r.find(ctx, doc{}, func(d decodeFunc) error {
 		e := &models.Expense{}
 		err := d(e)
 		if err != nil {
@@ -21,6 +21,12 @@ func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, er
 		result = append(result, e)
 		return nil
 	})
+	return result, err
+}
+
+func (r *ExpensesRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+	result := &models.Expense{}
+	err := r.findByID(ctx, id, result)
 	return result, err
 }
 
@@ -47,5 +53,4 @@ func (r *ExpensesRepository) InsertOne(ctx context.Context, expense *models.Expe
 		Date:      expense.Date,
 		AccountID: expense.AccountID,
 	}, nil
-
 }
