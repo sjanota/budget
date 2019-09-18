@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/gorilla/handlers"
@@ -37,7 +38,10 @@ func main() {
 	h := handlers.CORS(
 		handlers.AllowedHeaders([]string{"content-type"}),
 	)(
-		handler.GraphQL(schema.NewExecutableSchema(schema.Config{Resolvers: resolver})),
+		handler.GraphQL(
+			schema.NewExecutableSchema(schema.Config{Resolvers: resolver}),
+			handler.WebsocketKeepAliveDuration(10*time.Second),
+			),
 	)
 	http.Handle("/query", h)
 

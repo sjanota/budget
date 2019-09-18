@@ -13,6 +13,10 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+func (r *Resolver) Subscription() schema.SubscriptionResolver {
+	return &subscriptionResolver{r}
+}
+
 func (r *Resolver) ExpenseEntry() schema.ExpenseEntryResolver {
 	return &expenseEntryResolver{r}
 }
@@ -44,4 +48,13 @@ type mutationResolver struct{ *Resolver }
 func (r *mutationResolver) AddExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().InsertOne(ctx, input)
 }
+
+type subscriptionResolver struct {
+	*Resolver
+}
+
+func (r *subscriptionResolver) Expenses(ctx context.Context) (<-chan models.ExpenseEvent, error) {
+	return r.Storage.Expenses().Watch(ctx)
+}
+
 

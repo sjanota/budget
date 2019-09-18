@@ -10,6 +10,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type ExpenseEvent interface {
+	IsExpenseEvent()
+}
+
 type Account struct {
 	ID        primitive.ObjectID `json:"id"`
 	Name      string             `json:"name"`
@@ -33,6 +37,14 @@ type Envelope struct {
 	Expenses    []*Expense         `json:"expenses"`
 	BudgetPlans []*BudgetPlan      `json:"budgetPlans"`
 }
+
+type ExpenseAdded struct {
+	ID      primitive.ObjectID `json:"id"`
+	Type    EventType          `json:"type"`
+	Expense *Expense           `json:"expense"`
+}
+
+func (ExpenseAdded) IsExpenseEvent() {}
 
 type ExpenseEntryInput struct {
 	Title      string             `json:"title"`
@@ -97,5 +109,44 @@ func (e *Direction) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Direction) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type EventType string
+
+const (
+	EventTypeAdded EventType = "ADDED"
+)
+
+var AllEventType = []EventType{
+	EventTypeAdded,
+}
+
+func (e EventType) IsValid() bool {
+	switch e {
+	case EventTypeAdded:
+		return true
+	}
+	return false
+}
+
+func (e EventType) String() string {
+	return string(e)
+}
+
+func (e *EventType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EventType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EventType", str)
+	}
+	return nil
+}
+
+func (e EventType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

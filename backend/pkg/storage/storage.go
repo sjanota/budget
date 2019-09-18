@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"github.com/sjanota/budget/backend/pkg/storage/collections"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
@@ -32,11 +31,7 @@ func New(uri string) (*Storage, error) {
 	database := client.Database(cs.Database)
 	return &Storage{
 		db: database,
-		expenses: &ExpensesRepository{
-			repository: &repository{
-				collection: database.Collection(collections.EXPENSES),
-			},
-		},
+		expenses: newExpensesRepository(database),
 	}, nil
 }
 

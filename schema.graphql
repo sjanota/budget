@@ -85,3 +85,22 @@ input ExpenseEntryInput {
 type Mutation {
     addExpense(input: ExpenseInput): Expense
 }
+
+enum EventType {
+    ADDED
+}
+
+interface ExpenseEvent {
+    id: ID!
+    type: EventType!
+}
+
+type ExpenseAdded implements ExpenseEvent {
+    id: ID!
+    type: EventType!
+    expense: Expense
+}
+
+type Subscription {
+    expenses: ExpenseEvent!
+}
