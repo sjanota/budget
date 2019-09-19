@@ -45,7 +45,11 @@ export function mockDeleteExpense(id) {
 export const expense1 = {
   id: "5d8265e4d7d8a40795fe1b31",
   title: "Zakupy spożywcze",
-  total: 12.32,
+  total: {
+    integer: 12,
+    decimal: 32,
+    __typename: 'MoneyAmount'
+  },
   location: "Lidl",
   date: null,
   account: null,
@@ -56,7 +60,11 @@ export const expense1 = {
 export const expense2 = {
   id: "5d826618d7d8a40795fe1b33",
   title: "Zakupy spożywcze",
-  total: 12.32,
+  total: {
+    integer: 17,
+    decimal: 56,
+    __typename: 'MoneyAmount'
+  },
   location: "Lidl",
   date: null,
   account: null,

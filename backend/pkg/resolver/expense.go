@@ -15,7 +15,10 @@ func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*mo
 	return &models.Account{
 		ID:        *obj.AccountID,
 		Name:      "Konto Szymon",
-		Available: 0.1,
+		Available: &models.MoneyAmount{
+			Integer: 10,
+			Decimal: 99,
+		},
 		Expenses:  nil,
 		Transfers: nil,
 	}, nil

@@ -51,7 +51,7 @@ it('displays queried data', async () => {
   expect(component.find('tbody tr')).toHaveLength(1);
 });
 
-it('updates list on ADDED', async () => {
+it('updates list on CREATED', async () => {
   const {link, sendEvent} = createMockLink([
     mockQueryExpenses([expense1]),
   ]);
@@ -60,7 +60,7 @@ it('updates list on ADDED', async () => {
       <ExpensesList/>
     </MockedProvider>
   );
-  sendEvent(mockExpensesEvent({type: 'ADDED', expense: expense2}));
+  sendEvent(mockExpensesEvent({type: 'CREATED', expense: expense2}));
   await updateComponent(component);
   await updateComponent(component);
 

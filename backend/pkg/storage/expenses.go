@@ -58,23 +58,8 @@ func (r *ExpensesRepository) InsertOne(ctx context.Context, input *models.Expens
 		return nil, err
 	}
 
-	entries := make([]*models.ExpenseEntry, len(input.Entries))
-	for i, entry := range input.Entries {
-		entries[i] = &models.ExpenseEntry{
-			Title:      entry.Title,
-			CategoryID: entry.CategoryID,
-			Amount:     entry.Amount,
-		}
-	}
-	expense := &models.Expense{
-		ID:        result.InsertedID.(primitive.ObjectID),
-		Title:     input.Title,
-		Location:  input.Location,
-		Entries:   entries,
-		Total:     input.Total,
-		Date:      input.Date,
-		AccountID: input.AccountID,
-	}
+
+	expense := input.ToExpense(result.InsertedID.(primitive.ObjectID))
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeCreated,
 		Expense: expense,

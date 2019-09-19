@@ -5,7 +5,10 @@ const EXPENSE_FRAGMENT = gql`
         id
         title
         date
-        total
+        total {
+            integer
+            decimal
+        }
         location
         account {
             id

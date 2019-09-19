@@ -24,3 +24,35 @@ type ExpenseEntry struct {
 	Amount     MoneyAmount `json:"amount"`
 	CategoryID primitive.ObjectID
 }
+
+func (i MoneyAmountInput) ToMoneyAmount() *MoneyAmount {
+	return &MoneyAmount{
+		Integer: i.Integer,
+		Decimal: i.Decimal,
+	}
+}
+
+func (i ExpenseEntryInput) ToExpenseEntry() *ExpenseEntry {
+	return &ExpenseEntry{
+		Title:      i.Title,
+		CategoryID: i.CategoryID,
+		Amount:     *i.Amount.ToMoneyAmount(),
+	}
+}
+
+func (i ExpenseInput) ToExpense(id primitive.ObjectID) *Expense {
+	entries := make([]*ExpenseEntry, len(i.Entries))
+	for i, entry := range i.Entries {
+		entries[i] = entry.ToExpenseEntry()
+	}
+
+	return &Expense{
+		ID:        id,
+		Title:     i.Title,
+		Location:  i.Location,
+		Entries:   entries,
+		Total:     *i.Total.ToMoneyAmount(),
+		Date:      i.Date,
+		AccountID: i.AccountID,
+	}
+}

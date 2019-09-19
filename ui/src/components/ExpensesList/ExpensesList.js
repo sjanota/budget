@@ -89,7 +89,7 @@ function ListEntry({expense}) {
   return <tr>
     <td>{expense.title}</td>
     <td>{expense.date}</td>
-    <td>{expense.total}</td>
+    <td>{expense.total.integer}.{expense.total.decimal}</td>
     <td>{expense.location}</td>
     <td>{expense.account && expense.account.name}</td>
     <td><DeleteButton expense={expense}/></td>
@@ -100,18 +100,19 @@ function NewExpenseEntry({onCancelCreationClick}) {
   const [createExpense] = useMutation(CREATE_EXPENSE);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
-  const [total, setTotal] = useState(0.0);
+  const [total, setTotal] = useState("");
   const [location, setLocation] = useState("");
 
-  function onChangeCallback(callback) {
-    return event => callback(event.target.value)
+  function onChangeCallback(callback, modify = x => x) {
+    return event => callback(modify(event.target.value))
   }
 
   function validateInput() {
+    const [integer, decimal] = Number(total).toFixed(2).split(".");
     return {
       title,
       date,
-      total: Number(total),
+      total: {integer, decimal},
       location,
       entries: []
     }

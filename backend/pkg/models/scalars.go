@@ -8,21 +8,6 @@ import (
 	"strconv"
 )
 
-type MoneyAmount float64
-
-func (ma *MoneyAmount) UnmarshalGQL(v interface{}) error {
-	f, err := graphql.UnmarshalFloat(v)
-	if err != nil {
-		return err
-	}
-	*ma = MoneyAmount(f)
-	return nil
-}
-
-func (ma MoneyAmount) MarshalGQL(w io.Writer) {
-	graphql.MarshalFloat(float64(ma)).MarshalGQL(w)
-}
-
 func UnmarshalID(v interface{}) (primitive.ObjectID, error) {
 	s, ok := v.(string)
 	if !ok {

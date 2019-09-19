@@ -13,7 +13,7 @@ import (
 type Account struct {
 	ID        primitive.ObjectID `json:"id"`
 	Name      string             `json:"name"`
-	Available MoneyAmount        `json:"available"`
+	Available *MoneyAmount       `json:"available"`
 	Expenses  []*Expense         `json:"expenses"`
 	Transfers []*Transfer        `json:"transfers"`
 }
@@ -23,13 +23,13 @@ type BudgetPlan struct {
 	Date   *string            `json:"date"`
 	From   *Envelope          `json:"from"`
 	To     *Account           `json:"to"`
-	Amount MoneyAmount        `json:"amount"`
+	Amount *MoneyAmount       `json:"amount"`
 }
 
 type Envelope struct {
 	ID          primitive.ObjectID `json:"id"`
 	Name        string             `json:"name"`
-	Available   MoneyAmount        `json:"available"`
+	Available   *MoneyAmount       `json:"available"`
 	Expenses    []*Expense         `json:"expenses"`
 	BudgetPlans []*BudgetPlan      `json:"budgetPlans"`
 }
@@ -37,7 +37,7 @@ type Envelope struct {
 type ExpenseEntryInput struct {
 	Title      string             `json:"title"`
 	CategoryID primitive.ObjectID `json:"categoryID"`
-	Amount     MoneyAmount        `json:"amount"`
+	Amount     *MoneyAmountInput  `json:"amount"`
 }
 
 type ExpenseEvent struct {
@@ -49,9 +49,19 @@ type ExpenseInput struct {
 	Title     string               `json:"title"`
 	Location  *string              `json:"location"`
 	Entries   []*ExpenseEntryInput `json:"entries"`
-	Total     MoneyAmount          `json:"total"`
+	Total     *MoneyAmountInput    `json:"total"`
 	Date      *string              `json:"date"`
-	AccountID *primitive.ObjectID  `json:"AccountID"`
+	AccountID *primitive.ObjectID  `json:"accountID"`
+}
+
+type MoneyAmount struct {
+	Integer int `json:"integer"`
+	Decimal int `json:"decimal"`
+}
+
+type MoneyAmountInput struct {
+	Integer int `json:"integer"`
+	Decimal int `json:"decimal"`
 }
 
 type Transfer struct {
@@ -59,7 +69,7 @@ type Transfer struct {
 	Date   *string            `json:"date"`
 	From   *Account           `json:"from"`
 	To     *Account           `json:"to"`
-	Amount MoneyAmount        `json:"amount"`
+	Amount *MoneyAmount       `json:"amount"`
 }
 
 type Direction string

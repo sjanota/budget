@@ -1,5 +1,14 @@
-scalar MoneyAmount
 scalar Date
+
+type MoneyAmount {
+    integer: Int!
+    decimal: Int!
+}
+
+input MoneyAmountInput {
+    integer: Int!
+    decimal: Int!
+}
 
 enum Direction {
     IN
@@ -71,7 +80,7 @@ input ExpenseInput {
     title: String!
     location: String
     entries: [ExpenseEntryInput!]!
-    total: MoneyAmount!
+    total: MoneyAmountInput!
     date: Date
     accountID: ID
 }
@@ -79,7 +88,7 @@ input ExpenseInput {
 input ExpenseEntryInput {
     title: String!
     categoryID: ID!
-    amount: MoneyAmount!
+    amount: MoneyAmountInput!
 }
 
 type Mutation {
