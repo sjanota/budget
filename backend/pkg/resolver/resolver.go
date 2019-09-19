@@ -7,6 +7,7 @@ import (
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"github.com/sjanota/budget/backend/pkg/storage"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Resolver struct {
@@ -45,6 +46,10 @@ func (r *queryResolver) Expenses(ctx context.Context, since *string, until *stri
 
 type mutationResolver struct{ *Resolver }
 
+func (r *mutationResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+	return r.Storage.Expenses().DeleteByID(ctx, id)
+}
+
 func (r *mutationResolver) AddExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().InsertOne(ctx, input)
 }
@@ -53,7 +58,7 @@ type subscriptionResolver struct {
 	*Resolver
 }
 
-func (r *subscriptionResolver) ExpenseEvents(ctx context.Context) (<-chan models.ExpenseEvent, error) {
+func (r *subscriptionResolver) ExpenseEvents(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
 	return r.Storage.Expenses().Watch(ctx)
 }
 

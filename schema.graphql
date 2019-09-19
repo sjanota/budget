@@ -84,19 +84,15 @@ input ExpenseEntryInput {
 
 type Mutation {
     addExpense(input: ExpenseInput): Expense
+    deleteExpense(id: ID!): Expense
 }
 
 enum EventType {
     ADDED
+    DELETED
 }
 
-interface ExpenseEvent {
-    id: ID!
-    type: EventType!
-}
-
-type ExpenseAdded implements ExpenseEvent {
-    id: ID!
+type ExpenseEvent {
     type: EventType!
     expense: Expense
 }

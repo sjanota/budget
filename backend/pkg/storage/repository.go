@@ -40,3 +40,15 @@ func (r *repository) findOne(ctx context.Context, filter doc, v interface{}) err
 func (r *repository) findByID(ctx context.Context, id primitive.ObjectID, v interface{}) error {
 	return r.findOne(ctx, doc{_id: id}, v)
 }
+
+func (r *repository) deleteOne(ctx context.Context, filter doc, v interface{}) error {
+	result := r.collection.FindOneAndDelete(ctx, filter)
+	if err := result.Err(); err != nil {
+		return err
+	}
+	return result.Decode(v)
+}
+
+func (r *repository) deleteByID(ctx context.Context, id primitive.ObjectID, v interface{}) error {
+	return r.deleteOne(ctx, doc{_id: id}, v)
+}

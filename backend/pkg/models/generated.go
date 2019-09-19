@@ -10,10 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ExpenseEvent interface {
-	IsExpenseEvent()
-}
-
 type Account struct {
 	ID        primitive.ObjectID `json:"id"`
 	Name      string             `json:"name"`
@@ -38,18 +34,15 @@ type Envelope struct {
 	BudgetPlans []*BudgetPlan      `json:"budgetPlans"`
 }
 
-type ExpenseAdded struct {
-	ID      primitive.ObjectID `json:"id"`
-	Type    EventType          `json:"type"`
-	Expense *Expense           `json:"expense"`
-}
-
-func (ExpenseAdded) IsExpenseEvent() {}
-
 type ExpenseEntryInput struct {
 	Title      string             `json:"title"`
 	CategoryID primitive.ObjectID `json:"categoryID"`
 	Amount     MoneyAmount        `json:"amount"`
+}
+
+type ExpenseEvent struct {
+	Type    EventType `json:"type"`
+	Expense *Expense  `json:"expense"`
 }
 
 type ExpenseInput struct {
@@ -115,16 +108,18 @@ func (e Direction) MarshalGQL(w io.Writer) {
 type EventType string
 
 const (
-	EventTypeAdded EventType = "ADDED"
+	EventTypeAdded   EventType = "ADDED"
+	EventTypeDeleted EventType = "DELETED"
 )
 
 var AllEventType = []EventType{
 	EventTypeAdded,
+	EventTypeDeleted,
 }
 
 func (e EventType) IsValid() bool {
 	switch e {
-	case EventTypeAdded:
+	case EventTypeAdded, EventTypeDeleted:
 		return true
 	}
 	return false

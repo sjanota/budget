@@ -10,7 +10,7 @@ import (
 
 type ExpensesRepository struct {
 	*repository
-	watchers map[chan models.ExpenseEvent]struct{}
+	watchers map[chan *models.ExpenseEvent]struct{}
 }
 
 func newExpensesRepository(db *mongo.Database) *ExpensesRepository {
@@ -18,7 +18,7 @@ func newExpensesRepository(db *mongo.Database) *ExpensesRepository {
 		repository: &repository{
 			collection: db.Collection(collections.EXPENSES),
 		},
-		watchers: make(map[chan models.ExpenseEvent]struct{}),
+		watchers: make(map[chan *models.ExpenseEvent]struct{}),
 	}
 }
 
@@ -39,6 +39,16 @@ func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, er
 func (r *ExpensesRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
 	err := r.findByID(ctx, id, result)
+	return result, err
+}
+
+func (r *ExpensesRepository) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+	result := &models.Expense{}
+	err := r.deleteByID(ctx, id, result)
+	r.notify(&models.ExpenseEvent{
+		Type:    models.EventTypeDeleted,
+		Expense: result,
+	})
 	return result, err
 }
 
@@ -65,16 +75,15 @@ func (r *ExpensesRepository) InsertOne(ctx context.Context, input *models.Expens
 		Date:      input.Date,
 		AccountID: input.AccountID,
 	}
-	r.notify(models.ExpenseAdded{
-		ID:      expense.ID,
+	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeAdded,
 		Expense: expense,
 	})
 	return expense, nil
 }
 
-func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan models.ExpenseEvent, error) {
-	events := make(chan models.ExpenseEvent)
+func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
+	events := make(chan *models.ExpenseEvent)
 	r.watchers[events] = struct{}{}
 	go func() {
 		defer close(events)
@@ -86,7 +95,7 @@ func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan models.ExpenseEv
 	return events, nil
 }
 
-func (r *ExpensesRepository) notify(event models.ExpenseEvent) {
+func (r *ExpensesRepository) notify(event *models.ExpenseEvent) {
 	for watcher := range r.watchers {
 		watcher <- event
 	}
