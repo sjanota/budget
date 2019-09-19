@@ -51,7 +51,7 @@ it('displays queried data', async () => {
   expect(component.find('tbody tr')).toHaveLength(1);
 });
 
-it('updates in ADDED', async () => {
+it('updates list on ADDED', async () => {
   const {link, sendEvent} = createMockLink([
     mockQueryExpenses([expense1]),
   ]);
@@ -88,5 +88,19 @@ it('triggers deleteExpense mutation', async () => {
   expect(deleteMock.result).toHaveBeenCalled();
 });
 
+it('updates list on DELETED', async () => {
+  const {link, sendEvent} = createMockLink([
+    mockQueryExpenses([expense1, expense2]),
+  ]);
+  const component = mount(
+    <MockedProvider link={link}>
+      <ExpensesList/>
+    </MockedProvider>
+  );
+  sendEvent(mockExpensesEvent({type: 'DELETED', expense: expense2}));
+  await updateComponent(component);
+  await updateComponent(component);
 
+  expect(component.find('tbody tr')).toHaveLength(1);
+});
 

@@ -4,13 +4,16 @@ import {DELETE_EXPENSE, EXPENSES_EVENTS_SUBSCRIPTION, EXPENSES_QUERY} from "./Ex
 import Table from "react-bootstrap/Table";
 import Octicon, {Trashcan} from "@primer/octicons-react";
 import {Button} from "react-bootstrap";
+import {addToList, removeFromListById} from "../../util/immutable";
 
 function handleExpenseEvent(prev, {subscriptionData}) {
   const event = subscriptionData.data.expenseEvents;
   switch (event.type) {
     case "ADDED": {
-      const newExpense = event.expense;
-      return {expenses: [...prev.expenses, newExpense]};
+      return {expenses: addToList(prev.expenses, event.expense)};
+    }
+    case "DELETED": {
+      return {expenses: removeFromListById(prev.expenses, event.expense.id)}
     }
     default:
       return prev;
