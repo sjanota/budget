@@ -46,6 +46,14 @@ export const DELETE_EXPENSE = gql`
   }
 `;
 
+export const UPDATE_EXPENSE = gql`
+    mutation UpdateExpense($id: ID!, $input: ExpenseInput!) {
+        updateExpense(id: $id, input: $input) {
+            id
+        }
+    }
+`;
+
 export const CREATE_EXPENSE = gql`
     mutation CreateExpense($input: ExpenseInput!) {
         createExpense(input: $input) {

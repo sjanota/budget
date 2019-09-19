@@ -1,10 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {useMutation, useQuery} from "@apollo/react-hooks";
-import {CREATE_EXPENSE, DELETE_EXPENSE, EXPENSES_EVENTS_SUBSCRIPTION, EXPENSES_QUERY} from "./ExpensesList.gql";
+import {
+  CREATE_EXPENSE,
+  DELETE_EXPENSE,
+  EXPENSES_EVENTS_SUBSCRIPTION,
+  EXPENSES_QUERY,
+  UPDATE_EXPENSE
+} from "./ExpensesList.gql";
 import Table from "react-bootstrap/Table";
-import Octicon, {Check, Plus, Trashcan, X,} from "@primer/octicons-react";
+import Octicon, {Check, Pencil, Plus, Trashcan, X,} from "@primer/octicons-react";
 import {Button} from "react-bootstrap";
-import {addToList, removeFromListById} from "../../util/immutable";
+import {addToList, removeFromList, removeFromListByID, replaceOnListByID} from "../../util/immutable";
+import {cloneDeep} from "apollo-utilities";
 
 function handleExpenseEvent(prev, {subscriptionData}) {
   const event = subscriptionData.data.expenseEvents;
@@ -13,7 +20,10 @@ function handleExpenseEvent(prev, {subscriptionData}) {
       return {expenses: addToList(prev.expenses, event.expense)};
     }
     case "DELETED": {
-      return {expenses: removeFromListById(prev.expenses, event.expense.id)}
+      return {expenses: removeFromListByID(prev.expenses, event.expense.id)}
+    }
+    case "UPDATED": {
+      return {expenses: replaceOnListByID(prev.expenses, event.expense)}
     }
     default:
       return prev;
@@ -31,26 +41,41 @@ function ListButton({icon, action, onClick, ariaLabel}) {
   </Button>
 }
 
-function DeleteButton({expense}) {
-  const [deleteExpense] = useMutation(DELETE_EXPENSE);
+function DeleteButton({onClick}) {
   return <ListButton
     icon={Trashcan}
     action={"delete"}
-    onClick={() => deleteExpense({variables: {id: expense.id}})}
+    onClick={onClick}
     ariaLabel={"Delete expense"}
   />
 }
 
-function StartCreationButton({onClick}) {
+function DeleteExpenseButton({expense}) {
+  const [deleteExpense] = useMutation(DELETE_EXPENSE);
+  return <DeleteButton
+    onClick={() => deleteExpense({variables: {id: expense.id}})}
+  />
+}
+
+function EditButton({onClick}) {
+  return <ListButton
+    icon={Pencil}
+    action={"edit"}
+    onClick={onClick}
+    ariaLabel={"Edit expense"}
+  />
+}
+
+function CreateButton({onClick}) {
   return <ListButton
     icon={Plus}
-    action={"start-creation"}
+    action={"create"}
     onClick={onClick}
     ariaLabel={"Create new expense"}
   />
 }
 
-function CancelCreationButton({onClick}) {
+function CancelButton({onClick}) {
   return <ListButton
     icon={X}
     action={"cancel-creation"}
@@ -59,7 +84,7 @@ function CancelCreationButton({onClick}) {
   />
 }
 
-function CreateButton({onClick}) {
+function SubmitButton({onClick}) {
   return <ListButton
     icon={Check}
     action={"cancel-creation"}
@@ -79,29 +104,31 @@ function ListHeader({onStartCreationClick}) {
     <th>Konto</th>
     <th>
       Actions
-      <StartCreationButton onClick={onStartCreationClick}/>
+      <CreateButton onClick={onStartCreationClick}/>
     </th>
   </tr>
   </thead>
 }
 
-function ListEntry({expense}) {
+function ListEntry({expense, onEdit}) {
   return <tr>
     <td>{expense.title}</td>
     <td>{expense.date}</td>
     <td>{expense.total.integer}.{expense.total.decimal}</td>
     <td>{expense.location}</td>
     <td>{expense.account && expense.account.name}</td>
-    <td><DeleteButton expense={expense}/></td>
+    <td>
+      <DeleteExpenseButton expense={expense}/>
+      <EditButton onClick={onEdit}/>
+    </td>
   </tr>
 }
 
-function NewExpenseEntry({onCancelCreationClick}) {
-  const [createExpense] = useMutation(CREATE_EXPENSE);
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [total, setTotal] = useState("");
-  const [location, setLocation] = useState("");
+function EditEntry({init, onCancel, onSubmit}) {
+  const [title, setTitle] = useState(init ? init.title : "");
+  const [date, setDate] = useState(init ? init.date : "");
+  const [total, setTotal] = useState(init ? `${init.total.integer}.${init.total.decimal}` : "");
+  const [location, setLocation] = useState(init ? init.location : "");
 
   function onChangeCallback(callback, modify = x => x) {
     return event => callback(modify(event.target.value))
@@ -133,20 +160,36 @@ function NewExpenseEntry({onCancelCreationClick}) {
     </td>
     <td/>
     <td>
-      <CancelCreationButton onClick={onCancelCreationClick}/>
-      <CreateButton onClick={async () => {
-        const input = validateInput();
-        console.log(input);
-        await createExpense({variables: {input}});
-        onCancelCreationClick()
+      <CancelButton onClick={onCancel}/>
+      <SubmitButton onClick={() => {
+        onSubmit(validateInput());
+        onCancel()
       }}/>
     </td>
   </tr>
 }
 
+function CreateExpenseEntry({onCancel}) {
+  const [createExpense] = useMutation(CREATE_EXPENSE);
+  return <EditEntry
+    onCancel={onCancel}
+    onSubmit={input => createExpense({variables: {input}})}
+  />
+}
+
+function UpdateExpenseEntry({expense, onCancel}) {
+  const [updateExpense] = useMutation(UPDATE_EXPENSE);
+  return <EditEntry
+    init={expense}
+    onCancel={onCancel}
+    onSubmit={input => updateExpense({variables: {id: expense.id, input}})}
+  />
+}
+
 export default function ExpensesList() {
   const {loading, error, data, subscribeToMore} = useQuery(EXPENSES_QUERY);
   const [isCreating, setIsCreating] = useState(false);
+  const [editing, setEditing] = useState([]);
 
   useEffect(() => {
     if (loading) return;
@@ -166,9 +209,21 @@ export default function ExpensesList() {
   return <Table striped bordered hover>
     <ListHeader onStartCreationClick={() => setIsCreating(true)}/>
     <tbody>
-    {isCreating && <NewExpenseEntry onCancelCreationClick={() => setIsCreating(false)}/>}
+    {isCreating && <CreateExpenseEntry
+      onCancel={() => setIsCreating(false)}
+    />}
     {data.expenses.map(expense =>
-      <ListEntry key={expense.id} expense={expense}/>
+      editing.some(id => id === expense.id)
+      ? <UpdateExpenseEntry
+          key={expense.id}
+          expense={cloneDeep(expense)}
+          onCancel={() => setEditing(editing => removeFromList(editing, expense.id))}
+        />
+      : <ListEntry
+          key={expense.id}
+          expense={expense}
+          onEdit={() => setEditing(editing => addToList(editing, expense.id))}
+        />
     )}
     </tbody>
   </Table>

@@ -10,7 +10,7 @@ export function removeFromList(list, element) {
   return [...list.slice(0, idx), ...list.slice(idx+1, list.length)]
 }
 
-export function removeFromListById(list, elementId) {
+export function removeFromListByID(list, elementId) {
   const idx = list.findIndex(e => e.id === elementId);
   if (idx === -1) {
     return list
@@ -22,5 +22,15 @@ export function replaceOnList(list, idx, element) {
   if (idx < 0 || idx > list.length) {
     return list
   }
+  return [...list.slice(0, idx), element, ...list.slice(idx+1, list.length)]
+}
+
+export function replaceOnListByID(list, element) {
+  const idx = list.findIndex(e => e.id === element.id);
+
+  if (idx === -1) {
+    return list
+  }
+
   return [...list.slice(0, idx), element, ...list.slice(idx+1, list.length)]
 }

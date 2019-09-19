@@ -1,4 +1,4 @@
-import {addToList, removeFromList, removeFromListById, replaceOnList} from "./immutable";
+import {addToList, removeFromList, removeFromListByID, replaceOnList, replaceOnListByID} from "./immutable";
 
 describe('addToList', () => {
   describe('when element is added', () => {
@@ -47,12 +47,12 @@ describe('removeFromList', () => {
     });
 });
 
-describe('removeFromListById', () => {
+describe('removeFromListByID', () => {
   describe('when element is removed', () => {
     const oldList = [{id: 1}, {id: 2}, {id: 3}];
     const el = 2;
 
-    const newList = removeFromListById(oldList, el);
+    const newList = removeFromListByID(oldList, el);
 
     it('it is removed', () => {
       expect(newList).toEqual([{id: 1}, {id: 3}]);
@@ -68,7 +68,7 @@ describe('removeFromListById', () => {
     const oldList = [{id: 1}, {id: 2}, {id: 3}];
     const el = 5;
 
-    const newList = removeFromListById(oldList, el);
+    const newList = removeFromListByID(oldList, el);
 
     it('ignores the operation', () => {
       expect(newList).toBe(oldList)
@@ -77,7 +77,7 @@ describe('removeFromListById', () => {
 });
 
 describe('replaceOnList', () => {
-  describe('when element is removed', () => {
+  describe('when element is replaced', () => {
     const oldList = [1, 2, 3];
     const idx = 1;
     const el = 5;
@@ -112,6 +112,35 @@ describe('replaceOnList', () => {
     const el = 5;
 
     const newList = replaceOnList(oldList, idx, el);
+
+    it('ignores the operation', () => {
+      expect(newList).toBe(oldList)
+    });
+  });
+});
+
+describe('replaceOnListByID', () => {
+  describe('when element is present', () => {
+    const oldList = [{id: 1}, {id: 2, a: "b"}, {id: 3}];
+    const el = {id: 2, a: "c"};
+
+    const newList = replaceOnListByID(oldList, el);
+
+    it('it is replaced', () => {
+      expect(newList).toEqual([{id: 1}, {id: 2, a: "c"}, {id: 3}]);
+    });
+
+    it('old list is preserved', () => {
+      expect(oldList).toEqual([{id: 1}, {id: 2, a: "b"}, {id: 3}]);
+      expect(oldList).not.toBe(newList);
+    });
+  });
+
+  describe('when element is not on the list', () => {
+    const oldList = [{id: 1}, {id: 2}, {id: 3}];
+    const el = {id: 5};
+
+    const newList = removeFromListByID(oldList, el);
 
     it('ignores the operation', () => {
       expect(newList).toBe(oldList)
