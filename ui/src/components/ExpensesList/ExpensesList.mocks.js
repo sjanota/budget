@@ -1,4 +1,4 @@
-import {EXPENSES_QUERY} from "./ExpensesList.gql";
+import {DELETE_EXPENSE, EXPENSES_QUERY} from "./ExpensesList.gql";
 
 export function mockQueryExpenses(expenses) {
   return {
@@ -17,9 +17,28 @@ export function mockExpensesEvent(event) {
   return {
     result: {
       data: {
-        expenseEvents: event
+        expenseEvents: {...event, __typename: 'ExpenseEvent'}
       }
     }
+  }
+}
+
+export function mockDeleteExpense(id) {
+  return {
+    request: {
+      query: DELETE_EXPENSE,
+      variables: {
+        id: id
+      }
+    },
+    result: jest.fn().mockReturnValueOnce({
+      data: {
+        deleteExpense: {
+          id: id,
+          __typename: 'Expense'
+        }
+      }
+    })
   }
 }
 

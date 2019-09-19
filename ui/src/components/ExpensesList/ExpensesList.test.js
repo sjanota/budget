@@ -1,7 +1,7 @@
 import {mount} from 'enzyme';
 import React from 'react';
 import {MockedProvider} from "@apollo/react-testing";
-import {expense1, expense2, mockExpensesEvent, mockQueryExpenses} from "./ExpensesList.mocks";
+import {expense1, expense2, mockDeleteExpense, mockExpensesEvent, mockQueryExpenses} from "./ExpensesList.mocks";
 import {updateComponent} from "../../testing";
 import {createMockLink} from "../../testing/apollo";
 import ExpensesList from "./ExpensesList";
@@ -60,11 +60,32 @@ it('updates in ADDED', async () => {
       <ExpensesList/>
     </MockedProvider>
   );
-  sendEvent(mockExpensesEvent({type: 'ADDED', expense: expense2, __typename: 'ExpenseAdded'}));
+  sendEvent(mockExpensesEvent({type: 'ADDED', expense: expense2}));
   await updateComponent(component);
   await updateComponent(component);
 
   expect(component.find('tbody tr')).toHaveLength(2);
+});
+
+it('triggers deleteExpense mutation', async () => {
+  const deleteMock = mockDeleteExpense(expense1.id);
+  const {link} = createMockLink([
+    mockQueryExpenses([expense1]),
+    deleteMock
+  ]);
+  const component = mount(
+    <MockedProvider link={link}>
+      <ExpensesList/>
+    </MockedProvider>
+  );
+  await updateComponent(component);
+
+  const deleteButton = component.find('button[data-action="delete"]');
+  expect(deleteButton).toExist();
+
+  deleteButton.simulate('click');
+  await updateComponent(component);
+  expect(deleteMock.result).toHaveBeenCalled();
 });
 
 

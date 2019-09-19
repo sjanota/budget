@@ -1,7 +1,9 @@
 import React, {useEffect} from 'react';
-import {useQuery} from "@apollo/react-hooks";
-import {EXPENSES_EVENTS_SUBSCRIPTION, EXPENSES_QUERY} from "./ExpensesList.gql";
+import {useMutation, useQuery} from "@apollo/react-hooks";
+import {DELETE_EXPENSE, EXPENSES_EVENTS_SUBSCRIPTION, EXPENSES_QUERY} from "./ExpensesList.gql";
 import Table from "react-bootstrap/Table";
+import Octicon, {Trashcan} from "@primer/octicons-react";
+import {Button} from "react-bootstrap";
 
 function handleExpenseEvent(prev, {subscriptionData}) {
   const event = subscriptionData.data.expenseEvents;
@@ -23,8 +25,21 @@ function ListHeader() {
     <th>Suma</th>
     <th>Miejsce</th>
     <th>Konto</th>
+    <th>Actions</th>
   </tr>
   </thead>
+}
+
+function DeleteButton({expense}) {
+  const [deleteExpense] = useMutation(DELETE_EXPENSE);
+  return <Button
+    size={"sm"}
+    variant={"danger"}
+    data-action={"delete"}
+    onClick={() => deleteExpense({variables: {id: expense.id}})}
+  >
+    <Octicon icon={Trashcan} size={"small"} ariaLabel={"Delete expense"}/>
+  </Button>
 }
 
 function ListEntry({expense}) {
@@ -34,6 +49,7 @@ function ListEntry({expense}) {
     <td>{expense.total}</td>
     <td>{expense.location}</td>
     <td>{expense.account && expense.account.name}</td>
+    <td><DeleteButton expense={expense}/></td>
   </tr>
 }
 

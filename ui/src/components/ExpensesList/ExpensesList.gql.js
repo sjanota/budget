@@ -27,12 +27,18 @@ export const EXPENSES_EVENTS_SUBSCRIPTION = gql`
     subscription WatchExpenses {
         expenseEvents {
             type
-            ... on ExpenseAdded {
-                expense {
-                    ...ExpensesDetails
-                }
+            expense {
+                ...ExpensesDetails
             }
         }
     }
     ${EXPENSE_FRAGMENT}
+`;
+
+export const DELETE_EXPENSE = gql`
+  mutation DeleteExpense($id: ID!) {
+      deleteExpense(id: $id) {
+          id
+      }
+  }
 `;
