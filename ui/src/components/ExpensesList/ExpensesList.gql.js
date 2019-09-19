@@ -10,15 +10,6 @@ const EXPENSE_FRAGMENT = gql`
         account {
             id
             name
-            available
-        }
-        entries {
-            title
-            amount
-            category {
-                id
-                name
-            }
         }
     }
 `;

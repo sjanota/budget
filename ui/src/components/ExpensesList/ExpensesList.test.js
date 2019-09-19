@@ -1,21 +1,22 @@
 import {mount} from 'enzyme';
-import App from "./App";
 import React from 'react';
 import {MockedProvider} from "@apollo/react-testing";
-import {expense1, expense2, mockExpensesEvent, mockQueryExpenses} from "./App.mocks";
+import {expense1, expense2, mockExpensesEvent, mockQueryExpenses} from "./ExpensesList.mocks";
 import {updateComponent} from "../../testing";
 import {createMockLink} from "../../testing/apollo";
+import ExpensesList from "./ExpensesList";
 
 
 it('displays loading initially', async () => {
   const {link} = createMockLink([]);
   console.error = jest.fn();
-  const component = mount(<App/>, {
-    wrappingComponent: MockedProvider,
-    wrappingComponentProps: {link}
-  });
+  const component = mount(
+    <MockedProvider link={link}>
+      <ExpensesList/>
+    </MockedProvider>
+  );
 
-  expect(component.find('pre')).toHaveLength(0);
+  expect(component.find('tbody tr')).toHaveLength(0);
   expect(component.find('p')).toExist();
   expect(component.find('p')).toHaveText("Loading...");
 });
@@ -25,13 +26,13 @@ it('displays error if occurs', async () => {
   console.error = jest.fn();
   const component = mount(
     <MockedProvider link={link}>
-      <App/>
+      <ExpensesList/>
     </MockedProvider>
   );
   await updateComponent(component);
 
   expect(console.error).toBeCalled();
-  expect(component.find('pre')).toHaveLength(0);
+  expect(component.find('tbody tr')).toHaveLength(0);
   expect(component.find('p')).toExist();
   expect(component.find('p').text).toMatchSnapshot();
 });
@@ -42,12 +43,12 @@ it('displays queried data', async () => {
   ]);
   const component = mount(
     <MockedProvider link={link}>
-      <App/>
+      <ExpensesList/>
     </MockedProvider>
   );
   await updateComponent(component);
 
-  expect(component.find('pre')).toHaveLength(1);
+  expect(component.find('tbody tr')).toHaveLength(1);
 });
 
 it('updates in ADDED', async () => {
@@ -56,14 +57,14 @@ it('updates in ADDED', async () => {
   ]);
   const component = mount(
     <MockedProvider link={link}>
-      <App/>
+      <ExpensesList/>
     </MockedProvider>
   );
   sendEvent(mockExpensesEvent({type: 'ADDED', expense: expense2, __typename: 'ExpenseAdded'}));
   await updateComponent(component);
   await updateComponent(component);
 
-  expect(component.find('pre')).toHaveLength(2);
+  expect(component.find('tbody tr')).toHaveLength(2);
 });
 
 

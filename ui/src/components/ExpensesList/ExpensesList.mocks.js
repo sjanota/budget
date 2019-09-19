@@ -1,4 +1,4 @@
-import {EXPENSES_QUERY} from "./App.gql";
+import {EXPENSES_QUERY} from "./ExpensesList.gql";
 
 export function mockQueryExpenses(expenses) {
   return {
