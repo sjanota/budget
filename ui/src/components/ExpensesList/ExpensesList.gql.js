@@ -25,7 +25,7 @@ export const EXPENSES_QUERY = gql`
 
 export const EXPENSES_EVENTS_SUBSCRIPTION = gql`
     subscription WatchExpenses {
-        expenses {
+        expenseEvents {
             type
             ... on ExpenseAdded {
                 expense {

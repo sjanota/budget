@@ -102,5 +102,5 @@ type ExpenseAdded implements ExpenseEvent {
 }
 
 type Subscription {
-    expenses: ExpenseEvent!
+    expenseEvents: ExpenseEvent!
 }

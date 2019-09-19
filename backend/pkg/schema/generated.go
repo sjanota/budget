@@ -113,7 +113,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		Expenses func(childComplexity int) int
+		ExpenseEvents func(childComplexity int) int
 	}
 
 	Transfer struct {
@@ -142,7 +142,7 @@ type QueryResolver interface {
 	Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error)
 }
 type SubscriptionResolver interface {
-	Expenses(ctx context.Context) (<-chan models.ExpenseEvent, error)
+	ExpenseEvents(ctx context.Context) (<-chan models.ExpenseEvent, error)
 }
 
 type executableSchema struct {
@@ -440,12 +440,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Expenses(childComplexity, args["since"].(*string), args["until"].(*string)), true
 
-	case "Subscription.expenses":
-		if e.complexity.Subscription.Expenses == nil {
+	case "Subscription.expenseEvents":
+		if e.complexity.Subscription.ExpenseEvents == nil {
 			break
 		}
 
-		return e.complexity.Subscription.Expenses(childComplexity), true
+		return e.complexity.Subscription.ExpenseEvents(childComplexity), true
 
 	case "Transfer.amount":
 		if e.complexity.Transfer.Amount == nil {
@@ -677,7 +677,7 @@ type ExpenseAdded implements ExpenseEvent {
 }
 
 type Subscription {
-    expenses: ExpenseEvent!
+    expenseEvents: ExpenseEvent!
 }`},
 )
 
@@ -2289,7 +2289,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Subscription_expenses(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
+func (ec *executionContext) _Subscription_expenseEvents(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Field: field,
 		Args:  nil,
@@ -2297,7 +2297,7 @@ func (ec *executionContext) _Subscription_expenses(ctx context.Context, field gr
 	// FIXME: subscriptions are missing request middleware stack https://github.com/99designs/gqlgen/issues/259
 	//          and Tracer stack
 	rctx := ctx
-	results, err := ec.resolvers.Subscription().Expenses(rctx)
+	results, err := ec.resolvers.Subscription().ExpenseEvents(rctx)
 	if err != nil {
 		ec.Error(ctx, err)
 		return nil
@@ -4159,8 +4159,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	}
 
 	switch fields[0].Name {
-	case "expenses":
-		return ec._Subscription_expenses(ctx, fields[0])
+	case "expenseEvents":
+		return ec._Subscription_expenseEvents(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}

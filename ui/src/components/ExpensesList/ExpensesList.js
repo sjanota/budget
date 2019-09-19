@@ -4,7 +4,7 @@ import {EXPENSES_EVENTS_SUBSCRIPTION, EXPENSES_QUERY} from "./ExpensesList.gql";
 import Table from "react-bootstrap/Table";
 
 function handleExpenseEvent(prev, {subscriptionData}) {
-  const event = subscriptionData.data.expenses;
+  const event = subscriptionData.data.expenseEvents;
   switch (event.type) {
     case "ADDED": {
       const newExpense = event.expense;

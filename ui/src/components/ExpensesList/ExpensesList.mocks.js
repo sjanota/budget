@@ -17,7 +17,7 @@ export function mockExpensesEvent(event) {
   return {
     result: {
       data: {
-        expenses: event
+        expenseEvents: event
       }
     }
   }

@@ -7,6 +7,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/websocket v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/stretchr/testify v1.3.0
 	github.com/vektah/gqlparser v1.1.2

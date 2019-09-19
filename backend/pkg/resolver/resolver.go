@@ -53,7 +53,7 @@ type subscriptionResolver struct {
 	*Resolver
 }
 
-func (r *subscriptionResolver) Expenses(ctx context.Context) (<-chan models.ExpenseEvent, error) {
+func (r *subscriptionResolver) ExpenseEvents(ctx context.Context) (<-chan models.ExpenseEvent, error) {
 	return r.Storage.Expenses().Watch(ctx)
 }
 
