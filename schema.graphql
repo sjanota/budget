@@ -73,7 +73,7 @@ input ExpenseInput {
     entries: [ExpenseEntryInput!]!
     total: MoneyAmount!
     date: Date
-    AccountID: ID
+    accountID: ID
 }
 
 input ExpenseEntryInput {

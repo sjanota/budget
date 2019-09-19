@@ -42,3 +42,11 @@ export const DELETE_EXPENSE = gql`
       }
   }
 `;
+
+export const CREATE_EXPENSE = gql`
+    mutation CreateExpense($input: ExpenseInput!) {
+        createExpense(input: $input) {
+            id
+        }
+    }
+`;
