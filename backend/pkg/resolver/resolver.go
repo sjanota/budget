@@ -46,11 +46,15 @@ func (r *queryResolver) Expenses(ctx context.Context, since *string, until *stri
 
 type mutationResolver struct{ *Resolver }
 
+func (r *mutationResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses().ReplaceByID(ctx, id, input)
+}
+
 func (r *mutationResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	return r.Storage.Expenses().DeleteByID(ctx, id)
 }
 
-func (r *mutationResolver) CreateExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
+func (r *mutationResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().InsertOne(ctx, input)
 }
 

@@ -92,13 +92,15 @@ input ExpenseEntryInput {
 }
 
 type Mutation {
-    createExpense(input: ExpenseInput): Expense
+    createExpense(input: ExpenseInput!): Expense
     deleteExpense(id: ID!): Expense
+    updateExpense(id: ID!, input: ExpenseInput!): Expense
 }
 
 enum EventType {
     CREATED
     DELETED
+    UPDATED
 }
 
 type ExpenseEvent {

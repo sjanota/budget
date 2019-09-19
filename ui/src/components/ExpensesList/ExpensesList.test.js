@@ -60,8 +60,8 @@ it('updates list on CREATED', async () => {
       <ExpensesList/>
     </MockedProvider>
   );
-  sendEvent(mockExpensesEvent({type: 'CREATED', expense: expense2}));
   await updateComponent(component);
+  sendEvent(mockExpensesEvent({type: 'CREATED', expense: expense2}));
   await updateComponent(component);
 
   expect(component.find('tbody tr')).toHaveLength(2);
@@ -97,8 +97,8 @@ it('updates list on DELETED', async () => {
       <ExpensesList/>
     </MockedProvider>
   );
-  sendEvent(mockExpensesEvent({type: 'DELETED', expense: expense2}));
   await updateComponent(component);
+  sendEvent(mockExpensesEvent({type: 'DELETED', expense: expense2}));
   await updateComponent(component);
 
   expect(component.find('tbody tr')).toHaveLength(1);

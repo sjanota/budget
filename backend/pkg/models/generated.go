@@ -120,16 +120,18 @@ type EventType string
 const (
 	EventTypeCreated EventType = "CREATED"
 	EventTypeDeleted EventType = "DELETED"
+	EventTypeUpdated EventType = "UPDATED"
 )
 
 var AllEventType = []EventType{
 	EventTypeCreated,
 	EventTypeDeleted,
+	EventTypeUpdated,
 }
 
 func (e EventType) IsValid() bool {
 	switch e {
-	case EventTypeCreated, EventTypeDeleted:
+	case EventTypeCreated, EventTypeDeleted, EventTypeUpdated:
 		return true
 	}
 	return false

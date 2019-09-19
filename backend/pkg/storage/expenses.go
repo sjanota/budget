@@ -52,7 +52,18 @@ func (r *ExpensesRepository) DeleteByID(ctx context.Context, id primitive.Object
 	return result, err
 }
 
-func (r *ExpensesRepository) InsertOne(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
+func (r *ExpensesRepository) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	result := &models.Expense{}
+	replacement := input.ToExpense(id)
+	err := r.replaceByID(ctx, id, replacement, result)
+	r.notify(&models.ExpenseEvent{
+		Type:    models.EventTypeUpdated,
+		Expense: result,
+	})
+	return result, err
+}
+
+func (r *ExpensesRepository) InsertOne(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
 	result, err := r.collection.InsertOne(ctx, input)
 	if err != nil {
 		return nil, err
