@@ -78,7 +78,7 @@ function CreateButton({onClick}) {
 function CancelButton({onClick}) {
   return <ListButton
     icon={X}
-    action={"cancel-creation"}
+    action={"cancel"}
     onClick={onClick}
     ariaLabel={"Cancel expense creation"}
   />
@@ -87,13 +87,13 @@ function CancelButton({onClick}) {
 function SubmitButton({onClick}) {
   return <ListButton
     icon={Check}
-    action={"cancel-creation"}
+    action={"submit"}
     onClick={onClick}
     ariaLabel={"Cancel expense creation"}
   />
 }
 
-function ListHeader({onStartCreationClick}) {
+function ListHeader({onCreate}) {
   return <thead>
 
   <tr>
@@ -104,7 +104,7 @@ function ListHeader({onStartCreationClick}) {
     <th>Konto</th>
     <th>
       Actions
-      <CreateButton onClick={onStartCreationClick}/>
+      <CreateButton onClick={onCreate}/>
     </th>
   </tr>
   </thead>
@@ -207,7 +207,7 @@ export default function ExpensesList() {
   }
 
   return <Table striped bordered hover>
-    <ListHeader onStartCreationClick={() => setIsCreating(true)}/>
+    <ListHeader onCreate={() => setIsCreating(true)}/>
     <tbody>
     {isCreating && <CreateExpenseEntry
       onCancel={() => setIsCreating(false)}

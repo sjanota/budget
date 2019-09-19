@@ -1,7 +1,7 @@
 import {mount} from 'enzyme';
 import React from 'react';
 import {MockedProvider} from "@apollo/react-testing";
-import {expense1, expense2, mockDeleteExpense, mockExpensesEvent, mockQueryExpenses} from "./ExpensesList.mocks";
+import {expense1, expense2, mockDeleteExpense, mockExpensesEvent, mockQueryExpenses} from "./ExpensesList.gql.mocks";
 import {updateComponent} from "../../testing";
 import {createMockLink} from "../../testing/apollo";
 import ExpensesList from "./ExpensesList";
