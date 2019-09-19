@@ -108,18 +108,18 @@ func (e Direction) MarshalGQL(w io.Writer) {
 type EventType string
 
 const (
-	EventTypeAdded   EventType = "ADDED"
+	EventTypeCreated EventType = "CREATED"
 	EventTypeDeleted EventType = "DELETED"
 )
 
 var AllEventType = []EventType{
-	EventTypeAdded,
+	EventTypeCreated,
 	EventTypeDeleted,
 }
 
 func (e EventType) IsValid() bool {
 	switch e {
-	case EventTypeAdded, EventTypeDeleted:
+	case EventTypeCreated, EventTypeDeleted:
 		return true
 	}
 	return false

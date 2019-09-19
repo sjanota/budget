@@ -76,7 +76,7 @@ func (r *ExpensesRepository) InsertOne(ctx context.Context, input *models.Expens
 		AccountID: input.AccountID,
 	}
 	r.notify(&models.ExpenseEvent{
-		Type:    models.EventTypeAdded,
+		Type:    models.EventTypeCreated,
 		Expense: expense,
 	})
 	return expense, nil

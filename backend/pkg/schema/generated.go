@@ -103,7 +103,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddExpense    func(childComplexity int, input *models.ExpenseInput) int
+		CreateExpense func(childComplexity int, input *models.ExpenseInput) int
 		DeleteExpense func(childComplexity int, id primitive.ObjectID) int
 	}
 
@@ -135,7 +135,7 @@ type ExpenseEntryResolver interface {
 	Category(ctx context.Context, obj *models.ExpenseEntry) (*models.Category, error)
 }
 type MutationResolver interface {
-	AddExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error)
+	CreateExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error)
 	DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error)
 }
 type QueryResolver interface {
@@ -409,17 +409,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ExpenseEvent.Type(childComplexity), true
 
-	case "Mutation.addExpense":
-		if e.complexity.Mutation.AddExpense == nil {
+	case "Mutation.createExpense":
+		if e.complexity.Mutation.CreateExpense == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_addExpense_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_createExpense_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddExpense(childComplexity, args["input"].(*models.ExpenseInput)), true
+		return e.complexity.Mutation.CreateExpense(childComplexity, args["input"].(*models.ExpenseInput)), true
 
 	case "Mutation.deleteExpense":
 		if e.complexity.Mutation.DeleteExpense == nil {
@@ -663,12 +663,12 @@ input ExpenseEntryInput {
 }
 
 type Mutation {
-    addExpense(input: ExpenseInput): Expense
+    createExpense(input: ExpenseInput): Expense
     deleteExpense(id: ID!): Expense
 }
 
 enum EventType {
-    ADDED
+    CREATED
     DELETED
 }
 
@@ -812,7 +812,7 @@ func (ec *executionContext) field_Envelope_expenses_args(ctx context.Context, ra
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_addExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *models.ExpenseInput
@@ -2107,7 +2107,7 @@ func (ec *executionContext) _ExpenseEvent_expense(ctx context.Context, field gra
 	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_addExpense(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_createExpense(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2124,7 +2124,7 @@ func (ec *executionContext) _Mutation_addExpense(ctx context.Context, field grap
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_addExpense_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_createExpense_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -2133,7 +2133,7 @@ func (ec *executionContext) _Mutation_addExpense(ctx context.Context, field grap
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddExpense(rctx, args["input"].(*models.ExpenseInput))
+		return ec.resolvers.Mutation().CreateExpense(rctx, args["input"].(*models.ExpenseInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4090,8 +4090,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "addExpense":
-			out.Values[i] = ec._Mutation_addExpense(ctx, field)
+		case "createExpense":
+			out.Values[i] = ec._Mutation_createExpense(ctx, field)
 		case "deleteExpense":
 			out.Values[i] = ec._Mutation_deleteExpense(ctx, field)
 		default:

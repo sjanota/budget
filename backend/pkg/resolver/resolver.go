@@ -50,7 +50,7 @@ func (r *mutationResolver) DeleteExpense(ctx context.Context, id primitive.Objec
 	return r.Storage.Expenses().DeleteByID(ctx, id)
 }
 
-func (r *mutationResolver) AddExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
+func (r *mutationResolver) CreateExpense(ctx context.Context, input *models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().InsertOne(ctx, input)
 }
 
