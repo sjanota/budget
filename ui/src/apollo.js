@@ -6,6 +6,14 @@ import {getMainDefinition} from 'apollo-utilities';
 import {onError} from 'apollo-link-error';
 import {WebSocketLink} from 'apollo-link-ws';
 
+export function isSubscriptionOperation({query}) {
+  const definition = getMainDefinition(query);
+  return (
+    definition.kind === 'OperationDefinition' &&
+    definition.operation === 'subscription'
+  );
+}
+
 export default function createClient() {
   const graphqlApiUrl = "localhost:8080/query";
   const httpLink = createHttpLink({uri: `http://${graphqlApiUrl}`});
@@ -34,13 +42,7 @@ export default function createClient() {
   );
 
   const link = split(
-    ({query}) => {
-      const definition = getMainDefinition(query);
-      return (
-        definition.kind === 'OperationDefinition' &&
-        definition.operation === 'subscription'
-      );
-    },
+    isSubscriptionOperation,
     wsLink,
     httpLink,
   );
