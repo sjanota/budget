@@ -12,6 +12,7 @@ import Octicon, {Check, Pencil, Plus, Trashcan, X,} from "@primer/octicons-react
 import {Button} from "react-bootstrap";
 import {addToList, removeFromList, removeFromListByID, replaceOnListByID} from "../../util/immutable";
 import {cloneDeep} from "apollo-utilities";
+import './ExpensesList.css'
 
 function handleExpenseEvent(prev, {subscriptionData}) {
   const event = subscriptionData.data.expenseEvents;
@@ -94,8 +95,7 @@ function SubmitButton({onClick}) {
 }
 
 function ListHeader({onCreate}) {
-  return <thead>
-
+  return <thead className={"thead-dark"}>
   <tr>
     <th>Tytuł</th>
     <th>Data</th>
@@ -206,25 +206,28 @@ export default function ExpensesList() {
     return <p>Error :(</p>;
   }
 
-  return <Table striped bordered hover>
-    <ListHeader onCreate={() => setIsCreating(true)}/>
-    <tbody>
-    {isCreating && <CreateExpenseEntry
-      onCancel={() => setIsCreating(false)}
-    />}
-    {data.expenses.map(expense =>
-      editing.some(id => id === expense.id)
-      ? <UpdateExpenseEntry
-          key={expense.id}
-          expense={cloneDeep(expense)}
-          onCancel={() => setEditing(editing => removeFromList(editing, expense.id))}
-        />
-      : <ListEntry
-          key={expense.id}
-          expense={expense}
-          onEdit={() => setEditing(editing => addToList(editing, expense.id))}
-        />
-    )}
-    </tbody>
-  </Table>
+  return <div className={"ExpensesList"}>
+    <Table striped bordered hover size={"sm"}>
+      <ListHeader onCreate={() => setIsCreating(true)}/>
+      <tbody>
+      {isCreating && <CreateExpenseEntry
+        onCancel={() => setIsCreating(false)}
+      />}
+      {data.expenses.map(expense =>
+        editing.some(id => id === expense.id)
+          ? <UpdateExpenseEntry
+            key={expense.id}
+            expense={cloneDeep(expense)}
+            onCancel={() => setEditing(editing => removeFromList(editing, expense.id))}
+          />
+          : <ListEntry
+            key={expense.id}
+            expense={expense}
+            onEdit={() => setEditing(editing => addToList(editing, expense.id))}
+          />
+      )}
+      </tbody>
+    </Table>
+  </div>
+
 }
