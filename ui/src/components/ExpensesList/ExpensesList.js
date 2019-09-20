@@ -229,5 +229,4 @@ export default function ExpensesList() {
       </tbody>
     </Table>
   </div>
-
 }

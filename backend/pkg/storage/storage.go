@@ -10,10 +10,15 @@ import (
 type Storage struct {
 	db *mongo.Database
 	expenses *ExpensesRepository
+	accounts *AccountsRepository
 }
 
 func (s *Storage) Expenses() *ExpensesRepository {
 	return s.expenses
+}
+
+func (s *Storage) Accounts() *AccountsRepository {
+	return s.accounts
 }
 
 func New(uri string) (*Storage, error) {
@@ -32,6 +37,7 @@ func New(uri string) (*Storage, error) {
 	return &Storage{
 		db: database,
 		expenses: newExpensesRepository(database),
+		expenses: newAccountsRepository(database),
 	}, nil
 }
 

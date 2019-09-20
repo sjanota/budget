@@ -44,8 +44,6 @@ type Account {
     id: ID!
     name: String!
     available: MoneyAmount!
-    expenses(since: Date, until: Date): [Expense!]!
-    transfers(since: Date, until: Date, direction: Direction = BOTH): [Transfer!]!
 }
 
 type Envelope {
@@ -91,10 +89,16 @@ input ExpenseEntryInput {
     amount: MoneyAmountInput!
 }
 
+input AccountInput {
+    name: String!
+}
+
 type Mutation {
     createExpense(input: ExpenseInput!): Expense
     deleteExpense(id: ID!): Expense
     updateExpense(id: ID!, input: ExpenseInput!): Expense
+
+    createAccount(input: AccountInput!): Account
 }
 
 enum EventType {

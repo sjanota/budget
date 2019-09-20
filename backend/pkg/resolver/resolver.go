@@ -46,6 +46,10 @@ func (r *queryResolver) Expenses(ctx context.Context, since *string, until *stri
 
 type mutationResolver struct{ *Resolver }
 
+func (r *mutationResolver) CreateAccount(ctx context.Context, input models.AccountInput) (*models.Account, error) {
+	return r.Storage.Accounts().InsertOne(ctx, input)
+}
+
 func (r *mutationResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().ReplaceByID(ctx, id, input)
 }

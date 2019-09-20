@@ -51,10 +51,8 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Account struct {
 		Available func(childComplexity int) int
-		Expenses  func(childComplexity int, since *string, until *string) int
 		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
-		Transfers func(childComplexity int, since *string, until *string, direction *models.Direction) int
 	}
 
 	BudgetPlan struct {
@@ -108,6 +106,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CreateAccount func(childComplexity int, input models.AccountInput) int
 		CreateExpense func(childComplexity int, input models.ExpenseInput) int
 		DeleteExpense func(childComplexity int, id primitive.ObjectID) int
 		UpdateExpense func(childComplexity int, id primitive.ObjectID, input models.ExpenseInput) int
@@ -144,6 +143,7 @@ type MutationResolver interface {
 	CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error)
 	DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error)
 	UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error)
+	CreateAccount(ctx context.Context, input models.AccountInput) (*models.Account, error)
 }
 type QueryResolver interface {
 	Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error)
@@ -174,18 +174,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Account.Available(childComplexity), true
 
-	case "Account.expenses":
-		if e.complexity.Account.Expenses == nil {
-			break
-		}
-
-		args, err := ec.field_Account_expenses_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Account.Expenses(childComplexity, args["since"].(*string), args["until"].(*string)), true
-
 	case "Account.id":
 		if e.complexity.Account.ID == nil {
 			break
@@ -199,18 +187,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Account.Name(childComplexity), true
-
-	case "Account.transfers":
-		if e.complexity.Account.Transfers == nil {
-			break
-		}
-
-		args, err := ec.field_Account_transfers_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Account.Transfers(childComplexity, args["since"].(*string), args["until"].(*string), args["direction"].(*models.Direction)), true
 
 	case "BudgetPlan.amount":
 		if e.complexity.BudgetPlan.Amount == nil {
@@ -429,6 +405,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MoneyAmount.Integer(childComplexity), true
+
+	case "Mutation.createAccount":
+		if e.complexity.Mutation.CreateAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateAccount(childComplexity, args["input"].(models.AccountInput)), true
 
 	case "Mutation.createExpense":
 		if e.complexity.Mutation.CreateExpense == nil {
@@ -657,8 +645,6 @@ type Account {
     id: ID!
     name: String!
     available: MoneyAmount!
-    expenses(since: Date, until: Date): [Expense!]!
-    transfers(since: Date, until: Date, direction: Direction = BOTH): [Transfer!]!
 }
 
 type Envelope {
@@ -704,10 +690,16 @@ input ExpenseEntryInput {
     amount: MoneyAmountInput!
 }
 
+input AccountInput {
+    name: String!
+}
+
 type Mutation {
     createExpense(input: ExpenseInput!): Expense
     deleteExpense(id: ID!): Expense
     updateExpense(id: ID!, input: ExpenseInput!): Expense
+
+    createAccount(input: AccountInput!): Account
 }
 
 enum EventType {
@@ -729,58 +721,6 @@ type Subscription {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Account_expenses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["since"]; ok {
-		arg0, err = ec.unmarshalODate2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["since"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["until"]; ok {
-		arg1, err = ec.unmarshalODate2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["until"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Account_transfers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["since"]; ok {
-		arg0, err = ec.unmarshalODate2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["since"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["until"]; ok {
-		arg1, err = ec.unmarshalODate2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["until"] = arg1
-	var arg2 *models.Direction
-	if tmp, ok := rawArgs["direction"]; ok {
-		arg2, err = ec.unmarshalODirection2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDirection(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["direction"] = arg2
-	return args, nil
-}
 
 func (ec *executionContext) field_Category_expenses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -853,6 +793,20 @@ func (ec *executionContext) field_Envelope_expenses_args(ctx context.Context, ra
 		}
 	}
 	args["until"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.AccountInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNAccountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1087,94 +1041,6 @@ func (ec *executionContext) _Account_available(ctx context.Context, field graphq
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNMoneyAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMoneyAmount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Account_expenses(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Account",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Account_expenses_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Expenses, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*models.Expense)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNExpense2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Account_transfers(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Account",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Account_transfers_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Transfers, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*models.Transfer)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTransfer2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BudgetPlan_id(ctx context.Context, field graphql.CollectedField, obj *models.BudgetPlan) (ret graphql.Marshaler) {
@@ -2368,6 +2234,47 @@ func (ec *executionContext) _Mutation_updateExpense(ctx context.Context, field g
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateAccount(rctx, args["input"].(models.AccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Account)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_expenses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3844,6 +3751,24 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAccountInput(ctx context.Context, obj interface{}) (models.AccountInput, error) {
+	var it models.AccountInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputExpenseEntryInput(ctx context.Context, obj interface{}) (models.ExpenseEntryInput, error) {
 	var it models.ExpenseEntryInput
 	var asMap = obj.(map[string]interface{})
@@ -3977,16 +3902,6 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "available":
 			out.Values[i] = ec._Account_available(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "expenses":
-			out.Values[i] = ec._Account_expenses(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "transfers":
-			out.Values[i] = ec._Account_transfers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4333,6 +4248,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_deleteExpense(ctx, field)
 		case "updateExpense":
 			out.Values[i] = ec._Mutation_updateExpense(ctx, field)
+		case "createAccount":
+			out.Values[i] = ec._Mutation_createAccount(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4691,6 +4608,10 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAccountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccountInput(ctx context.Context, v interface{}) (models.AccountInput, error) {
+	return ec.unmarshalInputAccountInput(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
 }
@@ -5011,57 +4932,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNTransfer2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v models.Transfer) graphql.Marshaler {
-	return ec._Transfer(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNTransfer2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v []*models.Transfer) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		rctx := &graphql.ResolverContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithResolverContext(ctx, rctx)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalNTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v *models.Transfer) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Transfer(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
