@@ -6,12 +6,15 @@ import * as serviceWorker from './serviceWorker';
 import {ApolloProvider} from '@apollo/react-hooks';
 import createClient from "./apollo";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import {BrowserRouter} from "react-router-dom";
 
 
 
 ReactDOM.render(
   <ApolloProvider client={createClient()}>
-    <App/>
+    <BrowserRouter>
+      <App/>
+    </BrowserRouter>
   </ApolloProvider>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
