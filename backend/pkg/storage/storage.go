@@ -37,7 +37,7 @@ func New(uri string) (*Storage, error) {
 	return &Storage{
 		db: database,
 		expenses: newExpensesRepository(database),
-		expenses: newAccountsRepository(database),
+		accounts: newAccountsRepository(database),
 	}, nil
 }
 

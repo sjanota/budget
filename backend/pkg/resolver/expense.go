@@ -19,8 +19,6 @@ func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*mo
 			Integer: 10,
 			Decimal: 99,
 		},
-		Expenses:  nil,
-		Transfers: nil,
 	}, nil
 }
 
