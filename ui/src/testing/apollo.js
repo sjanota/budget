@@ -1,9 +1,9 @@
-import {getMainDefinition} from "apollo-utilities";
-import {MockLink, MockSubscriptionLink} from "@apollo/react-testing";
-import {ApolloLink} from "apollo-link";
+import { getMainDefinition } from 'apollo-utilities';
+import { MockLink, MockSubscriptionLink } from '@apollo/react-testing';
+import { ApolloLink } from 'apollo-link';
 
 export function createMockLink(mocks, addTypename = true) {
-  const isSubscription = ({query}) => {
+  const isSubscription = ({ query }) => {
     const definition = getMainDefinition(query);
     return (
       definition.kind === 'OperationDefinition' &&
@@ -14,7 +14,10 @@ export function createMockLink(mocks, addTypename = true) {
   const link = ApolloLink.split(
     isSubscription,
     subscriptionLink,
-    new MockLink(mocks, addTypename),
+    new MockLink(mocks, addTypename)
   );
-  return {link, sendEvent: subscriptionLink.simulateResult.bind(subscriptionLink)}
+  return {
+    link,
+    sendEvent: subscriptionLink.simulateResult.bind(subscriptionLink),
+  };
 }

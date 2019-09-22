@@ -1,0 +1,121 @@
+scalar Date
+
+type MoneyAmount {
+  integer: Int!
+  decimal: Int!
+}
+
+input MoneyAmountInput {
+  integer: Int!
+  decimal: Int!
+}
+
+enum Direction {
+  IN
+  OUT
+  BOTH
+}
+
+type Expense {
+  id: ID!
+  title: String!
+  location: String
+  entries: [ExpenseEntry!]!
+  total: MoneyAmount!
+  date: Date
+  account: Account
+}
+
+type ExpenseEntry {
+  title: String!
+  category: Category!
+  amount: MoneyAmount!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  description: String
+  envelope: Envelope!
+  expenses(since: Date, until: Date): [Expense!]!
+}
+
+type Account {
+  id: ID!
+  name: String!
+  available: MoneyAmount!
+}
+
+type Envelope {
+  id: ID!
+  name: String!
+  available: MoneyAmount!
+  expenses(since: Date, until: Date): [Expense!]!
+  budgetPlans(
+    since: Date
+    until: Date
+    direction: Direction = BOTH
+  ): [BudgetPlan!]!
+}
+
+type Transfer {
+  id: ID!
+  date: Date
+  from: Account
+  to: Account
+  amount: MoneyAmount!
+}
+
+type BudgetPlan {
+  id: ID!
+  date: Date
+  from: Envelope
+  to: Account
+  amount: MoneyAmount!
+}
+
+type Query {
+  expenses(since: Date, until: Date): [Expense!]!
+}
+
+input ExpenseInput {
+  title: String!
+  location: String
+  entries: [ExpenseEntryInput!]!
+  total: MoneyAmountInput!
+  date: Date
+  accountID: ID
+}
+
+input ExpenseEntryInput {
+  title: String!
+  categoryID: ID!
+  amount: MoneyAmountInput!
+}
+
+input AccountInput {
+  name: String!
+}
+
+type Mutation {
+  createExpense(input: ExpenseInput!): Expense
+  deleteExpense(id: ID!): Expense
+  updateExpense(id: ID!, input: ExpenseInput!): Expense
+
+  createAccount(input: AccountInput!): Account
+}
+
+enum EventType {
+  CREATED
+  DELETED
+  UPDATED
+}
+
+type ExpenseEvent {
+  type: EventType!
+  expense: Expense
+}
+
+type Subscription {
+  expenseEvents: ExpenseEvent!
+}

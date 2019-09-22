@@ -9,7 +9,7 @@ mongo-docker:
 	@echo "export MONGODB_URI=mongodb://localhost:$(port)/budget"
 
 api-dev:
-	cd backend; $(shell make mongo-docker); go run ./cmd/api/main.go
+	$(shell make mongo-docker); go run ./cmd/api/main.go
 
 generate:
-	cd backend; go generate ./...
+	go generate ./...
