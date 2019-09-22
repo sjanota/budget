@@ -1,5 +1,5 @@
 package storage
 
-type doc map[string]interface{}
+type Doc map[string]interface{}
 
 const _id = "_id"
