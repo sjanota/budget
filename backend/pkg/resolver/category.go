@@ -9,9 +9,9 @@ type categoryResolver struct{ *Resolver }
 
 func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error) {
 	return &models.Envelope{
-		ID:          obj.EnvelopeID,
-		Name:        "123",
-		Balance:   &models.MoneyAmount{
+		ID:   obj.EnvelopeID,
+		Name: "123",
+		Balance: &models.MoneyAmount{
 			Integer: 12,
 			Decimal: 54,
 		},
@@ -21,4 +21,3 @@ func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (
 func (c *categoryResolver) Expenses(ctx context.Context, obj *models.Category, since *string, until *string) ([]*models.Expense, error) {
 	panic("implement me")
 }
-

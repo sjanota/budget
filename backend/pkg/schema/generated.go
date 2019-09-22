@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 	"sync"
@@ -14,7 +15,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/sjanota/budget/backend/pkg/resolver"
 	"github.com/vektah/gqlparser"
 	"github.com/vektah/gqlparser/ast"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -67,12 +67,6 @@ type ComplexityRoot struct {
 	Budget struct {
 		Expenses func(childComplexity int) int
 		ID       func(childComplexity int) int
-	}
-
-	BudgetMutation struct {
-		CreateExpense func(childComplexity int, input models.ExpenseInput) int
-		DeleteExpense func(childComplexity int, id primitive.ObjectID) int
-		UpdateExpense func(childComplexity int, id primitive.ObjectID, input models.ExpenseInput) int
 	}
 
 	Category struct {
@@ -149,7 +143,7 @@ type ExpenseEntryResolver interface {
 }
 type MutationResolver interface {
 	CreateBudget(ctx context.Context, name string) (*models.Budget, error)
-	Budget(ctx context.Context, id primitive.ObjectID) (*resolver.BudgetResolver, error)
+	Budget(ctx context.Context, id primitive.ObjectID) (models.BudgetMutation, error)
 }
 type QueryResolver interface {
 	Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
@@ -243,42 +237,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Budget.ID(childComplexity), true
-
-	case "BudgetMutation.createExpense":
-		if e.complexity.BudgetMutation.CreateExpense == nil {
-			break
-		}
-
-		args, err := ec.field_BudgetMutation_createExpense_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.BudgetMutation.CreateExpense(childComplexity, args["input"].(models.ExpenseInput)), true
-
-	case "BudgetMutation.deleteExpense":
-		if e.complexity.BudgetMutation.DeleteExpense == nil {
-			break
-		}
-
-		args, err := ec.field_BudgetMutation_deleteExpense_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.BudgetMutation.DeleteExpense(childComplexity, args["id"].(primitive.ObjectID)), true
-
-	case "BudgetMutation.updateExpense":
-		if e.complexity.BudgetMutation.UpdateExpense == nil {
-			break
-		}
-
-		args, err := ec.field_BudgetMutation_updateExpense_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.BudgetMutation.UpdateExpense(childComplexity, args["id"].(primitive.ObjectID), args["input"].(models.ExpenseInput)), true
 
 	case "Category.description":
 		if e.complexity.Category.Description == nil {
@@ -704,7 +662,7 @@ input MoneyAmountInput {
   decimal: Int!
 }
 
-type BudgetMutation {
+interface BudgetMutation {
   createExpense(input: ExpenseInput!): Expense
   deleteExpense(id: ID!): Expense
   updateExpense(id: ID!, input: ExpenseInput!): Expense
@@ -741,56 +699,6 @@ schema {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_BudgetMutation_createExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.ExpenseInput
-	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNExpenseInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_BudgetMutation_deleteExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 primitive.ObjectID
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_BudgetMutation_updateExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 primitive.ObjectID
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 models.ExpenseInput
-	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalNExpenseInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_budget_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1254,129 +1162,6 @@ func (ec *executionContext) _Budget_expenses(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNExpense2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _BudgetMutation_createExpense(ctx context.Context, field graphql.CollectedField, obj *resolver.BudgetResolver) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "BudgetMutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_BudgetMutation_createExpense_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreateExpense(ctx, args["input"].(models.ExpenseInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Expense)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _BudgetMutation_deleteExpense(ctx context.Context, field graphql.CollectedField, obj *resolver.BudgetResolver) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "BudgetMutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_BudgetMutation_deleteExpense_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeleteExpense(ctx, args["id"].(primitive.ObjectID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Expense)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _BudgetMutation_updateExpense(ctx context.Context, field graphql.CollectedField, obj *resolver.BudgetResolver) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "BudgetMutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_BudgetMutation_updateExpense_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdateExpense(ctx, args["id"].(primitive.ObjectID), args["input"].(models.ExpenseInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Expense)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Category_id(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
@@ -2430,10 +2215,10 @@ func (ec *executionContext) _Mutation_budget(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*resolver.BudgetResolver)
+	res := resTmp.(models.BudgetMutation)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOBudgetMutation2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx, field.Selections, res)
+	return ec.marshalOBudgetMutation2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐBudgetMutation(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3880,6 +3665,15 @@ func (ec *executionContext) unmarshalInputMoneyAmountInput(ctx context.Context, 
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _BudgetMutation(ctx context.Context, sel ast.SelectionSet, obj *models.BudgetMutation) graphql.Marshaler {
+	switch obj := (*obj).(type) {
+	case nil:
+		return graphql.Null
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
@@ -3977,61 +3771,6 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var budgetMutationImplementors = []string{"BudgetMutation"}
-
-func (ec *executionContext) _BudgetMutation(ctx context.Context, sel ast.SelectionSet, obj *resolver.BudgetResolver) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, budgetMutationImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("BudgetMutation")
-		case "createExpense":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._BudgetMutation_createExpense(ctx, field, obj)
-				return res
-			})
-		case "deleteExpense":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._BudgetMutation_deleteExpense(ctx, field, obj)
-				return res
-			})
-		case "updateExpense":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._BudgetMutation_updateExpense(ctx, field, obj)
-				return res
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4935,10 +4674,6 @@ func (ec *executionContext) marshalNExpenseEvent2ᚖgithubᚗcomᚋsjanotaᚋbud
 	return ec._ExpenseEvent(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNExpenseInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseInput(ctx context.Context, v interface{}) (models.ExpenseInput, error) {
-	return ec.unmarshalInputExpenseInput(ctx, v)
-}
-
 func (ec *executionContext) unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v interface{}) (primitive.ObjectID, error) {
 	return models.UnmarshalID(v)
 }
@@ -5278,15 +5013,8 @@ func (ec *executionContext) marshalOBudget2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋ
 	return ec._Budget(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOBudgetMutation2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx context.Context, sel ast.SelectionSet, v resolver.BudgetResolver) graphql.Marshaler {
+func (ec *executionContext) marshalOBudgetMutation2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐBudgetMutation(ctx context.Context, sel ast.SelectionSet, v models.BudgetMutation) graphql.Marshaler {
 	return ec._BudgetMutation(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOBudgetMutation2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx context.Context, sel ast.SelectionSet, v *resolver.BudgetResolver) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._BudgetMutation(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalODate2string(ctx context.Context, v interface{}) (string, error) {

@@ -54,9 +54,8 @@ func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*mode
 	panic("implement me")
 }
 
-func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetResolver, error) {
+func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (models.BudgetMutation, error) {
 	return &BudgetResolver{
 		Resolver: r.Resolver,
 	}, nil
 }
-

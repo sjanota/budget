@@ -13,8 +13,8 @@ func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*mo
 		return nil, nil
 	}
 	return &models.Account{
-		ID:        *obj.AccountID,
-		Name:      "Konto Szymon",
+		ID:   *obj.AccountID,
+		Name: "Konto Szymon",
 		Balance: &models.MoneyAmount{
 			Integer: 10,
 			Decimal: 99,
@@ -32,4 +32,3 @@ func (r *expenseEntryResolver) Category(ctx context.Context, obj *models.Expense
 		EnvelopeID:  primitive.NewObjectID(),
 	}, nil
 }
-
