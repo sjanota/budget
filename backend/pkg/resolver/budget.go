@@ -23,7 +23,3 @@ func (r *BudgetResolver) DeleteExpense(ctx context.Context, id primitive.ObjectI
 func (r *BudgetResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.Expenses().InsertOne(ctx, input)
 }
-
-func (r *BudgetResolver) ExpenseEvent(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	return r.Storage.Expenses().Watch(ctx)
-}

@@ -61,13 +61,3 @@ func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*
 	}, nil
 }
 
-type subscriptionResolver struct {
-	*Resolver
-}
-
-func (r *subscriptionResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetResolver, error) {
-	return &BudgetResolver{
-		Resolver: r.Resolver,
-		Storage: r.Storage.Budget(id),
-	}, nil
-}

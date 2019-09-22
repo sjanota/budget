@@ -19,5 +19,3 @@ models:
     model: github.com/sjanota/budget/backend/pkg/models.ID
   BudgetMutation:
     model: github.com/sjanota/budget/backend/pkg/resolver.BudgetResolver
-  BudgetSubscription:
-    model: github.com/sjanota/budget/backend/pkg/resolver.BudgetResolver

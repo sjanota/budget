@@ -109,12 +109,8 @@ type ExpenseEvent {
   expense: Expense
 }
 
-type BudgetSubscription {
-  expenseEvent: ExpenseEvent!
-}
-
 type Subscription {
-  budget(id: ID!): BudgetSubscription
+  expenseEvent(budgetID: ID!): ExpenseEvent!
 }
 
 schema {

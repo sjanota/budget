@@ -38,7 +38,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	BudgetSubscription() BudgetSubscriptionResolver
 	Category() CategoryResolver
 	Expense() ExpenseResolver
 	ExpenseEntry() ExpenseEntryResolver
@@ -74,10 +73,6 @@ type ComplexityRoot struct {
 		CreateExpense func(childComplexity int, input models.ExpenseInput) int
 		DeleteExpense func(childComplexity int, id primitive.ObjectID) int
 		UpdateExpense func(childComplexity int, id primitive.ObjectID, input models.ExpenseInput) int
-	}
-
-	BudgetSubscription struct {
-		ExpenseEvent func(childComplexity int) int
 	}
 
 	Category struct {
@@ -139,13 +134,10 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		Budget func(childComplexity int, id primitive.ObjectID) int
+		ExpenseEvent func(childComplexity int, budgetID primitive.ObjectID) int
 	}
 }
 
-type BudgetSubscriptionResolver interface {
-	ExpenseEvent(ctx context.Context, obj *resolver.BudgetResolver) (*models.ExpenseEvent, error)
-}
 type CategoryResolver interface {
 	Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error)
 }
@@ -164,7 +156,7 @@ type QueryResolver interface {
 	Budgets(ctx context.Context) ([]*models.Budget, error)
 }
 type SubscriptionResolver interface {
-	Budget(ctx context.Context, id primitive.ObjectID) (<-chan *resolver.BudgetResolver, error)
+	ExpenseEvent(ctx context.Context, budgetID primitive.ObjectID) (<-chan *models.ExpenseEvent, error)
 }
 
 type executableSchema struct {
@@ -287,13 +279,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BudgetMutation.UpdateExpense(childComplexity, args["id"].(primitive.ObjectID), args["input"].(models.ExpenseInput)), true
-
-	case "BudgetSubscription.expenseEvent":
-		if e.complexity.BudgetSubscription.ExpenseEvent == nil {
-			break
-		}
-
-		return e.complexity.BudgetSubscription.ExpenseEvent(childComplexity), true
 
 	case "Category.description":
 		if e.complexity.Category.Description == nil {
@@ -527,17 +512,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Budgets(childComplexity), true
 
-	case "Subscription.budget":
-		if e.complexity.Subscription.Budget == nil {
+	case "Subscription.expenseEvent":
+		if e.complexity.Subscription.ExpenseEvent == nil {
 			break
 		}
 
-		args, err := ec.field_Subscription_budget_args(context.TODO(), rawArgs)
+		args, err := ec.field_Subscription_expenseEvent_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Subscription.Budget(childComplexity, args["id"].(primitive.ObjectID)), true
+		return e.complexity.Subscription.ExpenseEvent(childComplexity, args["budgetID"].(primitive.ObjectID)), true
 
 	}
 	return 0, false
@@ -741,12 +726,8 @@ type ExpenseEvent {
   expense: Expense
 }
 
-type BudgetSubscription {
-  expenseEvent: ExpenseEvent!
-}
-
 type Subscription {
-  budget(id: ID!): BudgetSubscription
+  expenseEvent(budgetID: ID!): ExpenseEvent!
 }
 
 schema {
@@ -867,17 +848,17 @@ func (ec *executionContext) field_Query_budget_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_budget_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Subscription_expenseEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 primitive.ObjectID
-	if tmp, ok := rawArgs["id"]; ok {
+	if tmp, ok := rawArgs["budgetID"]; ok {
 		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["budgetID"] = arg0
 	return args, nil
 }
 
@@ -1396,43 +1377,6 @@ func (ec *executionContext) _BudgetMutation_updateExpense(ctx context.Context, f
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _BudgetSubscription_expenseEvent(ctx context.Context, field graphql.CollectedField, obj *resolver.BudgetResolver) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "BudgetSubscription",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.BudgetSubscription().ExpenseEvent(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.ExpenseEvent)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNExpenseEvent2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Category_id(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
@@ -2645,13 +2589,13 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Subscription_budget(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
+func (ec *executionContext) _Subscription_expenseEvent(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Field: field,
 		Args:  nil,
 	})
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Subscription_budget_args(ctx, rawArgs)
+	args, err := ec.field_Subscription_expenseEvent_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return nil
@@ -2659,7 +2603,7 @@ func (ec *executionContext) _Subscription_budget(ctx context.Context, field grap
 	// FIXME: subscriptions are missing request middleware stack https://github.com/99designs/gqlgen/issues/259
 	//          and Tracer stack
 	rctx := ctx
-	results, err := ec.resolvers.Subscription().Budget(rctx, args["id"].(primitive.ObjectID))
+	results, err := ec.resolvers.Subscription().ExpenseEvent(rctx, args["budgetID"].(primitive.ObjectID))
 	if err != nil {
 		ec.Error(ctx, err)
 		return nil
@@ -2673,7 +2617,7 @@ func (ec *executionContext) _Subscription_budget(ctx context.Context, field grap
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalOBudgetSubscription2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNExpenseEvent2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEvent(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -4099,42 +4043,6 @@ func (ec *executionContext) _BudgetMutation(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var budgetSubscriptionImplementors = []string{"BudgetSubscription"}
-
-func (ec *executionContext) _BudgetSubscription(ctx context.Context, sel ast.SelectionSet, obj *resolver.BudgetResolver) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, budgetSubscriptionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("BudgetSubscription")
-		case "expenseEvent":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._BudgetSubscription_expenseEvent(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var categoryImplementors = []string{"Category"}
 
 func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet, obj *models.Category) graphql.Marshaler {
@@ -4525,8 +4433,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	}
 
 	switch fields[0].Name {
-	case "budget":
-		return ec._Subscription_budget(ctx, fields[0])
+	case "expenseEvent":
+		return ec._Subscription_expenseEvent(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -5379,17 +5287,6 @@ func (ec *executionContext) marshalOBudgetMutation2ᚖgithubᚗcomᚋsjanotaᚋb
 		return graphql.Null
 	}
 	return ec._BudgetMutation(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOBudgetSubscription2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx context.Context, sel ast.SelectionSet, v resolver.BudgetResolver) graphql.Marshaler {
-	return ec._BudgetSubscription(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOBudgetSubscription2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋresolverᚐBudgetResolver(ctx context.Context, sel ast.SelectionSet, v *resolver.BudgetResolver) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._BudgetSubscription(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalODate2string(ctx context.Context, v interface{}) (string, error) {
