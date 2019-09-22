@@ -12,6 +12,7 @@ import (
 func TestExpensesRepository_InsertOne(t *testing.T) {
 	drop(t)
 	ctx := context.Background()
+	budgetId := primitive.NewObjectID()
 
 	in := expenseInput(
 		"title",
@@ -33,7 +34,7 @@ func TestExpensesRepository_InsertOne(t *testing.T) {
 		"12032019",
 		primitive.NewObjectID(),
 	)
-	inserted, err := testStorage.Expenses().InsertOne(ctx, *in)
+	inserted, err := testStorage.Expenses(budgetId).Insert(ctx, *in)
 	require.NoError(t, err)
 	assertExpenseMatchesInput(t, in, inserted)
 }
@@ -41,6 +42,7 @@ func TestExpensesRepository_InsertOne(t *testing.T) {
 func TestExpensesRepository_FindOne(t *testing.T) {
 	drop(t)
 	ctx := context.Background()
+	budgetId := primitive.NewObjectID()
 
 	in := expenseInput(
 		"title",
@@ -62,10 +64,10 @@ func TestExpensesRepository_FindOne(t *testing.T) {
 		"12032019",
 		primitive.NewObjectID(),
 	)
-	inserted, err := testStorage.Expenses().InsertOne(ctx, *in)
+	inserted, err := testStorage.Expenses(budgetId).Insert(ctx, *in)
 	require.NoError(t, err)
 
-	found, err := testStorage.Expenses().FindByID(ctx, inserted.ID)
+	found, err := testStorage.Expenses(budgetId).FindByID(ctx, inserted.ID)
 	require.NoError(t, err)
 	assertExpenseMatchesInput(t, in, found)
 }
@@ -78,23 +80,23 @@ func assertExpenseMatchesInput(t assert.TestingT, expected *models.ExpenseInput,
 	for i := range actual.Entries {
 		assert.Equal(t, expected.Entries[i].Title, actual.Entries[i].Title)
 		assert.Equal(t, expected.Entries[i].CategoryID, actual.Entries[i].CategoryID)
-		assert.Equal(t, expected.Entries[i].Amount.Integer, actual.Entries[i].Amount.Integer)
-		assert.Equal(t, expected.Entries[i].Amount.Decimal, actual.Entries[i].Amount.Decimal)
+		assert.Equal(t, expected.Entries[i].Balance.Integer, actual.Entries[i].Balance.Integer)
+		assert.Equal(t, expected.Entries[i].Balance.Decimal, actual.Entries[i].Balance.Decimal)
 	}
-	assert.Equal(t, expected.Total.Integer, actual.Total.Integer)
-	assert.Equal(t, expected.Total.Decimal, actual.Total.Decimal)
+	assert.Equal(t, expected.TotalBalance.Integer, actual.TotalBalance.Integer)
+	assert.Equal(t, expected.TotalBalance.Decimal, actual.TotalBalance.Decimal)
 	assert.Equal(t, expected.Date, actual.Date)
 	assert.Equal(t, expected.AccountID, actual.AccountID)
 }
 
 func expenseInput(title, location string, entries []*models.ExpenseEntryInput, total *models.MoneyAmountInput, date string, accountID primitive.ObjectID) *models.ExpenseInput {
 	return &models.ExpenseInput{
-		Title:     title,
-		Location:  &location,
-		Entries:   entries,
-		Total:     total,
-		Date:      &date,
-		AccountID: &accountID,
+		Title:        title,
+		Location:     &location,
+		Entries:      entries,
+		TotalBalance: total,
+		Date:         &date,
+		AccountID:    &accountID,
 	}
 }
 
@@ -102,6 +104,6 @@ func expenseEntryInput(title string, categoryID primitive.ObjectID, amount *mode
 	return &models.ExpenseEntryInput{
 		Title:      title,
 		CategoryID: categoryID,
-		Amount:     amount,
+		Balance:    amount,
 	}
 }
