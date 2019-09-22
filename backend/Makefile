@@ -2,6 +2,13 @@
 
 MONGO_CONTAINER_NAME := budget-mongo
 
+check: lint
+
+lint:
+	$(eval out = $(shell golint ./... | grep -v 'should have comment or be unexported' | sed s/$$/xxx/))
+	@echo "$(out)" | sed $$'s/xxx /\\\n/g'
+	@exit $(shell echo "$(out)" | sed $$'s/xxx /\\\n/g' | wc -l)
+
 mongo-docker:
 	@docker start $(MONGO_CONTAINER_NAME) >/dev/null \
 	|| docker run --name $(MONGO_CONTAINER_NAME) -d -P mongo:3.6 >/dev/null
