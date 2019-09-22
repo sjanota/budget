@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 	Budget struct {
 		Expenses func(childComplexity int) int
 		ID       func(childComplexity int) int
+		Name     func(childComplexity int) int
 	}
 
 	Category struct {
@@ -237,6 +238,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Budget.ID(childComplexity), true
+
+	case "Budget.name":
+		if e.complexity.Budget.Name == nil {
+			break
+		}
+
+		return e.complexity.Budget.Name(childComplexity), true
 
 	case "Category.description":
 		if e.complexity.Category.Description == nil {
@@ -633,7 +641,8 @@ type EnvelopeTransfer {
 }
 
 type Budget {
-  id: ID
+  id: ID!
+  name: String!
   expenses: [Expense!]!
 }
 
@@ -1119,12 +1128,52 @@ func (ec *executionContext) _Budget_id(ctx context.Context, field graphql.Collec
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*primitive.ObjectID)
+	res := resTmp.(primitive.ObjectID)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Budget_name(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Budget",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Budget_expenses(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
@@ -3766,6 +3815,14 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = graphql.MarshalString("Budget")
 		case "id":
 			out.Values[i] = ec._Budget_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Budget_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "expenses":
 			out.Values[i] = ec._Budget_expenses(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

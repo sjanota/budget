@@ -58,7 +58,8 @@ type EnvelopeTransfer {
 }
 
 type Budget {
-  id: ID
+  id: ID!
+  name: String!
   expenses: [Expense!]!
 }
 

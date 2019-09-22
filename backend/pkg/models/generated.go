@@ -25,8 +25,9 @@ type AccountTransfer struct {
 }
 
 type Budget struct {
-	ID       *primitive.ObjectID `json:"id"`
-	Expenses []*Expense          `json:"expenses"`
+	ID       primitive.ObjectID `json:"id"`
+	Name     string             `json:"name"`
+	Expenses []*Expense         `json:"expenses"`
 }
 
 type Envelope struct {

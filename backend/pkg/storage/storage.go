@@ -103,3 +103,12 @@ func (s *Storage) replaceOne(ctx context.Context, filter Doc, replacement interf
 func (s *Storage) replaceByID(ctx context.Context, id primitive.ObjectID, replacement interface{}, v interface{}) error {
 	return s.replaceOne(ctx, Doc{_id: id}, replacement, v)
 }
+
+func (s *Storage) insertOne(ctx context.Context, v interface{}) (primitive.ObjectID, error) {
+	result, err := s.collection.InsertOne(ctx, v)
+	if err != nil {
+		return primitive.ObjectID{}, err
+	}
+
+	return result.InsertedID.(primitive.ObjectID), nil
+}
