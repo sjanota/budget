@@ -17,5 +17,7 @@ autobind:
 models:
   ID:
     model: github.com/sjanota/budget/backend/pkg/models.ID
-  BudgetOps:
-    model: github.com/sjanota/budget/backend/pkg/resolver.BudgetOps
+  BudgetMutation:
+    model: github.com/sjanota/budget/backend/pkg/resolver.BudgetResolver
+  BudgetSubscription:
+    model: github.com/sjanota/budget/backend/pkg/resolver.BudgetResolver

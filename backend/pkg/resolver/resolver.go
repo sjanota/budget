@@ -48,20 +48,16 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 	panic("implement me")
 }
 
-func (r *queryResolver) Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error) {
-	return r.Storage.Expenses().FindAll(ctx)
-}
-
 type mutationResolver struct{ *Resolver }
 
 func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
 	panic("implement me")
 }
 
-func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetOps, error) {
-	return &BudgetOps{
+func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetResolver, error) {
+	return &BudgetResolver{
 		Resolver: r.Resolver,
-		id:       id,
+		Storage: r.Storage.Budget(id),
 	}, nil
 }
 
@@ -69,8 +65,9 @@ type subscriptionResolver struct {
 	*Resolver
 }
 
-func (r *subscriptionResolver) ExpenseEvents(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	return r.Storage.Expenses().Watch(ctx)
+func (r *subscriptionResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetResolver, error) {
+	return &BudgetResolver{
+		Resolver: r.Resolver,
+		Storage: r.Storage.Budget(id),
+	}, nil
 }
-
-
