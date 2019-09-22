@@ -22,14 +22,14 @@ func main() {
 		port = defaultPort
 	}
 
-	mongoUri := os.Getenv("MONGODB_URI")
-	if mongoUri == "" {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
 		log.Fatal("Missing required MONGODB_URI env")
 	}
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 
-	storage, err := storage.New(mongoUri)
+	storage, err := storage.New(mongoURI)
 	if err != nil {
 		log.Fatalf("Couldn't create storate: %s", err)
 	}

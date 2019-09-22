@@ -18,6 +18,6 @@ func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (
 	}, nil
 }
 
-func (c *categoryResolver) Expenses(ctx context.Context, obj *models.Category, since *string, until *string) ([]*models.Expense, error) {
+func (r *categoryResolver) Expenses(ctx context.Context, obj *models.Category, since *string, until *string) ([]*models.Expense, error) {
 	panic("implement me")
 }
