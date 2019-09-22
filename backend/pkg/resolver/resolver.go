@@ -40,22 +40,29 @@ func (r *Resolver) Query() schema.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
+func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
+	panic("implement me")
+}
+
+func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
+	panic("implement me")
+}
+
 func (r *queryResolver) Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error) {
 	return r.Storage.Expenses().FindAll(ctx)
 }
 
 type mutationResolver struct{ *Resolver }
 
-func (r *mutationResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.Expenses().ReplaceByID(ctx, id, input)
+func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
+	panic("implement me")
 }
 
-func (r *mutationResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
-	return r.Storage.Expenses().DeleteByID(ctx, id)
-}
-
-func (r *mutationResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.Expenses().InsertOne(ctx, input)
+func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetOps, error) {
+	return &BudgetOps{
+		Resolver: r.Resolver,
+		id:       id,
+	}, nil
 }
 
 type subscriptionResolver struct {

@@ -5,31 +5,21 @@ type MoneyAmount {
   decimal: Int!
 }
 
-input MoneyAmountInput {
-  integer: Int!
-  decimal: Int!
-}
-
-enum Direction {
-  IN
-  OUT
-  BOTH
-}
-
 type Expense {
   id: ID!
   title: String!
   location: String
   entries: [ExpenseEntry!]!
-  total: MoneyAmount!
+  totalBalance: MoneyAmount!
   date: Date
   account: Account
 }
 
 type ExpenseEntry {
+  id: ID!
   title: String!
   category: Category!
-  amount: MoneyAmount!
+  balance: MoneyAmount!
 }
 
 type Category {
@@ -37,30 +27,21 @@ type Category {
   name: String!
   description: String
   envelope: Envelope!
-  expenses(since: Date, until: Date): [Expense!]!
 }
 
 type Account {
   id: ID!
   name: String!
-  available: MoneyAmount!
-  expenses(since: Date, until: Date): [Expense!]!
-  transfers(since: Date, until: Date, direction: Direction = BOTH): [Transfer!]!
+  balance: MoneyAmount!
 }
 
 type Envelope {
   id: ID!
   name: String!
-  available: MoneyAmount!
-  expenses(since: Date, until: Date): [Expense!]!
-  budgetPlans(
-    since: Date
-    until: Date
-    direction: Direction = BOTH
-  ): [BudgetPlan!]!
+  balance: MoneyAmount!
 }
 
-type Transfer {
+type AccountTransfer {
   id: ID!
   date: Date
   from: Account
@@ -68,7 +49,7 @@ type Transfer {
   amount: MoneyAmount!
 }
 
-type BudgetPlan {
+type EnvelopeTransfer {
   id: ID!
   date: Date
   from: Envelope
@@ -76,15 +57,21 @@ type BudgetPlan {
   amount: MoneyAmount!
 }
 
+type Budget {
+  id: ID
+  expenses: [Expense!]!
+}
+
 type Query {
-  expenses(since: Date, until: Date): [Expense!]!
+  budget(id: ID!): Budget
+  budgets: [Budget!]!
 }
 
 input ExpenseInput {
   title: String!
   location: String
   entries: [ExpenseEntryInput!]!
-  total: MoneyAmountInput!
+  totalBalance: MoneyAmountInput!
   date: Date
   accountID: ID
 }
@@ -92,13 +79,23 @@ input ExpenseInput {
 input ExpenseEntryInput {
   title: String!
   categoryID: ID!
-  amount: MoneyAmountInput!
+  balance: MoneyAmountInput!
 }
 
-type Mutation {
+input MoneyAmountInput {
+  integer: Int!
+  decimal: Int!
+}
+
+type BudgetOps {
   createExpense(input: ExpenseInput!): Expense
   deleteExpense(id: ID!): Expense
   updateExpense(id: ID!, input: ExpenseInput!): Expense
+}
+
+type Mutation {
+  createBudget(name: String!): Budget
+  budget(id: ID!): BudgetOps
 }
 
 enum EventType {
@@ -114,4 +111,9 @@ type ExpenseEvent {
 
 type Subscription {
   expenseEvents: ExpenseEvent!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }

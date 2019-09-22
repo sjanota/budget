@@ -4,7 +4,7 @@
 # for detailed .gqlgen.yml documentation.
 
 schema:
-  - ../schema.graphql
+  - schema.graphql
 exec:
   filename: pkg/schema/generated.go
 model:
@@ -17,3 +17,5 @@ autobind:
 models:
   ID:
     model: github.com/sjanota/budget/backend/pkg/models.ID
+  BudgetOps:
+    model: github.com/sjanota/budget/backend/pkg/resolver.BudgetOps
