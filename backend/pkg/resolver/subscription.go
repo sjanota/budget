@@ -11,5 +11,5 @@ type subscriptionResolver struct {
 }
 
 func (r *subscriptionResolver) ExpenseEvent(ctx context.Context, budgetID primitive.ObjectID) (<-chan *models.ExpenseEvent, error) {
-	return r.Storage.Budget(budgetID).Expenses().Watch(ctx)
+	return r.Storage.Expenses(budgetID).Watch(ctx)
 }
