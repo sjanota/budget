@@ -24,7 +24,7 @@ func newAccountsRepository(db *mongo.Database) *AccountsRepository {
 
 func (r *AccountsRepository) FindAll(ctx context.Context) ([]*models.Account, error) {
 	var result []*models.Account
-	err := r.find(ctx, doc{}, func(d decodeFunc) error {
+	err := r.find(ctx, Doc{}, func(d decodeFunc) error {
 		e := &models.Account{}
 		err := d(e)
 		if err != nil {

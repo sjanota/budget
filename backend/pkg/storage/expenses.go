@@ -24,7 +24,7 @@ func newExpensesRepository(db *mongo.Database) *ExpensesRepository {
 
 func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, error) {
 	var result []*models.Expense
-	err := r.find(ctx, doc{}, func(d decodeFunc) error {
+	err := r.find(ctx, Doc{}, func(d decodeFunc) error {
 		e := &models.Expense{}
 		err := d(e)
 		if err != nil {
