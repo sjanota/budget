@@ -6,8 +6,8 @@ check: lint
 
 lint:
 	$(eval out = $(shell golint ./... | grep -v 'should have comment or be unexported' | sed s/$$/xxx/))
-	@echo "$(out)" | grep -v '^$$' | sed $$'s/xxx /\\\n/g'
-	@exit $(shell echo "$(out)" | sed $$'s/xxx /\\\n/g' | grep -v '^$$' | wc -l)
+	@echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' || true
+	@exit $(shell echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' | wc -l)
 
 mongo-docker:
 	@docker start $(MONGO_CONTAINER_NAME) >/dev/null \

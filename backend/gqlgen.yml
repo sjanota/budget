@@ -17,3 +17,7 @@ autobind:
 models:
   ID:
     model: github.com/sjanota/budget/backend/pkg/models.ID
+  Budget:
+    fields:
+      expenses:
+        resolver: true

@@ -11,6 +11,12 @@ type BudgetResolver struct {
 	budgetID primitive.ObjectID
 }
 
+func (r *BudgetResolver) Expenses(ctx context.Context, obj *models.Budget) ([]*models.Expense, error) {
+	return r.Storage.
+		Expenses(obj.ID).
+		FindAll(ctx)
+}
+
 func (r *BudgetResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	return r.Storage.
 		Expenses(r.budgetID).

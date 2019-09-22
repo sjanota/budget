@@ -5,6 +5,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Budget struct {
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name     string             `json:"name"`
+	Expenses []*Expense
+}
+
 type BudgetMutation interface {
 	UpdateExpense(ctx context.Context, id primitive.ObjectID, input ExpenseInput) (*Expense, error)
 	DeleteExpense(ctx context.Context, id primitive.ObjectID) (*Expense, error)

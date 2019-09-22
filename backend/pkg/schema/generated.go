@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Budget() BudgetResolver
 	Category() CategoryResolver
 	Expense() ExpenseResolver
 	ExpenseEntry() ExpenseEntryResolver
@@ -133,6 +134,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type BudgetResolver interface {
+	Expenses(ctx context.Context, obj *models.Budget) ([]*models.Expense, error)
+}
 type CategoryResolver interface {
 	Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error)
 }
@@ -1189,13 +1193,13 @@ func (ec *executionContext) _Budget_expenses(ctx context.Context, field graphql.
 		Object:   "Budget",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Expenses, nil
+		return ec.resolvers.Budget().Expenses(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3816,18 +3820,27 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 		case "id":
 			out.Values[i] = ec._Budget_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Budget_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "expenses":
-			out.Values[i] = ec._Budget_expenses(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Budget_expenses(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

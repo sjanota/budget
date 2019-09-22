@@ -14,6 +14,10 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+func (r *Resolver) Budget() schema.BudgetResolver {
+	return &BudgetResolver{Resolver: r}
+}
+
 func (r *Resolver) Subscription() schema.SubscriptionResolver {
 	return &subscriptionResolver{r}
 }

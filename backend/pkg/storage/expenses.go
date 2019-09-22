@@ -18,7 +18,7 @@ func newExpensesRepository(storage *Storage) *expensesRepository {
 	}
 }
 
-func (r *expensesRepository) ForBudget(budgetID primitive.ObjectID) *Expenses {
+func (r *expensesRepository) session(budgetID primitive.ObjectID) *Expenses {
 	return &Expenses{
 		expensesRepository: r,
 		budgetID:           budgetID,
@@ -32,7 +32,7 @@ type Expenses struct {
 
 func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
 	var result []*models.Expense
-	err := r.find(ctx, Doc{}, func(d decodeFunc) error {
+	err := r.find(ctx, doc{}, func(d decodeFunc) error {
 		e := &models.Expense{}
 		err := d(e)
 		if err != nil {

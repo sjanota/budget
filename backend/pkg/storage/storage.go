@@ -18,11 +18,11 @@ type Storage struct {
 }
 
 func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
-	return s.expenses.ForBudget(budgetID)
+	return s.expenses.session(budgetID)
 }
 
-func (s *Storage) Budgets() *budgetsRepository {
-	return s.budgets
+func (s *Storage) Budgets() *Budgets {
+	return s.budgets.session()
 }
 
 func New(uri string) (*Storage, error) {
@@ -52,12 +52,17 @@ func (s *Storage) Drop(ctx context.Context) error {
 }
 
 func (s *Storage) Init(ctx context.Context) error {
-	return nil
+	index := mongo.IndexModel{
+		Keys:    doc{"name": 1},
+		Options: options.Index().SetUnique(true),
+	}
+	_, err := s.collection.Indexes().CreateOne(ctx, index)
+	return err
 }
 
 type decodeFunc func(interface{}) error
 
-func (s *Storage) find(ctx context.Context, filter Doc, consumer func(decodeFunc) error) error {
+func (s *Storage) find(ctx context.Context, filter doc, consumer func(decodeFunc) error) error {
 	cursor, err := s.collection.Find(ctx, filter)
 	if err != nil {
 		return err
@@ -74,7 +79,7 @@ func (s *Storage) find(ctx context.Context, filter Doc, consumer func(decodeFunc
 	return nil
 }
 
-func (s *Storage) findOne(ctx context.Context, filter Doc, v interface{}) error {
+func (s *Storage) findOne(ctx context.Context, filter doc, v interface{}) error {
 	result := s.collection.FindOne(ctx, filter)
 	if err := result.Err(); err != nil {
 		return err
@@ -83,10 +88,10 @@ func (s *Storage) findOne(ctx context.Context, filter Doc, v interface{}) error 
 }
 
 func (s *Storage) findByID(ctx context.Context, id primitive.ObjectID, v interface{}) error {
-	return s.findOne(ctx, Doc{_id: id}, v)
+	return s.findOne(ctx, doc{_id: id}, v)
 }
 
-func (s *Storage) deleteOne(ctx context.Context, filter Doc, v interface{}) error {
+func (s *Storage) deleteOne(ctx context.Context, filter doc, v interface{}) error {
 	result := s.collection.FindOneAndDelete(ctx, filter)
 	if err := result.Err(); err != nil {
 		return err
@@ -95,10 +100,10 @@ func (s *Storage) deleteOne(ctx context.Context, filter Doc, v interface{}) erro
 }
 
 func (s *Storage) deleteByID(ctx context.Context, id primitive.ObjectID, v interface{}) error {
-	return s.deleteOne(ctx, Doc{_id: id}, v)
+	return s.deleteOne(ctx, doc{_id: id}, v)
 }
 
-func (s *Storage) replaceOne(ctx context.Context, filter Doc, replacement interface{}, v interface{}) error {
+func (s *Storage) replaceOne(ctx context.Context, filter doc, replacement interface{}, v interface{}) error {
 	result := s.collection.FindOneAndReplace(ctx, filter, replacement, options.FindOneAndReplace().SetReturnDocument(options.After))
 	if err := result.Err(); err != nil {
 		return err
@@ -107,7 +112,7 @@ func (s *Storage) replaceOne(ctx context.Context, filter Doc, replacement interf
 }
 
 func (s *Storage) replaceByID(ctx context.Context, id primitive.ObjectID, replacement interface{}, v interface{}) error {
-	return s.replaceOne(ctx, Doc{_id: id}, replacement, v)
+	return s.replaceOne(ctx, doc{_id: id}, replacement, v)
 }
 
 func (s *Storage) insertOne(ctx context.Context, v interface{}) (primitive.ObjectID, error) {

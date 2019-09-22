@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"context"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,9 +9,8 @@ import (
 )
 
 func TestExpensesRepository_InsertOne(t *testing.T) {
-	drop(t)
-	ctx := context.Background()
-	budgetId := primitive.NewObjectID()
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
 
 	in := expenseInput(
 		"title",
@@ -34,15 +32,14 @@ func TestExpensesRepository_InsertOne(t *testing.T) {
 		"12032019",
 		primitive.NewObjectID(),
 	)
-	inserted, err := testStorage.Expenses(budgetId).Insert(ctx, *in)
+	inserted, err := testStorage.Expenses(budget.ID).Insert(ctx, *in)
 	require.NoError(t, err)
 	assertExpenseMatchesInput(t, in, inserted)
 }
 
 func TestExpensesRepository_FindOne(t *testing.T) {
-	drop(t)
-	ctx := context.Background()
-	budgetId := primitive.NewObjectID()
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
 
 	in := expenseInput(
 		"title",
@@ -64,10 +61,10 @@ func TestExpensesRepository_FindOne(t *testing.T) {
 		"12032019",
 		primitive.NewObjectID(),
 	)
-	inserted, err := testStorage.Expenses(budgetId).Insert(ctx, *in)
+	inserted, err := testStorage.Expenses(budget.ID).Insert(ctx, *in)
 	require.NoError(t, err)
 
-	found, err := testStorage.Expenses(budgetId).FindByID(ctx, inserted.ID)
+	found, err := testStorage.Expenses(budget.ID).FindByID(ctx, inserted.ID)
 	require.NoError(t, err)
 	assertExpenseMatchesInput(t, in, found)
 }
