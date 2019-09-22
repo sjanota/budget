@@ -14,10 +14,15 @@ type Storage struct {
 	db         *mongo.Database
 	collection *mongo.Collection
 	expenses   *expensesRepository
+	budgets    *budgetsRepository
 }
 
 func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
 	return s.expenses.ForBudget(budgetID)
+}
+
+func (s *Storage) Budgets() *budgetsRepository {
+	return s.budgets
 }
 
 func New(uri string) (*Storage, error) {
@@ -38,6 +43,7 @@ func New(uri string) (*Storage, error) {
 		collection: database.Collection(collectionName),
 	}
 	storage.expenses = newExpensesRepository(storage)
+	storage.budgets = newBudgetsRepository(storage)
 	return storage, nil
 }
 
