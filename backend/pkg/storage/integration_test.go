@@ -56,7 +56,7 @@ func withDockerMongo(test func()) {
 	}
 
 	fmt.Println(port)
-	testStorage, err = storage.New("mongodb://localhost:" + port+"/test-db")
+	testStorage, err = storage.New("mongodb://localhost:" + port + "/test-db")
 	if err != nil {
 		panic(fmt.Errorf("cannot create testStorage: %s", err))
 	}

@@ -57,7 +57,6 @@ func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*mode
 func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (*BudgetResolver, error) {
 	return &BudgetResolver{
 		Resolver: r.Resolver,
-		Storage: r.Storage.Budget(id),
 	}, nil
 }
 
