@@ -25,6 +25,7 @@ type Expense struct {
 	TotalBalance MoneyAmount        `json:"total"`
 	Date         *string            `json:"date"`
 	AccountID    *primitive.ObjectID
+	BudgetID     primitive.ObjectID
 }
 
 type Category struct {
@@ -35,7 +36,6 @@ type Category struct {
 }
 
 type ExpenseEntry struct {
-	ID         primitive.ObjectID `json:"id"`
 	Title      string             `json:"title"`
 	Balance    MoneyAmount        `json:"amount"`
 	CategoryID primitive.ObjectID
@@ -50,31 +50,30 @@ func (i MoneyAmountInput) ToModel() *MoneyAmount {
 
 func (i ExpenseEntryInput) ToModel() *ExpenseEntry {
 	return &ExpenseEntry{
-		ID:         primitive.NewObjectID(),
 		Title:      i.Title,
 		CategoryID: i.CategoryID,
 		Balance:    *i.Balance.ToModel(),
 	}
 }
 
-func (i ExpenseInput) ToModel(idOptional ...primitive.ObjectID) *Expense {
+func (i ExpenseInput) ToModel(budgetID primitive.ObjectID) *Expense {
 	entries := make([]*ExpenseEntry, len(i.Entries))
 	for i, entry := range i.Entries {
 		entries[i] = entry.ToModel()
 	}
 
-	id := primitive.NewObjectID()
-	if len(idOptional) != 0 {
-		id = idOptional[0]
-	}
-
 	return &Expense{
-		ID:           id,
 		Title:        i.Title,
 		Location:     i.Location,
 		Entries:      entries,
 		TotalBalance: *i.TotalBalance.ToModel(),
 		Date:         i.Date,
 		AccountID:    i.AccountID,
+		BudgetID:     budgetID,
 	}
+}
+
+func (e *Expense) WithID(id primitive.ObjectID) *Expense {
+	e.ID = id
+	return e
 }

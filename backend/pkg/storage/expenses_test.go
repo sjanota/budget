@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 	"testing"
 )
 
@@ -16,7 +15,7 @@ func TestExpenses_Insert(t *testing.T) {
 	in := expenseInput1
 	inserted, err := testStorage.Expenses(budget.ID).Insert(ctx, *in)
 	require.NoError(t, err)
-	assert.Equal(t, in.ToModel(inserted.ID), inserted)
+	assert.Equal(t, in.ToModel(budget.ID).WithID(inserted.ID), inserted)
 
 	all, err := testStorage.Expenses(budget.ID).FindAll(ctx)
 	require.NoError(t, err)
@@ -30,17 +29,14 @@ func TestExpenses_Delete(t *testing.T) {
 	in := expenseInput1
 	inserted, err := testStorage.Expenses(budget.ID).Insert(ctx, *in)
 	require.NoError(t, err)
-	_, err = testStorage.Expenses(budget.ID).Insert(ctx, *in)
-	require.NoError(t, err)
 
-	deleted, err := testStorage.Expenses(budget.ID).Delete(ctx, inserted.ID)
+	deleted, err := testStorage.Expenses(budget.ID).DeleteByID(ctx, inserted.ID)
 	require.NoError(t, err)
-	log.Printf("%#v", in.ToModel(deleted.ID))
-	assert.Equal(t, in.ToModel(deleted.ID), deleted)
+	assert.Equal(t, in.ToModel(budget.ID).WithID(inserted.ID), deleted)
 
-	all, err := testStorage.Expenses(budget.ID).FindAll(ctx)
+	found, err := testStorage.Expenses(budget.ID).FindByID(ctx, deleted.ID)
 	require.NoError(t, err)
-	assert.Len(t, all, 0)
+	require.Nil(t, found)
 }
 
 func TestExpenses_FindOne(t *testing.T) {
@@ -54,7 +50,7 @@ func TestExpenses_FindOne(t *testing.T) {
 	found, err := testStorage.Expenses(budget.ID).FindByID(ctx, inserted.ID)
 	require.NoError(t, err)
 	require.NotNil(t, found)
-	assert.Equal(t, in.ToModel(inserted.ID), inserted)
+	assert.Equal(t, in.ToModel(budget.ID).WithID(inserted.ID), inserted)
 }
 
 func TestExpenses_FindOneNotExists(t *testing.T) {

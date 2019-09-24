@@ -4,16 +4,28 @@ import (
 	"context"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type budgetsRepository struct {
 	storage *Storage
+	*repository
 }
 
-func newBudgetsRepository(storage *Storage) *budgetsRepository {
+func newBudgetsRepository(ctx context.Context, storage *Storage) (*budgetsRepository, error) {
+	collection := storage.db.Collection("budgets")
+	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    doc{"name": 1},
+		Options: options.Index().SetUnique(true),
+	})
+
 	return &budgetsRepository{
 		storage:  storage,
-	}
+		repository: &repository{
+			collection: collection,
+		},
+	}, err
 }
 
 func (r *budgetsRepository) session() *Budgets {
@@ -29,18 +41,18 @@ func (r *budgetsRepository) Create(ctx context.Context, name string) (budget *mo
 		Name: name,
 		Expenses: make([]*models.Expense, 0),
 	}
-	budget.ID, err = r.storage.insertOne(ctx, budget)
+	budget.ID, err = r.insertOne(ctx, budget)
 	return
 }
 
 func (r *budgetsRepository) FindByID(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
 	result = &models.Budget{}
-	err = r.storage.findByID(ctx, id, result)
+	err = r.findByID(ctx, id, result)
 	return
 }
 
 func (r *budgetsRepository) Delete(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
 	result = &models.Budget{}
-	err = r.storage.deleteByID(ctx, id, result)
+	err = r.deleteByID(ctx, id, result)
 	return
 }

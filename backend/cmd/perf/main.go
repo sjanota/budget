@@ -54,7 +54,7 @@ func main() {
 						Entries:  nil,
 						TotalBalance: &models.MoneyAmountInput{
 							Integer: 1,
-							Decimal: 0,
+							Decimal: 1,
 						},
 						Date:      nil,
 						AccountID: &accountID,
@@ -75,6 +75,8 @@ func main() {
 			fmt.Println(took)
 		}
 	}
+	rsp, err := storage.Expenses(budget.ID).TotalBalanceForAccount(ctx, primitive.NewObjectID())
+	log.Println(rsp)
 
 }
 

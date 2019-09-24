@@ -105,7 +105,6 @@ type ComplexityRoot struct {
 	ExpenseEntry struct {
 		Balance  func(childComplexity int) int
 		Category func(childComplexity int) int
-		ID       func(childComplexity int) int
 		Title    func(childComplexity int) int
 	}
 
@@ -397,13 +396,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ExpenseEntry.Category(childComplexity), true
 
-	case "ExpenseEntry.id":
-		if e.complexity.ExpenseEntry.ID == nil {
-			break
-		}
-
-		return e.complexity.ExpenseEntry.ID(childComplexity), true
-
 	case "ExpenseEntry.title":
 		if e.complexity.ExpenseEntry.Title == nil {
 			break
@@ -603,7 +595,6 @@ type Expense {
 }
 
 type ExpenseEntry {
-  id: ID!
   title: String!
   category: Category!
   balance: MoneyAmount!
@@ -1897,43 +1888,6 @@ func (ec *executionContext) _Expense_account(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ExpenseEntry_id(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEntry) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "ExpenseEntry",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(primitive.ObjectID)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ExpenseEntry_title(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEntry) (ret graphql.Marshaler) {
@@ -4043,11 +3997,6 @@ func (ec *executionContext) _ExpenseEntry(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ExpenseEntry")
-		case "id":
-			out.Values[i] = ec._ExpenseEntry_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "title":
 			out.Values[i] = ec._ExpenseEntry_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
