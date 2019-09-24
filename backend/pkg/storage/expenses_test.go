@@ -107,7 +107,6 @@ func TestExpenses_ReplaceByID(t *testing.T) {
 	ctx, budget, after := beforeWithBudget(t)
 	defer after()
 
-
 	in := expenseInput1
 	inserted, err := testStorage.Expenses(budget.ID).Insert(ctx, *in)
 	require.NoError(t, err)
@@ -179,7 +178,7 @@ var expenseInput2 = &models.ExpenseInput{
 		{
 			Title:      "cat food",
 			CategoryID: primitive.ObjectID{},
-			Balance:    &models.MoneyAmountInput{
+			Balance: &models.MoneyAmountInput{
 				Integer: 3,
 				Decimal: 26,
 			},
@@ -204,7 +203,7 @@ var expenseInput2 = &models.ExpenseInput{
 func assertEvent(t *testing.T, ch <-chan *models.ExpenseEvent, eventType models.EventType, expense *models.Expense) {
 	select {
 	case event := <-ch:
-		assert.Equal(t, &models.ExpenseEvent{Type:eventType, Expense:expense}, event)
+		assert.Equal(t, &models.ExpenseEvent{Type: eventType, Expense: expense}, event)
 	default:
 		t.Error("no event received")
 	}

@@ -57,4 +57,3 @@ func (s *Storage) Init(ctx context.Context) error {
 	s.expenses = newExpensesRepository(s)
 	return nil
 }
-

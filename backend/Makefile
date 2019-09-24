@@ -1,13 +1,18 @@
 .PHONY: mongo
 
 MONGO_CONTAINER_NAME := budget-mongo
+LINT_IGNORE=should have comment or be unexported
 
-check: lint
+check: fmt lint
 
 lint:
-	$(eval out = $(shell golint ./... | grep -v 'should have comment or be unexported' | sed s/$$/xxx/))
+	@echo golint ./...
+	$(eval out = $(shell golint ./... | grep -v '$(LINT_IGNORE)' | sed s/$$/xxx/))
 	@echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' || true
 	@exit $(shell echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' | wc -l)
+
+fmt:
+	go fmt ./...
 
 mongo-docker:
 	@docker start $(MONGO_CONTAINER_NAME) >/dev/null \

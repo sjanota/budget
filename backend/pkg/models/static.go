@@ -36,8 +36,8 @@ type Category struct {
 }
 
 type ExpenseEntry struct {
-	Title      string             `json:"title"`
-	Balance    MoneyAmount        `json:"amount"`
+	Title      string      `json:"title"`
+	Balance    MoneyAmount `json:"amount"`
 	CategoryID primitive.ObjectID
 }
 

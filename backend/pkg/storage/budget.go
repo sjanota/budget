@@ -21,7 +21,7 @@ func newBudgetsRepository(ctx context.Context, storage *Storage) (*budgetsReposi
 	})
 
 	return &budgetsRepository{
-		storage:  storage,
+		storage: storage,
 		repository: &repository{
 			collection: collection,
 		},
@@ -38,7 +38,7 @@ type Budgets struct {
 
 func (r *Budgets) Create(ctx context.Context, name string) (budget *models.Budget, err error) {
 	budget = &models.Budget{
-		Name: name,
+		Name:     name,
 		Expenses: make([]*models.Expense, 0),
 	}
 	budget.ID, err = r.insertOne(ctx, budget)
