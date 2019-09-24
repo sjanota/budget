@@ -50,13 +50,13 @@ func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*mod
 }
 
 func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
-	panic("implement me")
+	return r.Storage.Budgets().FindAll(ctx)
 }
 
 type mutationResolver struct{ *Resolver }
 
 func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
-	panic("implement me")
+	return r.Storage.Budgets().Insert(ctx, name)
 }
 
 func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (models.BudgetMutation, error) {
