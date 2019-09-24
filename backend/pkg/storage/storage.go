@@ -62,7 +62,7 @@ func (s *Storage) Init(ctx context.Context) error {
 
 type decodeFunc func(interface{}) error
 
-func (s *Storage) find(ctx context.Context, filter doc, consumer func(decodeFunc) error) error {
+func (s *Storage) find(ctx context.Context, filter doc, consumer func(decodeFunc) error, findOptions ...*options.FindOptions) error {
 	cursor, err := s.collection.Find(ctx, filter)
 	if err != nil {
 		return err
@@ -79,16 +79,16 @@ func (s *Storage) find(ctx context.Context, filter doc, consumer func(decodeFunc
 	return nil
 }
 
-func (s *Storage) findOne(ctx context.Context, filter doc, v interface{}) error {
-	result := s.collection.FindOne(ctx, filter)
+func (s *Storage) findOne(ctx context.Context, filter doc, v interface{}, opts ...*options.FindOneOptions) error {
+	result := s.collection.FindOne(ctx, filter, opts...)
 	if err := result.Err(); err != nil {
 		return err
 	}
 	return result.Decode(v)
 }
 
-func (s *Storage) findByID(ctx context.Context, id primitive.ObjectID, v interface{}) error {
-	return s.findOne(ctx, doc{_id: id}, v)
+func (s *Storage) findByID(ctx context.Context, id primitive.ObjectID, v interface{}, opts ...*options.FindOneOptions) error {
+	return s.findOne(ctx, doc{_id: id}, v, opts...)
 }
 
 func (s *Storage) deleteOne(ctx context.Context, filter doc, v interface{}) error {

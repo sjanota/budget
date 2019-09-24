@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestBudgetsRepository_Create(t *testing.T) {
+func TestBudgets_Create(t *testing.T) {
 	ctx := before(t)
 
 	name := "create-budget"
@@ -18,7 +18,7 @@ func TestBudgetsRepository_Create(t *testing.T) {
 	assert.Empty(t, budget.Expenses)
 }
 
-func TestBudgetsRepository_Delete(t *testing.T) {
+func TestBudgets_Delete(t *testing.T) {
 	ctx, budget, _ := beforeWithBudget(t)
 
 	deleted, err := testStorage.Budgets().Delete(ctx, budget.ID)
@@ -27,7 +27,7 @@ func TestBudgetsRepository_Delete(t *testing.T) {
 	assert.Equal(t, budget, deleted)
 }
 
-func TestBudgetsRepository_FindByID(t *testing.T) {
+func TestBudgets_FindByID(t *testing.T) {
 	ctx, budget, after := beforeWithBudget(t)
 	defer after()
 
@@ -37,7 +37,7 @@ func TestBudgetsRepository_FindByID(t *testing.T) {
 	assert.Equal(t, budget, found)
 }
 
-func TestBudgetsRepository_RecreateFails(t *testing.T) {
+func TestBudgets_RecreateFails(t *testing.T) {
 	ctx, budget, after := beforeWithBudget(t)
 	defer after()
 

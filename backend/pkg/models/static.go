@@ -18,7 +18,7 @@ type BudgetMutation interface {
 }
 
 type Expense struct {
-	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	ID           primitive.ObjectID `json:"id"`
 	Title        string             `json:"title"`
 	Location     *string            `json:"location"`
 	Entries      []*ExpenseEntry    `json:"entries"`
@@ -28,14 +28,14 @@ type Expense struct {
 }
 
 type Category struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	ID          primitive.ObjectID `json:"id"`
 	Name        string             `json:"name"`
 	Description *string            `json:"description"`
 	EnvelopeID  primitive.ObjectID
 }
 
 type ExpenseEntry struct {
-	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	ID         primitive.ObjectID `json:"id"`
 	Title      string             `json:"title"`
 	Balance    MoneyAmount        `json:"amount"`
 	CategoryID primitive.ObjectID
@@ -50,16 +50,22 @@ func (i MoneyAmountInput) ToModel() *MoneyAmount {
 
 func (i ExpenseEntryInput) ToModel() *ExpenseEntry {
 	return &ExpenseEntry{
+		ID:         primitive.NewObjectID(),
 		Title:      i.Title,
 		CategoryID: i.CategoryID,
 		Balance:    *i.Balance.ToModel(),
 	}
 }
 
-func (i ExpenseInput) ToModel(id primitive.ObjectID) *Expense {
+func (i ExpenseInput) ToModel(idOptional ...primitive.ObjectID) *Expense {
 	entries := make([]*ExpenseEntry, len(i.Entries))
 	for i, entry := range i.Entries {
 		entries[i] = entry.ToModel()
+	}
+
+	id := primitive.NewObjectID()
+	if len(idOptional) != 0 {
+		id = idOptional[0]
 	}
 
 	return &Expense{

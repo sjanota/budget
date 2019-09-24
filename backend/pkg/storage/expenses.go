@@ -3,7 +3,9 @@ package storage
 import (
 	"context"
 	"github.com/sjanota/budget/backend/pkg/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type expensesRepository struct {
@@ -30,34 +32,89 @@ type Expenses struct {
 	budgetID primitive.ObjectID
 }
 
-func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
-	var result []*models.Expense
-	err := r.find(ctx, doc{}, func(d decodeFunc) error {
-		e := &models.Expense{}
-		err := d(e)
-		if err != nil {
-			return err
-		}
-		result = append(result, e)
-		return nil
+func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primitive.ObjectID) (bson.Raw, error) {
+	cursor, err := r.collection.Aggregate(ctx, []doc{
+		{opMatch: doc{_id: r.budgetID}},
+		{
+			"$project": doc{
+				"expenses": doc{
+					"$filter": doc {
+						"input": "$expenses",
+						"as": "expense",
+						"cond": doc{
+							"$eq": []interface{}{"$$expense.accountid", accountID},
+						},
+					},
+				},
+			},
+		},
+		{
+			"$project": doc{
+				"totalInt": doc{
+					"$sum": "$expenses.totalbalance.integer",
+				},
+				"totalDec": doc{
+					"$sum": "$expenses.totalbalance.decimal",
+				},
+				_id: 0,
+			},
+		},
 	})
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+	if !cursor.Next(ctx) {
+		return nil, nil
+	}
+	return cursor.Current, nil
+}
+
+func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
+	result := &models.Budget{}
+	opts := options.FindOne().SetProjection(doc{expenses: 1})
+	err := r.findByID(ctx, r.budgetID, result, opts)
+	return result.Expenses, err
 }
 
 func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.findByID(ctx, id, result)
+	cursor, err := r.collection.Aggregate(ctx, []doc{
+		{opMatch: doc{_id: r.budgetID, "expenses.id": id}},
+		{opUnwind: "$expenses"},
+		{opReplaceRoot: doc{"newRoot": "$expenses"}},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !cursor.Next(ctx) {
+		return nil, nil
+	}
+
+	err = cursor.Decode(result)
 	return result, err
 }
 
-func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
-	result := &models.Expense{}
-	err := r.deleteByID(ctx, id, result)
-	r.notify(&models.ExpenseEvent{
-		Type:    models.EventTypeDeleted,
-		Expense: result,
-	})
-	return result, err
+func (r *Expenses) Delete(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+	budget := &models.Budget{}
+	opts := options.FindOneAndUpdate().SetProjection(
+		doc{expenses: doc{opElemMatch: doc{"id": id}}},
+	)
+	result := r.collection.FindOneAndUpdate(ctx,
+		doc{_id: r.budgetID},
+		doc{opPull: doc{expenses: doc{"id": id}}},
+		opts,
+	)
+	err := result.Decode(budget)
+	if err != nil {
+		return nil, err
+	}
+
+	//r.notify(&models.ExpenseEvent{
+	//	Type:    models.EventTypeDeleted,
+	//	Expense: result,
+	//})
+	return budget.Expenses[0], err
 }
 
 func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
@@ -72,17 +129,20 @@ func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input
 }
 
 func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	result, err := r.collection.InsertOne(ctx, input)
+	result := input.ToModel()
+	_, err := r.collection.UpdateOne(ctx,
+		doc{_id: r.budgetID},
+		doc{opPush: doc{expenses: result}},
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	expense := input.ToModel(result.InsertedID.(primitive.ObjectID))
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeCreated,
-		Expense: expense,
+		Expense: result,
 	})
-	return expense, nil
+	return result, nil
 }
 
 func (r *Expenses) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {

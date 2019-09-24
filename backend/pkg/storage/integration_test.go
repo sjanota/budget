@@ -113,3 +113,11 @@ func deleteMongoContainer() error {
 	}
 	return nil
 }
+
+func strPtr(s string) *string {
+	return &s
+}
+
+func idPtr(id primitive.ObjectID) *primitive.ObjectID {
+	return &id
+}
