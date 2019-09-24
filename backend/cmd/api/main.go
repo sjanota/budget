@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -33,6 +34,11 @@ func main() {
 	storage, err := storage.New(mongoURI)
 	if err != nil {
 		log.Fatalf("Couldn't create storate: %s", err)
+	}
+
+	err = storage.Init(context.Background())
+	if err != nil {
+		log.Fatalf("Couldn't init storate: %s", err)
 	}
 
 	resolver := &resolver.Resolver{Storage: storage}

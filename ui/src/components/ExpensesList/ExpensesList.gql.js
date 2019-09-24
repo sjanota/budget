@@ -1,63 +1,63 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 const EXPENSE_FRAGMENT = gql`
-    fragment ExpensesDetails on Expense {
-        id
-        title
-        date
-        total {
-            integer
-            decimal
-        }
-        location
-        account {
-            id
-            name
-        }
+  fragment ExpensesDetails on Expense {
+    id
+    title
+    date
+    totalBalance {
+      integer
+      decimal
     }
+    location
+    account {
+      id
+      name
+    }
+  }
 `;
 
 export const EXPENSES_QUERY = gql`
-    query QueryExpenses {
-        expenses {
-            ...ExpensesDetails
-        }
+  query QueryExpenses($budgetID: ID!) {
+    expenses(budgetID: $budgetID) {
+      ...ExpensesDetails
     }
-    ${EXPENSE_FRAGMENT}
+  }
+  ${EXPENSE_FRAGMENT}
 `;
 
 export const EXPENSES_EVENTS_SUBSCRIPTION = gql`
-    subscription WatchExpenses {
-        expenseEvents {
-            type
-            expense {
-                ...ExpensesDetails
-            }
-        }
+  subscription WatchExpenses($budgetID: ID!) {
+    expenseEvent(budgetID: $budgetID) {
+      type
+      expense {
+        ...ExpensesDetails
+      }
     }
-    ${EXPENSE_FRAGMENT}
+  }
+  ${EXPENSE_FRAGMENT}
 `;
 
 export const DELETE_EXPENSE = gql`
-  mutation DeleteExpense($id: ID!) {
-      deleteExpense(id: $id) {
-          id
-      }
+  mutation DeleteExpense($budgetID: ID!, $id: ID!) {
+    deleteExpense(budgetID: $budgetID, id: $id) {
+      id
+    }
   }
 `;
 
 export const UPDATE_EXPENSE = gql`
-    mutation UpdateExpense($id: ID!, $input: ExpenseInput!) {
-        updateExpense(id: $id, input: $input) {
-            id
-        }
+  mutation UpdateExpense($budgetID: ID!, $id: ID!, $input: ExpenseInput!) {
+    updateExpense(budgetID: $budgetID, id: $id, input: $input) {
+      id
     }
+  }
 `;
 
 export const CREATE_EXPENSE = gql`
-    mutation CreateExpense($input: ExpenseInput!) {
-        createExpense(input: $input) {
-            id
-        }
+  mutation CreateExpense($budgetID: ID!, $input: ExpenseInput!) {
+    createExpense(budgetID: $budgetID, input: $input) {
+      id
     }
+  }
 `;

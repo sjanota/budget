@@ -17,21 +17,3 @@ func (r *BudgetResolver) Expenses(ctx context.Context, obj *models.Budget) ([]*m
 		Expenses(obj.ID).
 		FindAll(ctx)
 }
-
-func (r *BudgetResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.
-		Expenses(r.budgetID).
-		ReplaceByID(ctx, id, input)
-}
-
-func (r *BudgetResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
-	return r.Storage.
-		Expenses(r.budgetID).
-		DeleteByID(ctx, id)
-}
-
-func (r *BudgetResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.
-		Expenses(r.budgetID).
-		Insert(ctx, input)
-}

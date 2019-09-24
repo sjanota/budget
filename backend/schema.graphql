@@ -65,6 +65,8 @@ type Budget {
 type Query {
   budget(id: ID!): Budget
   budgets: [Budget!]!
+
+  expenses(budgetID: ID!): [Expense!]!
 }
 
 input ExpenseInput {
@@ -87,15 +89,12 @@ input MoneyAmountInput {
   decimal: Int!
 }
 
-interface BudgetMutation {
-  createExpense(input: ExpenseInput!): Expense
-  deleteExpense(id: ID!): Expense
-  updateExpense(id: ID!, input: ExpenseInput!): Expense
-}
-
 type Mutation {
   createBudget(name: String!): Budget
-  budget(id: ID!): BudgetMutation
+
+  createExpense(budgetID: ID!, input: ExpenseInput!): Expense
+  deleteExpense(budgetID: ID!, id: ID!): Expense
+  updateExpense(budgetID: ID!, id: ID!, input: ExpenseInput!): Expense
 }
 
 enum EventType {

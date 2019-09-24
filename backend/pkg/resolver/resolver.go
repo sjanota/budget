@@ -45,6 +45,10 @@ func (r *Resolver) Query() schema.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
+func (r *queryResolver) Expenses(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).FindAll(ctx)
+}
+
 func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
 	return r.Storage.Budgets().FindByID(ctx, id)
 }
@@ -55,12 +59,18 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 
 type mutationResolver struct{ *Resolver }
 
-func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
-	return r.Storage.Budgets().Insert(ctx, name)
+func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).Insert(ctx, input)
 }
 
-func (r *mutationResolver) Budget(ctx context.Context, id primitive.ObjectID) (models.BudgetMutation, error) {
-	return &BudgetResolver{
-		Resolver: r.Resolver,
-	}, nil
+func (r *mutationResolver) DeleteExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).DeleteByID(ctx, id)
+}
+
+func (r *mutationResolver) UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).ReplaceByID(ctx, id, input)
+}
+
+func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
+	return r.Storage.Budgets().Insert(ctx, name)
 }
