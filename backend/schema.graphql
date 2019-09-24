@@ -66,7 +66,11 @@ type Query {
   budget(id: ID!): Budget
   budgets: [Budget!]!
 
+  expense(budgetID: ID!, id: ID!): Expense
   expenses(budgetID: ID!): [Expense!]!
+
+  account(budgetID: ID!, id: ID!): Account
+  accounts(budgetID: ID!): [Account!]!
 }
 
 input ExpenseInput {
@@ -99,6 +103,9 @@ type Mutation {
   createExpense(budgetID: ID!, input: ExpenseInput!): Expense
   deleteExpense(budgetID: ID!, id: ID!): Expense
   updateExpense(budgetID: ID!, id: ID!, input: ExpenseInput!): Expense
+
+  createAccount(budgetID: ID!, input: AccountInput!): Account
+  updateAccount(budgetID: ID!, id: ID!, input: AccountInput!): Account
 }
 
 enum EventType {
