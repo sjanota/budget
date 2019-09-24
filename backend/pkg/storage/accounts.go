@@ -2,29 +2,39 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/sjanota/budget/backend/pkg/storage/collections"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type AccountsRepository struct {
+type accountsRepository struct {
 	*repository
-	//watchers map[chan *models.ExpenseEvent]struct{}
+	storage *Storage
 }
 
-func newAccountsRepository(db *mongo.Database) *AccountsRepository {
-	return &AccountsRepository{
+func newAccountsRepository(s *Storage) *accountsRepository {
+	return &accountsRepository{
 		repository: &repository{
-			collection: db.Collection(collections.ACCOUNTS),
+			collection: s.db.Collection("accounts"),
 		},
-		//watchers: make(map[chan *models.ExpenseEvent]struct{}),
 	}
 }
 
-func (r *AccountsRepository) FindAll(ctx context.Context) ([]*models.Account, error) {
+func (r *accountsRepository) session(budgetID primitive.ObjectID) *Accounts {
+	return &Accounts{
+		accountsRepository: r,
+		budgetID:           budgetID,
+	}
+}
+
+type Accounts struct {
+	*accountsRepository
+	budgetID primitive.ObjectID
+}
+
+func (r *Accounts) FindAll(ctx context.Context) ([]*models.Account, error) {
 	var result []*models.Account
-	err := r.find(ctx, Doc{}, func(d decodeFunc) error {
+	err := r.find(ctx, doc{budgetID: r.budgetID}, func(d decodeFunc) error {
 		e := &models.Account{}
 		err := d(e)
 		if err != nil {
@@ -36,26 +46,22 @@ func (r *AccountsRepository) FindAll(ctx context.Context) ([]*models.Account, er
 	return result, err
 }
 
-func (r *AccountsRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
+func (r *Accounts) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
 	result := &models.Account{}
 	err := r.findByID(ctx, id, result)
 	return result, err
 }
 
-func (r *AccountsRepository) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
+func (r *Accounts) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
 	result := &models.Account{}
 	err := r.deleteByID(ctx, id, result)
-	//r.notify(&models.ExpenseEvent{
-	//	Type:    models.EventTypeDeleted,
-	//	Expense: result,
-	//})
 	return result, err
 }
 
-func (r *AccountsRepository) InsertOne(ctx context.Context, input models.AccountInput) (*models.Account, error) {
+func (r *Accounts) InsertOne(ctx context.Context, input models.AccountInput) (*models.Account, error) {
 	account := &models.Account{
 		Name: input.Name,
-		Available: &models.MoneyAmount{
+		Balance: &models.MoneyAmount{
 			Integer: 0,
 			Decimal: 0,
 		},
@@ -66,29 +72,5 @@ func (r *AccountsRepository) InsertOne(ctx context.Context, input models.Account
 	}
 
 	account.ID = result.InsertedID.(primitive.ObjectID)
-
-	//r.notify(&models.ExpenseEvent{
-	//	Type:    models.EventTypeCreated,
-	//	Expense: expense,
-	//})
 	return account, nil
 }
-
-//func (r *AccountsRepository) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-//	events := make(chan *models.ExpenseEvent)
-//	r.watchers[events] = struct{}{}
-//	go func() {
-//		defer close(events)
-//		defer func() {
-//			delete(r.watchers, events)
-//		}()
-//		<-ctx.Done()
-//	}()
-//	return events, nil
-//}
-//
-//func (r *AccountsRepository) notify(event *models.ExpenseEvent) {
-//	for watcher := range r.watchers {
-//		watcher <- event
-//	}
-//}

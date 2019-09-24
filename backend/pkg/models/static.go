@@ -1,19 +1,28 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type Budget struct {
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name     string             `json:"name"`
+	Expenses []*Expense
+}
 
 type Expense struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Title     string             `json:"title"`
-	Location  *string            `json:"location"`
-	Entries   []*ExpenseEntry    `json:"entries"`
-	Total     MoneyAmount        `json:"total"`
-	Date      *string            `json:"date"`
-	AccountID *primitive.ObjectID
+	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Title        string             `json:"title"`
+	Location     *string            `json:"location"`
+	Entries      []*ExpenseEntry    `json:"entries"`
+	TotalBalance MoneyAmount        `json:"total"`
+	Date         *string            `json:"date"`
+	AccountID    *primitive.ObjectID
+	BudgetID     primitive.ObjectID
 }
 
 type Category struct {
-	ID          primitive.ObjectID `json:"id"`
+	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name        string             `json:"name"`
 	Description *string            `json:"description"`
 	EnvelopeID  primitive.ObjectID
@@ -21,38 +30,43 @@ type Category struct {
 
 type ExpenseEntry struct {
 	Title      string      `json:"title"`
-	Amount     MoneyAmount `json:"amount"`
+	Balance    MoneyAmount `json:"amount"`
 	CategoryID primitive.ObjectID
 }
 
-func (i MoneyAmountInput) ToMoneyAmount() *MoneyAmount {
+func (i MoneyAmountInput) ToModel() *MoneyAmount {
 	return &MoneyAmount{
 		Integer: i.Integer,
 		Decimal: i.Decimal,
 	}
 }
 
-func (i ExpenseEntryInput) ToExpenseEntry() *ExpenseEntry {
+func (i ExpenseEntryInput) ToModel() *ExpenseEntry {
 	return &ExpenseEntry{
 		Title:      i.Title,
 		CategoryID: i.CategoryID,
-		Amount:     *i.Amount.ToMoneyAmount(),
+		Balance:    *i.Balance.ToModel(),
 	}
 }
 
-func (i ExpenseInput) ToExpense(id primitive.ObjectID) *Expense {
+func (i ExpenseInput) ToModel(budgetID primitive.ObjectID) *Expense {
 	entries := make([]*ExpenseEntry, len(i.Entries))
 	for i, entry := range i.Entries {
-		entries[i] = entry.ToExpenseEntry()
+		entries[i] = entry.ToModel()
 	}
 
 	return &Expense{
-		ID:        id,
-		Title:     i.Title,
-		Location:  i.Location,
-		Entries:   entries,
-		Total:     *i.Total.ToMoneyAmount(),
-		Date:      i.Date,
-		AccountID: i.AccountID,
+		Title:        i.Title,
+		Location:     i.Location,
+		Entries:      entries,
+		TotalBalance: *i.TotalBalance.ToModel(),
+		Date:         i.Date,
+		AccountID:    i.AccountID,
+		BudgetID:     budgetID,
 	}
+}
+
+func (e *Expense) WithID(id primitive.ObjectID) *Expense {
+	e.ID = id
+	return e
 }

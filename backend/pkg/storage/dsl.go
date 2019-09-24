@@ -1,5 +1,7 @@
 package storage
 
-type Doc map[string]interface{}
+type doc map[string]interface{}
+type list []interface{}
 
 const _id = "_id"
+const budgetID = "budgetid"

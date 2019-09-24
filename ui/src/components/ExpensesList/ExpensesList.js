@@ -22,10 +22,11 @@ import { CreateButton } from '../common/CreateButton';
 import { CancelButton } from '../common/CancelButton';
 import { SubmitButton } from '../common/SubmitButton';
 import PropTypes from 'prop-types';
-import { Expense } from './ExpenseList.types';
+import { Expense } from './ExpensesList.types';
+import { useBudget } from '../context/budget/budget';
 
 function handleExpenseEvent(prev, { subscriptionData }) {
-  const event = subscriptionData.data.expenseEvents;
+  const event = subscriptionData.data.expenseEvent;
   switch (event.type) {
     case 'CREATED': {
       return { expenses: addToList(prev.expenses, event.expense) };
@@ -42,7 +43,10 @@ function handleExpenseEvent(prev, { subscriptionData }) {
 }
 
 function DeleteExpenseButton({ expense }) {
-  const [deleteExpense] = useMutation(DELETE_EXPENSE);
+  const { id: budgetID } = useBudget();
+  const [deleteExpense] = useMutation(DELETE_EXPENSE, {
+    variables: { budgetID },
+  });
   return (
     <DeleteButton
       onClick={() => deleteExpense({ variables: { id: expense.id } })}
@@ -82,7 +86,7 @@ function ListEntry({ expense, onEdit }) {
       <td>{expense.title}</td>
       <td>{expense.date}</td>
       <td>
-        {expense.total.integer}.{expense.total.decimal}
+        {expense.totalBalance.integer}.{expense.totalBalance.decimal}
       </td>
       <td>{expense.location}</td>
       <td>{expense.account && expense.account.name}</td>
@@ -102,8 +106,8 @@ ListEntry.propTypes = {
 function EditEntry({ init, onCancel, onSubmit }) {
   const [title, setTitle] = useState(init ? init.title : '');
   const [date, setDate] = useState(init ? init.date : '');
-  const [total, setTotal] = useState(
-    init ? `${init.total.integer}.${init.total.decimal}` : ''
+  const [totalBalance, setTotalBalance] = useState(
+    init ? `${init.totalBalance.integer}.${init.totalBalance.decimal}` : ''
   );
   const [location, setLocation] = useState(init ? init.location : '');
 
@@ -112,13 +116,13 @@ function EditEntry({ init, onCancel, onSubmit }) {
   }
 
   function validateInput() {
-    const [integer, decimal] = Number(total)
+    const [integer, decimal] = Number(totalBalance)
       .toFixed(2)
       .split('.');
     return {
       title,
       date,
-      total: { integer, decimal },
+      totalBalance: { integer, decimal },
       location,
       entries: [],
     };
@@ -142,8 +146,8 @@ function EditEntry({ init, onCancel, onSubmit }) {
       </td>
       <td>
         <input
-          value={total}
-          onChange={onChangeCallback(setTotal)}
+          value={totalBalance}
+          onChange={onChangeCallback(setTotalBalance)}
           type={'number'}
         />
       </td>
@@ -175,11 +179,12 @@ EditEntry.propTypes = {
 };
 
 function CreateExpenseEntry({ onCancel }) {
+  const { id: budgetID } = useBudget();
   const [createExpense] = useMutation(CREATE_EXPENSE);
   return (
     <EditEntry
       onCancel={onCancel}
-      onSubmit={input => createExpense({ variables: { input } })}
+      onSubmit={input => createExpense({ variables: { input, budgetID } })}
     />
   );
 }
@@ -189,13 +194,14 @@ CreateExpenseEntry.propTypes = {
 };
 
 function UpdateExpenseEntry({ expense, onCancel }) {
+  const { id: budgetID } = useBudget();
   const [updateExpense] = useMutation(UPDATE_EXPENSE);
   return (
     <EditEntry
       init={expense}
       onCancel={onCancel}
       onSubmit={input =>
-        updateExpense({ variables: { id: expense.id, input } })
+        updateExpense({ variables: { id: expense.id, input, budgetID } })
       }
     />
   );
@@ -207,7 +213,10 @@ UpdateExpenseEntry.propTypes = {
 };
 
 export default function ExpensesList() {
-  const { loading, error, data, subscribeToMore } = useQuery(EXPENSES_QUERY);
+  const { id: budgetID } = useBudget();
+  const { loading, error, data, subscribeToMore } = useQuery(EXPENSES_QUERY, {
+    variables: { budgetID },
+  });
   const [isCreating, setIsCreating] = useState(false);
   const [editing, setEditing] = useState([]);
 
@@ -215,10 +224,11 @@ export default function ExpensesList() {
     if (loading) return;
     return subscribeToMore({
       document: EXPENSES_EVENTS_SUBSCRIPTION,
+      variables: { budgetID },
       updateQuery: handleExpenseEvent,
       onError: console.error,
     });
-  }, [loading, subscribeToMore]);
+  }, [loading, subscribeToMore, budgetID]);
 
   if (loading) return <p>Loading...</p>;
   if (error) {

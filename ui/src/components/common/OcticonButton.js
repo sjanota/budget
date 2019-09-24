@@ -8,6 +8,11 @@ const SMALL = {
   octicon: 'small',
 };
 
+const Size = PropTypes.shape({
+  bootstrap: PropTypes.string,
+  octicon: PropTypes.string,
+});
+
 export function OcticonButton({ icon, action, onClick, size }) {
   return (
     <Button
@@ -22,10 +27,10 @@ export function OcticonButton({ icon, action, onClick, size }) {
 }
 
 OcticonButton.propTypes = {
-  icon: PropTypes.element.isRequired,
+  icon: PropTypes.any.isRequired,
   action: PropTypes.string,
   onClick: PropTypes.func,
-  size: PropTypes.string,
+  size: Size,
 };
 
 OcticonButton.defaultProps = {

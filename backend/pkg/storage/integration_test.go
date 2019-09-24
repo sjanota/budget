@@ -3,12 +3,16 @@ package storage_test
 import (
 	"context"
 	"fmt"
-	"github.com/sjanota/budget/backend/pkg/storage"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/sjanota/budget/backend/pkg/models"
+	"github.com/sjanota/budget/backend/pkg/storage"
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -25,6 +29,24 @@ func TestMain(m *testing.M) {
 		retCode = m.Run()
 	})
 	os.Exit(retCode)
+}
+
+func before(t *testing.T) context.Context {
+	drop(t)
+	return context.Background()
+}
+
+func beforeWithBudget(t *testing.T) (context.Context, *models.Budget, func()) {
+	ctx, cancel := context.WithCancel(before(t))
+	name := primitive.NewObjectID().Hex()
+
+	budget, err := testStorage.Budgets().Insert(ctx, name)
+	require.NoError(t, err)
+
+	return ctx, budget, func() {
+		_, _ = testStorage.Budgets().DeleteByID(ctx, budget.ID)
+		cancel()
+	}
 }
 
 func drop(t *testing.T) {
@@ -56,7 +78,7 @@ func withDockerMongo(test func()) {
 	}
 
 	fmt.Println(port)
-	testStorage, err = storage.New("mongodb://localhost:" + port+"/test-db")
+	testStorage, err = storage.New("mongodb://localhost:" + port + "/test-db")
 	if err != nil {
 		panic(fmt.Errorf("cannot create testStorage: %s", err))
 	}
@@ -92,4 +114,12 @@ func deleteMongoContainer() error {
 		return fmt.Errorf("cannot delete mongo container: %s", out)
 	}
 	return nil
+}
+
+func strPtr(s string) *string {
+	return &s
+}
+
+func idPtr(id primitive.ObjectID) *primitive.ObjectID {
+	return &id
 }

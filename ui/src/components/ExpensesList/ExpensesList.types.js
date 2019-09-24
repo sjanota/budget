@@ -14,7 +14,7 @@ export const Expense = PropTypes.shape({
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   date: PropTypes.string,
-  total: MoneyAmount.isRequired,
+  totalBalance: MoneyAmount.isRequired,
   location: PropTypes.string,
   account: Account,
 });
