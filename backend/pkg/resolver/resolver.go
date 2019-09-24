@@ -4,6 +4,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"github.com/sjanota/budget/backend/pkg/storage"
@@ -12,6 +13,10 @@ import (
 
 type Resolver struct {
 	Storage *storage.Storage
+}
+
+func (r *Resolver) Budget() schema.BudgetResolver {
+	return &BudgetResolver{Resolver: r}
 }
 
 func (r *Resolver) Subscription() schema.SubscriptionResolver {
@@ -40,30 +45,32 @@ func (r *Resolver) Query() schema.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
-func (r *queryResolver) Expenses(ctx context.Context, since *string, until *string) ([]*models.Expense, error) {
-	return r.Storage.Expenses().FindAll(ctx)
+func (r *queryResolver) Expenses(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).FindAll(ctx)
+}
+
+func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
+	return r.Storage.Budgets().FindByID(ctx, id)
+}
+
+func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
+	return r.Storage.Budgets().FindAll(ctx)
 }
 
 type mutationResolver struct{ *Resolver }
 
-func (r *mutationResolver) UpdateExpense(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.Expenses().ReplaceByID(ctx, id, input)
+func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).Insert(ctx, input)
 }
 
-func (r *mutationResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
-	return r.Storage.Expenses().DeleteByID(ctx, id)
+func (r *mutationResolver) DeleteExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).DeleteByID(ctx, id)
 }
 
-func (r *mutationResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	return r.Storage.Expenses().InsertOne(ctx, input)
+func (r *mutationResolver) UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+	return r.Storage.Expenses(budgetID).ReplaceByID(ctx, id, input)
 }
 
-type subscriptionResolver struct {
-	*Resolver
+func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
+	return r.Storage.Budgets().Insert(ctx, name)
 }
-
-func (r *subscriptionResolver) ExpenseEvents(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	return r.Storage.Expenses().Watch(ctx)
-}
-
-

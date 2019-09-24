@@ -2,29 +2,89 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/sjanota/budget/backend/pkg/storage/collections"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type ExpensesRepository struct {
+type expensesRepository struct {
 	*repository
-	watchers map[chan *models.ExpenseEvent]struct{}
+	storage    *Storage
+	collection *mongo.Collection
+	watchers   map[chan *models.ExpenseEvent]struct{}
 }
 
-func newExpensesRepository(db *mongo.Database) *ExpensesRepository {
-	return &ExpensesRepository{
-		repository: &repository{
-			collection: db.Collection(collections.EXPENSES),
-		},
+func newExpensesRepository(storage *Storage) *expensesRepository {
+	return &expensesRepository{
+		storage:  storage,
 		watchers: make(map[chan *models.ExpenseEvent]struct{}),
+		repository: &repository{
+			collection: storage.db.Collection("expenses"),
+		},
 	}
 }
 
-func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, error) {
-	var result []*models.Expense
-	err := r.find(ctx, doc{}, func(d decodeFunc) error {
+func (r *expensesRepository) session(budgetID primitive.ObjectID) *Expenses {
+	return &Expenses{
+		expensesRepository: r,
+		budgetID:           budgetID,
+	}
+}
+
+type Expenses struct {
+	*expensesRepository
+	budgetID primitive.ObjectID
+}
+
+func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primitive.ObjectID) (*models.MoneyAmount, error) {
+	cursor, err := r.collection.Aggregate(ctx, []doc{
+		{"$match": doc{"budgetid": r.budgetID, "accountid": accountID}},
+		{
+			"$group": doc{
+				"_id": nil,
+				"integer": doc{
+					"$sum": "$totalbalance.integer",
+				},
+				"decimal": doc{
+					"$sum": "$totalbalance.decimal",
+				},
+			},
+		},
+		{
+			"$project": doc{
+				"_id": 0,
+				"integer": doc{
+					"$sum": list{
+						"$integer",
+						doc{
+							"$floor": doc{
+								"$divide": list{"$decimal", 100},
+							},
+						},
+					},
+				},
+				"decimal": doc{
+					"$mod": list{"$decimal", 100},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !cursor.Next(ctx) {
+		return &models.MoneyAmount{}, nil
+	}
+
+	result := &models.MoneyAmount{}
+	err = cursor.Decode(result)
+	return result, err
+}
+
+func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
+	result := make([]*models.Expense, 0)
+	err := r.find(ctx, doc{budgetID: r.budgetID}, func(d decodeFunc) error {
 		e := &models.Expense{}
 		err := d(e)
 		if err != nil {
@@ -36,15 +96,25 @@ func (r *ExpensesRepository) FindAll(ctx context.Context) ([]*models.Expense, er
 	return result, err
 }
 
-func (r *ExpensesRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.findByID(ctx, id, result)
+	err := r.findOne(ctx, r.byID(id), result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	return result, err
 }
 
-func (r *ExpensesRepository) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
+func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.deleteByID(ctx, id, result)
+	err := r.deleteOne(ctx, r.byID(id), result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeDeleted,
 		Expense: result,
@@ -52,10 +122,13 @@ func (r *ExpensesRepository) DeleteByID(ctx context.Context, id primitive.Object
 	return result, err
 }
 
-func (r *ExpensesRepository) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
+func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	result := &models.Expense{}
-	replacement := input.ToExpense(id)
-	err := r.replaceByID(ctx, id, replacement, result)
+	replacement := input.ToModel(r.budgetID)
+	err := r.replaceOne(ctx, r.byID(id), replacement, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeUpdated,
 		Expense: result,
@@ -63,23 +136,28 @@ func (r *ExpensesRepository) ReplaceByID(ctx context.Context, id primitive.Objec
 	return result, err
 }
 
-func (r *ExpensesRepository) InsertOne(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	result, err := r.collection.InsertOne(ctx, input)
+func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
+	if err := r.expectBudget(ctx); err != nil {
+		return nil, err
+	}
+	result := input.ToModel(r.budgetID)
+	id, err := r.insertOne(ctx, result)
 	if err != nil {
 		return nil, err
 	}
 
-
-	expense := input.ToExpense(result.InsertedID.(primitive.ObjectID))
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeCreated,
-		Expense: expense,
+		Expense: result,
 	})
-	return expense, nil
+	return result.WithID(id), nil
 }
 
-func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	events := make(chan *models.ExpenseEvent)
+func (r *Expenses) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
+	if err := r.expectBudget(ctx); err != nil {
+		return nil, err
+	}
+	events := make(chan *models.ExpenseEvent, 1)
 	r.watchers[events] = struct{}{}
 	go func() {
 		defer close(events)
@@ -91,8 +169,23 @@ func (r *ExpensesRepository) Watch(ctx context.Context) (<-chan *models.ExpenseE
 	return events, nil
 }
 
-func (r *ExpensesRepository) notify(event *models.ExpenseEvent) {
+func (r *Expenses) notify(event *models.ExpenseEvent) {
 	for watcher := range r.watchers {
 		watcher <- event
 	}
+}
+
+func (r *Expenses) expectBudget(ctx context.Context) error {
+	budget, err := r.storage.Budgets().FindByID(ctx, r.budgetID)
+	if err != nil {
+		return err
+	}
+	if budget == nil {
+		return ErrNoBudget
+	}
+	return nil
+}
+
+func (r *Expenses) byID(id primitive.ObjectID) doc {
+	return doc{budgetID: r.budgetID, _id: id}
 }

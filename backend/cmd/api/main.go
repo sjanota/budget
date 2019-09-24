@@ -1,12 +1,14 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/sjanota/budget/backend/pkg/storage"
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/sjanota/budget/backend/pkg/storage"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/gorilla/handlers"
@@ -22,16 +24,21 @@ func main() {
 		port = defaultPort
 	}
 
-	mongoUri := os.Getenv("MONGODB_URI")
-	if mongoUri == "" {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
 		log.Fatal("Missing required MONGODB_URI env")
 	}
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 
-	storage, err := storage.New(mongoUri)
+	storage, err := storage.New(mongoURI)
 	if err != nil {
 		log.Fatalf("Couldn't create storate: %s", err)
+	}
+
+	err = storage.Init(context.Background())
+	if err != nil {
+		log.Fatalf("Couldn't init storate: %s", err)
 	}
 
 	resolver := &resolver.Resolver{Storage: storage}
