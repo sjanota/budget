@@ -3,15 +3,16 @@ package storage_test
 import (
 	"context"
 	"fmt"
-	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/sjanota/budget/backend/pkg/storage"
-	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/sjanota/budget/backend/pkg/models"
+	"github.com/sjanota/budget/backend/pkg/storage"
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -39,11 +40,11 @@ func beforeWithBudget(t *testing.T) (context.Context, *models.Budget, func()) {
 	ctx, cancel := context.WithCancel(before(t))
 	name := primitive.NewObjectID().Hex()
 
-	budget, err := testStorage.Budgets().Create(ctx, name)
+	budget, err := testStorage.Budgets().Insert(ctx, name)
 	require.NoError(t, err)
 
 	return ctx, budget, func() {
-		_, _ = testStorage.Budgets().Delete(ctx, budget.ID)
+		_, _ = testStorage.Budgets().DeleteByID(ctx, budget.ID)
 		cancel()
 	}
 }

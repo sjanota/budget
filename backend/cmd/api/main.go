@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/sjanota/budget/backend/pkg/storage"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/sjanota/budget/backend/pkg/storage"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/gorilla/handlers"

@@ -4,6 +4,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"github.com/sjanota/budget/backend/pkg/storage"
@@ -45,7 +46,7 @@ func (r *Resolver) Query() schema.QueryResolver {
 type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
-	panic("implement me")
+	return r.Storage.Budgets().FindByID(ctx, id)
 }
 
 func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {

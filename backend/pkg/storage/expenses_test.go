@@ -2,12 +2,13 @@ package storage_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
 )
 
 func TestExpenses_Insert(t *testing.T) {

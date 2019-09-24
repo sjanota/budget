@@ -13,6 +13,7 @@ lint:
 
 fmt:
 	go fmt ./...
+	goimports -l -w .
 
 test:
 	go test ./...

@@ -1,11 +1,12 @@
 package models
 
 import (
+	"io"
+	"strconv"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"io"
-	"strconv"
 )
 
 func UnmarshalID(v interface{}) (primitive.ObjectID, error) {

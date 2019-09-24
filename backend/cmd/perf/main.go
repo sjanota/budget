@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/sjanota/budget/backend/pkg/storage"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/sjanota/budget/backend/pkg/models"
+	"github.com/sjanota/budget/backend/pkg/storage"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
@@ -34,7 +35,7 @@ func main() {
 	storage.Drop(ctx)
 	storage.Init(ctx)
 
-	budget, err := storage.Budgets().Create(ctx, "test")
+	budget, err := storage.Budgets().Insert(ctx, "test")
 	if err != nil {
 		log.Fatalf("cannot create budget: %s", err)
 	}

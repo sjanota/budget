@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,7 +37,7 @@ type Budgets struct {
 	*budgetsRepository
 }
 
-func (r *Budgets) Create(ctx context.Context, name string) (budget *models.Budget, err error) {
+func (r *Budgets) Insert(ctx context.Context, name string) (budget *models.Budget, err error) {
 	budget = &models.Budget{
 		Name:     name,
 		Expenses: make([]*models.Expense, 0),
@@ -45,17 +46,34 @@ func (r *Budgets) Create(ctx context.Context, name string) (budget *models.Budge
 	return
 }
 
-func (r *Budgets) FindByID(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
-	result = &models.Budget{}
-	err = r.findByID(ctx, id, result)
+func (r *Budgets) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
+	result := &models.Budget{}
+	err := r.findByID(ctx, id, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
-	return
+	return result, err
 }
 
-func (r *Budgets) Delete(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
-	result = &models.Budget{}
-	err = r.deleteByID(ctx, id, result)
-	return
+func (r *Budgets) FindAll(ctx context.Context) ([]*models.Budget, error) {
+	result := make([]*models.Budget, 0)
+	err := r.find(ctx, nil, func(d decodeFunc) error {
+		entry := &models.Budget{}
+		err := d(entry)
+		if err != nil {
+			return err
+		}
+		result = append(result, entry)
+		return nil
+	})
+	return result, err
+}
+
+func (r *Budgets) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
+	result := &models.Budget{}
+	err := r.deleteByID(ctx, id, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	return result, err
 }
