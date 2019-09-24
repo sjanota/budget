@@ -25,10 +25,6 @@ func TestExpenses_Insert(t *testing.T) {
 	expected := in.ToModel(budget.ID).WithID(inserted.ID)
 	assert.Equal(t, expected, inserted)
 	assertEvent(t, watch, models.EventTypeCreated, expected)
-
-	all, err := testStorage.Expenses(budget.ID).FindAll(ctx)
-	require.NoError(t, err)
-	assert.Len(t, all, 1)
 }
 
 func TestExpenses_Insert_BudgetNotExist(t *testing.T) {
@@ -95,7 +91,7 @@ func TestExpenses_FindByID(t *testing.T) {
 
 	expected := in.ToModel(budget.ID).WithID(inserted.ID)
 	assert.NotNil(t, found)
-	assert.Equal(t, expected, inserted)
+	assert.Equal(t, expected, found)
 }
 
 func TestExpenses_FindByID_NotExists(t *testing.T) {
@@ -140,6 +136,33 @@ func TestExpenses_ReplaceByID_NotExist(t *testing.T) {
 	replaced, err := testStorage.Expenses(budget.ID).ReplaceByID(ctx, primitive.NewObjectID(), *in)
 	require.NoError(t, err)
 	require.Nil(t, replaced)
+}
+
+func TestExpenses_FindAll(t *testing.T) {
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
+
+	inserted1, err := testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput1)
+	require.NoError(t, err)
+	inserted2, err := testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput2)
+	require.NoError(t, err)
+
+	found, err := testStorage.Expenses(budget.ID).FindAll(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+	assert.Len(t, found, 2)
+	assert.Contains(t, found, inserted1)
+	assert.Contains(t, found, inserted2)
+}
+
+func TestExpenses_FindAll_None(t *testing.T) {
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
+
+	found, err := testStorage.Expenses(budget.ID).FindAll(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+	assert.Len(t, found, 0)
 }
 
 var expenseInput1 = &models.ExpenseInput{

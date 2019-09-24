@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -84,7 +83,7 @@ func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primiti
 }
 
 func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
-	var result []*models.Expense
+	result := make([]*models.Expense, 0)
 	err := r.find(ctx, doc{budgetID: r.budgetID}, func(d decodeFunc) error {
 		e := &models.Expense{}
 		err := d(e)
@@ -92,7 +91,6 @@ func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
 			return err
 		}
 		result = append(result, e)
-		fmt.Printf("Found: %#v\n", e)
 		return nil
 	})
 	return result, err
@@ -121,12 +119,12 @@ func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*mode
 		Type:    models.EventTypeDeleted,
 		Expense: result,
 	})
-	return result.WithID(id), err
+	return result, err
 }
 
 func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	result := &models.Expense{}
-	replacement := input.ToModel(r.budgetID).WithID(id)
+	replacement := input.ToModel(r.budgetID)
 	err := r.replaceOne(ctx, r.byID(id), replacement, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil

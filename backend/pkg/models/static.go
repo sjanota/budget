@@ -19,7 +19,7 @@ type BudgetMutation interface {
 }
 
 type Expense struct {
-	ID           primitive.ObjectID `json:"id"`
+	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Title        string             `json:"title"`
 	Location     *string            `json:"location"`
 	Entries      []*ExpenseEntry    `json:"entries"`
@@ -30,7 +30,7 @@ type Expense struct {
 }
 
 type Category struct {
-	ID          primitive.ObjectID `json:"id"`
+	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name        string             `json:"name"`
 	Description *string            `json:"description"`
 	EnvelopeID  primitive.ObjectID
