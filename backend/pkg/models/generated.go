@@ -10,12 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Account struct {
-	ID      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Balance *MoneyAmount       `json:"balance"`
-}
-
 type AccountInput struct {
 	Name string `json:"name"`
 }

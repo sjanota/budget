@@ -20,6 +20,10 @@ func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
 	return s.expenses.session(budgetID)
 }
 
+func (s *Storage) Accounts(budgetID primitive.ObjectID) *Accounts {
+	return s.accounts.session(budgetID)
+}
+
 func (s *Storage) Budgets() *Budgets {
 	return s.budgets.session()
 }

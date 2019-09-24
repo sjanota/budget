@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -14,6 +16,7 @@ type accountsRepository struct {
 
 func newAccountsRepository(s *Storage) *accountsRepository {
 	return &accountsRepository{
+		storage: s,
 		repository: &repository{
 			collection: s.db.Collection("accounts"),
 		},
@@ -23,17 +26,20 @@ func newAccountsRepository(s *Storage) *accountsRepository {
 func (r *accountsRepository) session(budgetID primitive.ObjectID) *Accounts {
 	return &Accounts{
 		accountsRepository: r,
-		budgetID:           budgetID,
+		budgetScoped: &budgetScoped{
+			getStorage: func() *Storage { return r.storage },
+			budgetID:   budgetID,
+		},
 	}
 }
 
 type Accounts struct {
 	*accountsRepository
-	budgetID primitive.ObjectID
+	*budgetScoped
 }
 
 func (r *Accounts) FindAll(ctx context.Context) ([]*models.Account, error) {
-	var result []*models.Account
+	result := make([]*models.Account, 0)
 	err := r.find(ctx, doc{budgetID: r.budgetID}, func(d decodeFunc) error {
 		e := &models.Account{}
 		err := d(e)
@@ -49,22 +55,29 @@ func (r *Accounts) FindAll(ctx context.Context) ([]*models.Account, error) {
 func (r *Accounts) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
 	result := &models.Account{}
 	err := r.findByID(ctx, id, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	return result, err
 }
 
-func (r *Accounts) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Account, error) {
+func (r *Accounts) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.AccountInput) (*models.Account, error) {
 	result := &models.Account{}
-	err := r.deleteByID(ctx, id, result)
+	replacement := input.ToModel(r.budgetID)
+	err := r.replaceOne(ctx, r.byID(id), replacement, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	return result, err
 }
 
-func (r *Accounts) InsertOne(ctx context.Context, input models.AccountInput) (*models.Account, error) {
+func (r *Accounts) Insert(ctx context.Context, input models.AccountInput) (*models.Account, error) {
+	if err := r.expectBudget(ctx); err != nil {
+		return nil, err
+	}
 	account := &models.Account{
-		Name: input.Name,
-		Balance: &models.MoneyAmount{
-			Integer: 0,
-			Decimal: 0,
-		},
+		Name:     input.Name,
+		BudgetID: r.budgetID,
 	}
 	result, err := r.collection.InsertOne(ctx, account)
 	if err != nil {

@@ -165,6 +165,39 @@ func TestExpenses_FindAll_None(t *testing.T) {
 	assert.Len(t, found, 0)
 }
 
+func TestExpenses_TotalBalanceForAccount(t *testing.T) {
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
+
+	_, err := testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput1)
+	require.NoError(t, err)
+	_, err = testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput2)
+	require.NoError(t, err)
+
+	balance, err := testStorage.Expenses(budget.ID).TotalBalanceForAccount(ctx, accountID)
+	require.NoError(t, err)
+	require.NotNil(t, balance)
+	assert.Equal(t, 17, balance.Integer)
+	assert.Equal(t, 10, balance.Decimal)
+}
+
+func TestExpenses_TotalBalanceForAccount_NotFound(t *testing.T) {
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
+
+	_, err := testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput1)
+	require.NoError(t, err)
+	_, err = testStorage.Expenses(budget.ID).Insert(ctx, *expenseInput2)
+	require.NoError(t, err)
+
+	balance, err := testStorage.Expenses(budget.ID).TotalBalanceForAccount(ctx, primitive.NewObjectID())
+	require.NoError(t, err)
+	require.NotNil(t, balance)
+	assert.Equal(t, 0, balance.Integer)
+	assert.Equal(t, 0, balance.Decimal)
+}
+
+var accountID = primitive.NewObjectID()
 var expenseInput1 = &models.ExpenseInput{
 	Title:    "title",
 	Location: strPtr("location"),
@@ -173,25 +206,25 @@ var expenseInput1 = &models.ExpenseInput{
 			Title:      "food",
 			CategoryID: primitive.NewObjectID(),
 			Balance: &models.MoneyAmountInput{
-				Integer: 3,
-				Decimal: 28,
+				Integer: 5,
+				Decimal: 50,
 			},
 		},
 		{
 			Title:      "sweets",
 			CategoryID: primitive.NewObjectID(),
 			Balance: &models.MoneyAmountInput{
-				Integer: 3,
-				Decimal: 28,
+				Integer: 12,
+				Decimal: 80,
 			},
 		},
 	},
 	TotalBalance: &models.MoneyAmountInput{
-		Integer: 3,
-		Decimal: 28,
+		Integer: 6,
+		Decimal: 40,
 	},
 	Date:      strPtr("12032019"),
-	AccountID: idPtr(primitive.NewObjectID()),
+	AccountID: &accountID,
 }
 
 var expenseInput2 = &models.ExpenseInput{
@@ -202,16 +235,16 @@ var expenseInput2 = &models.ExpenseInput{
 			Title:      "food",
 			CategoryID: primitive.NewObjectID(),
 			Balance: &models.MoneyAmountInput{
-				Integer: 3,
-				Decimal: 26,
+				Integer: 1,
+				Decimal: 50,
 			},
 		},
 		{
 			Title:      "cat food",
 			CategoryID: primitive.ObjectID{},
 			Balance: &models.MoneyAmountInput{
-				Integer: 3,
-				Decimal: 26,
+				Integer: 2,
+				Decimal: 30,
 			},
 		},
 		{
@@ -219,16 +252,16 @@ var expenseInput2 = &models.ExpenseInput{
 			CategoryID: primitive.NewObjectID(),
 			Balance: &models.MoneyAmountInput{
 				Integer: 3,
-				Decimal: 28,
+				Decimal: 60,
 			},
 		},
 	},
 	TotalBalance: &models.MoneyAmountInput{
-		Integer: 3,
-		Decimal: 28,
+		Integer: 10,
+		Decimal: 70,
 	},
 	Date:      strPtr("12032019"),
-	AccountID: idPtr(primitive.NewObjectID()),
+	AccountID: &accountID,
 }
 
 func assertEvent(t *testing.T, ch <-chan *models.ExpenseEvent, eventType models.EventType, expense *models.Expense) {

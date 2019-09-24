@@ -27,13 +27,16 @@ func newExpensesRepository(storage *Storage) *expensesRepository {
 func (r *expensesRepository) session(budgetID primitive.ObjectID) *Expenses {
 	return &Expenses{
 		expensesRepository: r,
-		budgetID:           budgetID,
+		budgetScoped: &budgetScoped{
+			getStorage: func() *Storage { return r.storage },
+			budgetID:   budgetID,
+		},
 	}
 }
 
 type Expenses struct {
 	*expensesRepository
-	budgetID primitive.ObjectID
+	*budgetScoped
 }
 
 func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primitive.ObjectID) (*models.MoneyAmount, error) {
@@ -172,19 +175,4 @@ func (r *Expenses) notify(event *models.ExpenseEvent) {
 	for watcher := range r.watchers {
 		watcher <- event
 	}
-}
-
-func (r *Expenses) expectBudget(ctx context.Context) error {
-	budget, err := r.storage.Budgets().FindByID(ctx, r.budgetID)
-	if err != nil {
-		return err
-	}
-	if budget == nil {
-		return ErrNoBudget
-	}
-	return nil
-}
-
-func (r *Expenses) byID(id primitive.ObjectID) doc {
-	return doc{budgetID: r.budgetID, _id: id}
 }

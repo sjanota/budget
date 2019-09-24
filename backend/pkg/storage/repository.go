@@ -75,3 +75,23 @@ func (r *repository) insertOne(ctx context.Context, v interface{}) (primitive.Ob
 
 	return result.InsertedID.(primitive.ObjectID), nil
 }
+
+type budgetScoped struct {
+	getStorage func() *Storage
+	budgetID   primitive.ObjectID
+}
+
+func (r *budgetScoped) expectBudget(ctx context.Context) error {
+	budget, err := r.getStorage().Budgets().FindByID(ctx, r.budgetID)
+	if err != nil {
+		return err
+	}
+	if budget == nil {
+		return ErrNoBudget
+	}
+	return nil
+}
+
+func (r *budgetScoped) byID(id primitive.ObjectID) doc {
+	return doc{budgetID: r.budgetID, _id: id}
+}
