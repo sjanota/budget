@@ -3,7 +3,7 @@
 MONGO_CONTAINER_NAME := budget-mongo
 LINT_IGNORE=should have comment or be unexported
 
-check: fmt lint
+check: fmt lint test
 
 lint:
 	@echo golint ./...
@@ -13,6 +13,9 @@ lint:
 
 fmt:
 	go fmt ./...
+
+test:
+	go test ./...
 
 mongo-docker:
 	@docker start $(MONGO_CONTAINER_NAME) >/dev/null \

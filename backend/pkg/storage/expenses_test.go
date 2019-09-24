@@ -38,6 +38,13 @@ func TestExpenses_Insert_BudgetNotExist(t *testing.T) {
 	require.EqualError(t, err, storage.ErrNoBudget.Error())
 }
 
+func TestExpenses_Watch_BudgetNotExist(t *testing.T) {
+	ctx := context.Background()
+
+	_, err := testStorage.Expenses(primitive.NewObjectID()).Watch(ctx)
+	require.EqualError(t, err, storage.ErrNoBudget.Error())
+}
+
 func TestExpenses_DeleteByID(t *testing.T) {
 	ctx, budget, after := beforeWithBudget(t)
 	defer after()

@@ -155,6 +155,9 @@ func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*mode
 }
 
 func (r *Expenses) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
+	if err := r.expectBudget(ctx); err != nil {
+		return nil, err
+	}
 	events := make(chan *models.ExpenseEvent, 1)
 	r.watchers[events] = struct{}{}
 	go func() {

@@ -26,7 +26,7 @@ func (r *BudgetResolver) UpdateExpense(ctx context.Context, id primitive.ObjectI
 func (r *BudgetResolver) DeleteExpense(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	return r.Storage.
 		Expenses(r.budgetID).
-		Delete(ctx, id)
+		DeleteByID(ctx, id)
 }
 
 func (r *BudgetResolver) CreateExpense(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
