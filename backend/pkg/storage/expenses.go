@@ -99,7 +99,7 @@ func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
 
 func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.findOne(ctx, doc{budgetID: r.budgetID, _id: id}, result)
+	err := r.findOne(ctx, r.byId(id), result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
@@ -108,7 +108,10 @@ func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models
 
 func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.deleteOne(ctx, doc{budgetID: r.budgetID, _id: id}, result)
+	err := r.deleteOne(ctx, r.byId(id), result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -122,9 +125,11 @@ func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*mode
 
 func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	result := &models.Expense{}
-	replacement := input.ToModel(r.budgetID)
-	replacement.ID = id
-	err := r.replaceByID(ctx, id, replacement, result)
+	replacement := input.ToModel(r.budgetID).WithID(id)
+	err := r.replaceOne(ctx, r.byId(id), replacement, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	r.notify(&models.ExpenseEvent{
 		Type:    models.EventTypeUpdated,
 		Expense: result,
@@ -133,6 +138,9 @@ func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input
 }
 
 func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
+	if err := r.expectBudget(ctx); err != nil{
+		return nil, err
+	}
 	result := input.ToModel(r.budgetID)
 	id, err := r.insertOne(ctx, result)
 	if err != nil {
@@ -147,7 +155,7 @@ func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*mode
 }
 
 func (r *Expenses) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	events := make(chan *models.ExpenseEvent)
+	events := make(chan *models.ExpenseEvent, 1)
 	r.watchers[events] = struct{}{}
 	go func() {
 		defer close(events)
@@ -163,4 +171,19 @@ func (r *Expenses) notify(event *models.ExpenseEvent) {
 	for watcher := range r.watchers {
 		watcher <- event
 	}
+}
+
+func (r *Expenses) expectBudget(ctx context.Context) error {
+	budget, err := r.storage.Budgets().FindByID(ctx, r.budgetID)
+	if err != nil {
+		return err
+	}
+	if budget == nil {
+		return ErrNoBudget
+	}
+	return nil
+}
+
+func (r *Expenses) byId(id primitive.ObjectID) doc {
+	return doc{budgetID: r.budgetID, _id: id}
 }

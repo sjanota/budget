@@ -36,7 +36,7 @@ type Budgets struct {
 	*budgetsRepository
 }
 
-func (r *budgetsRepository) Create(ctx context.Context, name string) (budget *models.Budget, err error) {
+func (r *Budgets) Create(ctx context.Context, name string) (budget *models.Budget, err error) {
 	budget = &models.Budget{
 		Name: name,
 		Expenses: make([]*models.Expense, 0),
@@ -45,13 +45,16 @@ func (r *budgetsRepository) Create(ctx context.Context, name string) (budget *mo
 	return
 }
 
-func (r *budgetsRepository) FindByID(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
+func (r *Budgets) FindByID(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
 	result = &models.Budget{}
 	err = r.findByID(ctx, id, result)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	return
 }
 
-func (r *budgetsRepository) Delete(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
+func (r *Budgets) Delete(ctx context.Context, id primitive.ObjectID) (result *models.Budget, err error) {
 	result = &models.Budget{}
 	err = r.deleteByID(ctx, id, result)
 	return

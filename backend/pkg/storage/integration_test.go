@@ -36,7 +36,7 @@ func before(t *testing.T) context.Context {
 }
 
 func beforeWithBudget(t *testing.T) (context.Context, *models.Budget, func()) {
-	ctx := before(t)
+	ctx, cancel := context.WithCancel(before(t))
 	name := primitive.NewObjectID().Hex()
 
 	budget, err := testStorage.Budgets().Create(ctx, name)
@@ -44,6 +44,7 @@ func beforeWithBudget(t *testing.T) (context.Context, *models.Budget, func()) {
 
 	return ctx, budget, func() {
 		_, _ = testStorage.Budgets().Delete(ctx, budget.ID)
+		cancel()
 	}
 }
 
