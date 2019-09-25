@@ -50,3 +50,15 @@ func (a *Account) WithID(id primitive.ObjectID) *Account {
 	a.ID = id
 	return a
 }
+
+func (a EnvelopeInput) ToModel(budgetID primitive.ObjectID) *Envelope {
+	return &Envelope{
+		Name:     a.Name,
+		BudgetID: budgetID,
+	}
+}
+
+func (a *Envelope) WithID(id primitive.ObjectID) *Envelope {
+	a.ID = id
+	return a
+}

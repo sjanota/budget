@@ -39,3 +39,9 @@ type Account struct {
 	Name     string             `json:"name"`
 	BudgetID primitive.ObjectID
 }
+
+type Envelope struct {
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name     string             `json:"name"`
+	BudgetID primitive.ObjectID
+}

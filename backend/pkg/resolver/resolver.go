@@ -15,6 +15,10 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+func (r *Resolver) Envelope() schema.EnvelopeResolver {
+	return &envelopeResolver{r}
+}
+
 func (r *Resolver) Account() schema.AccountResolver {
 	return &accountResolver{r}
 }
@@ -49,6 +53,14 @@ func (r *Resolver) Query() schema.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
+func (r *queryResolver) Envelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Envelope, error) {
+	return r.Storage.Envelopes(budgetID).FindByID(ctx, id)
+}
+
+func (r *queryResolver) Envelopes(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Envelope, error) {
+	return r.Storage.Envelopes(budgetID).FindAll(ctx)
+}
+
 func (r *queryResolver) Expense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Expense, error) {
 	return r.Storage.Expenses(budgetID).FindByID(ctx, id)
 }
@@ -75,13 +87,20 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 
 type mutationResolver struct{ *Resolver }
 
+func (r *mutationResolver) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input models.EnvelopeInput) (*models.Envelope, error) {
+	return r.Storage.Envelopes(budgetID).Insert(ctx, input)
+}
+
+func (r *mutationResolver) UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, input models.EnvelopeInput) (*models.Envelope, error) {
+	return r.Storage.Envelopes(budgetID).ReplaceByID(ctx, id, input)
+}
+
 func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, input models.AccountInput) (*models.Account, error) {
 	return r.Storage.Accounts(budgetID).Insert(ctx, input)
 }
 
 func (r *mutationResolver) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, input models.AccountInput) (*models.Account, error) {
 	return r.Storage.Accounts(budgetID).ReplaceByID(ctx, id, input)
-
 }
 
 func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {

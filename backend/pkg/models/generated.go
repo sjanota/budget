@@ -22,10 +22,8 @@ type AccountTransfer struct {
 	Amount *MoneyAmount       `json:"amount"`
 }
 
-type Envelope struct {
-	ID      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Balance *MoneyAmount       `json:"balance"`
+type EnvelopeInput struct {
+	Name string `json:"name"`
 }
 
 type EnvelopeTransfer struct {
