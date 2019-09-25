@@ -16,26 +16,23 @@ type accountsRepository struct {
 
 func newAccountsRepository(s *Storage) *accountsRepository {
 	return &accountsRepository{
-		storage: s,
 		repository: &repository{
+			storage:    s,
 			collection: s.db.Collection("accounts"),
-		},
-	}
-}
-
-func (r *accountsRepository) session(budgetID primitive.ObjectID) *Accounts {
-	return &Accounts{
-		accountsRepository: r,
-		budgetScoped: &budgetScoped{
-			getStorage: func() *Storage { return r.storage },
-			budgetID:   budgetID,
 		},
 	}
 }
 
 type Accounts struct {
 	*accountsRepository
-	*budgetScoped
+	budgetID primitive.ObjectID
+}
+
+func (r accountsRepository) session(budgetID primitive.ObjectID) *Accounts {
+	return &Accounts{
+		accountsRepository: &r,
+		budgetID:           budgetID,
+	}
 }
 
 func (r *Accounts) FindAll(ctx context.Context) ([]*models.Account, error) {
@@ -64,7 +61,7 @@ func (r *Accounts) FindByID(ctx context.Context, id primitive.ObjectID) (*models
 func (r *Accounts) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.AccountInput) (*models.Account, error) {
 	result := &models.Account{}
 	replacement := input.ToModel(r.budgetID)
-	err := r.replaceOne(ctx, r.byID(id), replacement, result)
+	err := r.replaceOne(ctx, doc{budgetID: r.budgetID}, replacement, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
@@ -72,7 +69,7 @@ func (r *Accounts) ReplaceByID(ctx context.Context, id primitive.ObjectID, input
 }
 
 func (r *Accounts) Insert(ctx context.Context, input models.AccountInput) (*models.Account, error) {
-	if err := r.expectBudget(ctx); err != nil {
+	if err := r.expectBudget(ctx, r.budgetID); err != nil {
 		return nil, err
 	}
 	account := &models.Account{

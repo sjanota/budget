@@ -11,6 +11,7 @@ import (
 type decodeFunc func(interface{}) error
 
 type repository struct {
+	storage    *Storage
 	collection *mongo.Collection
 }
 
@@ -76,13 +77,8 @@ func (r *repository) insertOne(ctx context.Context, v interface{}) (primitive.Ob
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-type budgetScoped struct {
-	getStorage func() *Storage
-	budgetID   primitive.ObjectID
-}
-
-func (r *budgetScoped) expectBudget(ctx context.Context) error {
-	budget, err := r.getStorage().Budgets().FindByID(ctx, r.budgetID)
+func (r *repository) expectBudget(ctx context.Context, budgetID primitive.ObjectID) error {
+	budget, err := r.storage.Budgets().FindByID(ctx, budgetID)
 	if err != nil {
 		return err
 	}
@@ -90,8 +86,4 @@ func (r *budgetScoped) expectBudget(ctx context.Context) error {
 		return ErrNoBudget
 	}
 	return nil
-}
-
-func (r *budgetScoped) byID(id primitive.ObjectID) doc {
-	return doc{budgetID: r.budgetID, _id: id}
 }
