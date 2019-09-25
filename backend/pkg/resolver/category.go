@@ -12,10 +12,6 @@ func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (
 	return &models.Envelope{
 		ID:   obj.EnvelopeID,
 		Name: "123",
-		Balance: &models.MoneyAmount{
-			Integer: 12,
-			Decimal: 54,
-		},
 	}, nil
 }
 

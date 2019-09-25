@@ -10,10 +10,11 @@ import (
 )
 
 type Storage struct {
-	db       *mongo.Database
-	expenses *expensesRepository
-	budgets  *budgetsRepository
-	accounts *accountsRepository
+	db        *mongo.Database
+	expenses  *expensesRepository
+	budgets   *budgetsRepository
+	accounts  *accountsRepository
+	envelopes *envelopesRepository
 }
 
 func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
@@ -22,6 +23,10 @@ func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
 
 func (s *Storage) Accounts(budgetID primitive.ObjectID) *Accounts {
 	return s.accounts.session(budgetID)
+}
+
+func (s *Storage) Envelopes(budgetID primitive.ObjectID) *Envelopes {
+	return s.envelopes.session(budgetID)
 }
 
 func (s *Storage) Budgets() *Budgets {
@@ -60,5 +65,6 @@ func (s *Storage) Init(ctx context.Context) error {
 	}
 	s.expenses = newExpensesRepository(s)
 	s.accounts = newAccountsRepository(s)
+	s.envelopes = newEnvelopesRepository(s)
 	return nil
 }

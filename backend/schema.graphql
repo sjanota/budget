@@ -71,6 +71,9 @@ type Query {
 
   account(budgetID: ID!, id: ID!): Account
   accounts(budgetID: ID!): [Account!]!
+
+  envelope(budgetID: ID!, id: ID!): Envelope
+  envelopes(budgetID: ID!): [Envelope!]!
 }
 
 input ExpenseInput {
@@ -97,6 +100,10 @@ input AccountInput {
   name: String!
 }
 
+input EnvelopeInput {
+  name: String!
+}
+
 type Mutation {
   createBudget(name: String!): Budget
 
@@ -106,6 +113,9 @@ type Mutation {
 
   createAccount(budgetID: ID!, input: AccountInput!): Account
   updateAccount(budgetID: ID!, id: ID!, input: AccountInput!): Account
+
+  createEnvelope(budgetID: ID!, input: EnvelopeInput!): Envelope
+  updateEnvelope(budgetID: ID!, id: ID!, input: EnvelopeInput!): Envelope
 }
 
 enum EventType {
