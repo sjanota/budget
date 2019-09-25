@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "ui"
+    },
+    {
+      "path": "backend"
+    }
+  ],
+  "settings": {
+    "go.useLanguageServer": true
+  }
+}

@@ -9,16 +9,19 @@ import (
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 )
 
-const collectionName = "budgets"
-
 type Storage struct {
 	db       *mongo.Database
 	expenses *expensesRepository
 	budgets  *budgetsRepository
+	accounts *accountsRepository
 }
 
 func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
 	return s.expenses.session(budgetID)
+}
+
+func (s *Storage) Accounts(budgetID primitive.ObjectID) *Accounts {
+	return s.accounts.session(budgetID)
 }
 
 func (s *Storage) Budgets() *Budgets {
@@ -56,5 +59,6 @@ func (s *Storage) Init(ctx context.Context) error {
 		return err
 	}
 	s.expenses = newExpensesRepository(s)
+	s.accounts = newAccountsRepository(s)
 	return nil
 }

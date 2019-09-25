@@ -10,19 +10,23 @@ import (
 
 type expensesRepository struct {
 	*repository
-	storage    *Storage
-	collection *mongo.Collection
-	watchers   map[chan *models.ExpenseEvent]struct{}
+	storage  *Storage
+	watchers map[chan *models.ExpenseEvent]struct{}
 }
 
 func newExpensesRepository(storage *Storage) *expensesRepository {
 	return &expensesRepository{
-		storage:  storage,
 		watchers: make(map[chan *models.ExpenseEvent]struct{}),
 		repository: &repository{
+			storage:    storage,
 			collection: storage.db.Collection("expenses"),
 		},
 	}
+}
+
+type Expenses struct {
+	*expensesRepository
+	budgetID primitive.ObjectID
 }
 
 func (r *expensesRepository) session(budgetID primitive.ObjectID) *Expenses {
@@ -30,11 +34,6 @@ func (r *expensesRepository) session(budgetID primitive.ObjectID) *Expenses {
 		expensesRepository: r,
 		budgetID:           budgetID,
 	}
-}
-
-type Expenses struct {
-	*expensesRepository
-	budgetID primitive.ObjectID
 }
 
 func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primitive.ObjectID) (*models.MoneyAmount, error) {
@@ -98,7 +97,7 @@ func (r *Expenses) FindAll(ctx context.Context) ([]*models.Expense, error) {
 
 func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.findOne(ctx, r.byID(id), result)
+	err := r.findOne(ctx, doc{"budgetid": r.budgetID, _id: id}, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
@@ -107,7 +106,7 @@ func (r *Expenses) FindByID(ctx context.Context, id primitive.ObjectID) (*models
 
 func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*models.Expense, error) {
 	result := &models.Expense{}
-	err := r.deleteOne(ctx, r.byID(id), result)
+	err := r.deleteOne(ctx, doc{"budgetid": r.budgetID, _id: id}, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
@@ -125,7 +124,7 @@ func (r *Expenses) DeleteByID(ctx context.Context, id primitive.ObjectID) (*mode
 func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.ExpenseInput) (*models.Expense, error) {
 	result := &models.Expense{}
 	replacement := input.ToModel(r.budgetID)
-	err := r.replaceOne(ctx, r.byID(id), replacement, result)
+	err := r.replaceOne(ctx, doc{"budgetid": r.budgetID, _id: id}, replacement, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
@@ -137,7 +136,7 @@ func (r *Expenses) ReplaceByID(ctx context.Context, id primitive.ObjectID, input
 }
 
 func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*models.Expense, error) {
-	if err := r.expectBudget(ctx); err != nil {
+	if err := r.expectBudget(ctx, r.budgetID); err != nil {
 		return nil, err
 	}
 	result := input.ToModel(r.budgetID)
@@ -154,7 +153,7 @@ func (r *Expenses) Insert(ctx context.Context, input models.ExpenseInput) (*mode
 }
 
 func (r *Expenses) Watch(ctx context.Context) (<-chan *models.ExpenseEvent, error) {
-	if err := r.expectBudget(ctx); err != nil {
+	if err := r.expectBudget(ctx, r.budgetID); err != nil {
 		return nil, err
 	}
 	events := make(chan *models.ExpenseEvent, 1)
@@ -173,19 +172,4 @@ func (r *Expenses) notify(event *models.ExpenseEvent) {
 	for watcher := range r.watchers {
 		watcher <- event
 	}
-}
-
-func (r *Expenses) expectBudget(ctx context.Context) error {
-	budget, err := r.storage.Budgets().FindByID(ctx, r.budgetID)
-	if err != nil {
-		return err
-	}
-	if budget == nil {
-		return ErrNoBudget
-	}
-	return nil
-}
-
-func (r *Expenses) byID(id primitive.ObjectID) doc {
-	return doc{budgetID: r.budgetID, _id: id}
 }

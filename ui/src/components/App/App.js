@@ -14,6 +14,10 @@ export default function App() {
         <div className={'App-main'}>
           <Switch>
             <Route path={'/expenses'} component={ExpensesList} />
+            <Route
+              path={'/accounts'}
+              render={() => <p>Tu będzie lista kont</p>}
+            />
           </Switch>
         </div>
       </div>

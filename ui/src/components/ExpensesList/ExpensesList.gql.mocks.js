@@ -1,4 +1,4 @@
-import {DELETE_EXPENSE, EXPENSES_QUERY} from "./ExpensesList.gql";
+import { DELETE_EXPENSE, EXPENSES_QUERY } from "./ExpensesList.gql";
 
 export function mockQueryExpenses(expenses) {
   return {
@@ -17,7 +17,7 @@ export function mockExpensesEvent(event) {
   return {
     result: {
       data: {
-        expenseEvents: {...event, __typename: 'ExpenseEvent'}
+        expenseEvents: { ...event, __typename: 'ExpenseEvent' }
       }
     }
   }

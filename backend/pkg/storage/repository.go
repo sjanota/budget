@@ -11,6 +11,7 @@ import (
 type decodeFunc func(interface{}) error
 
 type repository struct {
+	storage    *Storage
 	collection *mongo.Collection
 }
 
@@ -74,4 +75,15 @@ func (r *repository) insertOne(ctx context.Context, v interface{}) (primitive.Ob
 	}
 
 	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func (r *repository) expectBudget(ctx context.Context, budgetID primitive.ObjectID) error {
+	budget, err := r.storage.Budgets().FindByID(ctx, budgetID)
+	if err != nil {
+		return err
+	}
+	if budget == nil {
+		return ErrNoBudget
+	}
+	return nil
 }
