@@ -20,7 +20,7 @@ func (r *Resolver) Account() schema.AccountResolver {
 }
 
 func (r *Resolver) Budget() schema.BudgetResolver {
-	return &BudgetResolver{r}
+	return &budgetResolver{r}
 }
 
 func (r *Resolver) Subscription() schema.SubscriptionResolver {
