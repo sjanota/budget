@@ -22,12 +22,16 @@ func (i ExpenseInput) ToModel(budgetID primitive.ObjectID) *Expense {
 	for i, entry := range i.Entries {
 		entries[i] = entry.ToModel()
 	}
+	var totalBalance MoneyAmount
+	if i.TotalBalance != nil {
+		totalBalance = *i.TotalBalance.ToModel()
+	}
 
 	return &Expense{
 		Title:        i.Title,
 		Location:     i.Location,
 		Entries:      entries,
-		TotalBalance: *i.TotalBalance.ToModel(),
+		TotalBalance: totalBalance,
 		Date:         i.Date,
 		AccountID:    i.AccountID,
 		BudgetID:     budgetID,
@@ -61,4 +65,16 @@ func (a EnvelopeInput) ToModel(budgetID primitive.ObjectID) *Envelope {
 func (a *Envelope) WithID(id primitive.ObjectID) *Envelope {
 	a.ID = id
 	return a
+}
+
+func (i CategoryInput) ToModel(budgetID primitive.ObjectID) *Category {
+	return &Category{
+		Name:     i.Name,
+		BudgetID: budgetID,
+	}
+}
+
+func (c *Category) WithID(id primitive.ObjectID) *Category {
+	c.ID = id
+	return c
 }

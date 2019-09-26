@@ -32,13 +32,21 @@ func main() {
 	}
 
 	ctx := context.Background()
-	storage.Drop(ctx)
-	storage.Init(ctx)
+	err = storage.Drop(ctx)
+	if err != nil {
+		log.Fatalf("Couldn't drop storage: %s", err)
+	}
+	err = storage.Init(ctx)
+	if err != nil {
+		log.Fatalf("Couldn't init storage: %s", err)
+	}
 
 	budget, err := storage.Budgets().Insert(ctx, "test")
 	if err != nil {
 		log.Fatalf("cannot create budget: %s", err)
 	}
+
+	log.Println("Start test")
 
 	for nOfAccounts, nOfExpenses := range accountsConfig {
 		for i := 0; i < nOfAccounts; i++ {

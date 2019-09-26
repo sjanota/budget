@@ -72,15 +72,11 @@ func (r *Envelopes) Insert(ctx context.Context, input models.EnvelopeInput) (*mo
 	if err := r.expectBudget(ctx, r.budgetID); err != nil {
 		return nil, err
 	}
-	account := &models.Envelope{
-		Name:     input.Name,
-		BudgetID: r.budgetID,
-	}
-	result, err := r.collection.InsertOne(ctx, account)
+
+	envelope := input.ToModel(r.budgetID)
+	result, err := r.collection.InsertOne(ctx, envelope)
 	if err != nil {
 		return nil, err
 	}
-
-	account.ID = result.InsertedID.(primitive.ObjectID)
-	return account, nil
+	return envelope.WithID(result.InsertedID.(primitive.ObjectID)), nil
 }
