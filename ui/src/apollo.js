@@ -15,7 +15,7 @@ export function isSubscriptionOperation({ query }) {
 }
 
 export default function createClient() {
-    const graphqlApiUrl = "localhost:8080/query";
+    const graphqlApiUrl = "192.168.0.80:8080/query";
     const httpLink = createHttpLink({ uri: `http://${graphqlApiUrl}` });
     const wsLink = new WebSocketLink({
         uri: `ws://${graphqlApiUrl}`,
