@@ -1,19 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { DELETE_EXPENSE, EXPENSES_QUERY } from './ExpensesList.gql';
-import { BudgetContext } from '../context/budget/budget';
-
-const MOCK_BUDGET_ID = 'fakebudegtid';
-
-export const MockedBudgetProvider = ({ children }) => (
-  <BudgetContext.Provider value={{ id: MOCK_BUDGET_ID }}>
-    {children}
-  </BudgetContext.Provider>
-);
-
-MockedBudgetProvider.propTypes = {
-  children: PropTypes.any,
-};
+import { DELETE_EXPENSE, EXPENSES_QUERY } from '../ExpensesList.gql';
+import { MOCK_BUDGET_ID } from '../../context/budget/budget.testing';
 
 export function mockQueryExpenses(expenses) {
   return {

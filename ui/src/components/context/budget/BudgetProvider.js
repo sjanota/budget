@@ -5,10 +5,6 @@ import PropTypes from 'prop-types';
 import { QUERY_BUDGETS, CREATE_BUDGET } from './BudgetProvider.gql';
 import { addToList } from '../../../util/immutable';
 
-function hasAnyBudget(data) {
-  return data && data.budgets && data.budgets.length !== 0;
-}
-
 export const BudgetProvider = ({ children }) => {
   const { loading, error, data } = useQuery(QUERY_BUDGETS);
   const [createBudget] = useMutation(CREATE_BUDGET, {
@@ -45,6 +41,11 @@ export const BudgetProvider = ({ children }) => {
     </BudgetContext.Provider>
   );
 };
+
 BudgetProvider.propTypes = {
   children: PropTypes.node,
 };
+
+function hasAnyBudget(data) {
+  return data && data.budgets && data.budgets.length !== 0;
+}

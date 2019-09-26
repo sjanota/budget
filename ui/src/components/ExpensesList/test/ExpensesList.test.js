@@ -7,11 +7,11 @@ import {
   mockDeleteExpense,
   mockExpensesEvent,
   mockQueryExpenses,
-  MockedBudgetProvider,
 } from './ExpensesList.test.mocks';
-import { updateComponent } from '../../testing';
-import { createMockLink } from '../../testing/apollo';
-import ExpensesList from './ExpensesList';
+import { updateComponent } from '../../../testing';
+import { createMockLink } from '../../../testing/apollo';
+import ExpensesList from '../ExpensesList';
+import { MockedBudgetProvider } from '../../context/budget/budget.testing';
 
 it('displays loading initially', async () => {
   const { link } = createMockLink([]);

@@ -4,7 +4,7 @@ import { Navigation } from '../Navigation/Navigation';
 import './App.css';
 import { Switch } from 'react-router-dom';
 import { Route } from 'react-router-dom';
-import { BudgetProvider } from '../context/budget/BudgetProvider';
+import { BudgetProvider } from '../context/budget/budget';
 
 export default function App() {
   return (
