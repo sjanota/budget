@@ -9,6 +9,7 @@ import {
 } from './EnvelopesList.gql';
 import { Envelope } from '../../model/propTypes';
 import PropTypes from 'prop-types';
+import * as MoneyAmount from '../../model/MoneyAmount';
 
 export function EnvelopesList() {
   const { id: budgetID } = useBudget();
@@ -65,6 +66,7 @@ function ListHeader() {
   return (
     <>
       <th>Nazwa</th>
+      <th>Bilans</th>
     </>
   );
 }
@@ -73,6 +75,7 @@ function ListEntry({ entry }) {
   return (
     <>
       <td>{entry.name}</td>
+      <td>{MoneyAmount.format(entry.balance)}</td>
     </>
   );
 }
@@ -94,6 +97,7 @@ function EditEntry({ entry, setEntry }) {
           onChange={event => setValue({ name: event.target.value })}
         />
       </td>
+      <td>{MoneyAmount.format(entry.balance)}</td>
     </>
   );
 }
