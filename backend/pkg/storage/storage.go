@@ -15,6 +15,7 @@ type Storage struct {
 	budgets   *budgetsRepository
 	accounts  *accountsRepository
 	envelopes *envelopesRepository
+	categories *categoriesRepository
 }
 
 func (s *Storage) Expenses(budgetID primitive.ObjectID) *Expenses {
@@ -27,6 +28,10 @@ func (s *Storage) Accounts(budgetID primitive.ObjectID) *Accounts {
 
 func (s *Storage) Envelopes(budgetID primitive.ObjectID) *Envelopes {
 	return s.envelopes.session(budgetID)
+}
+
+func (s *Storage) Categories(budgetID primitive.ObjectID) *Categories {
+	return s.categories.session(budgetID)
 }
 
 func (s *Storage) Budgets() *Budgets {
@@ -66,5 +71,6 @@ func (s *Storage) Init(ctx context.Context) error {
 	s.expenses = newExpensesRepository(s)
 	s.accounts = newAccountsRepository(s)
 	s.envelopes = newEnvelopesRepository(s)
+	s.categories = newCategoriesRepository(s)
 	return nil
 }

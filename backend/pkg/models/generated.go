@@ -22,6 +22,11 @@ type AccountTransfer struct {
 	Amount *MoneyAmount       `json:"amount"`
 }
 
+type CategoryInput struct {
+	Name       string             `json:"name"`
+	EnvelopeID primitive.ObjectID `json:"envelopeID"`
+}
+
 type EnvelopeInput struct {
 	Name string `json:"name"`
 }

@@ -26,6 +26,7 @@ type Category struct {
 	Name        string             `json:"name"`
 	Description *string            `json:"description"`
 	EnvelopeID  primitive.ObjectID
+	BudgetID    primitive.ObjectID
 }
 
 type ExpenseEntry struct {

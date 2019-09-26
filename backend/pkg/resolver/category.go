@@ -9,12 +9,5 @@ import (
 type categoryResolver struct{ *Resolver }
 
 func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error) {
-	return &models.Envelope{
-		ID:   obj.EnvelopeID,
-		Name: "123",
-	}, nil
-}
-
-func (r *categoryResolver) Expenses(ctx context.Context, obj *models.Category, since *string, until *string) ([]*models.Expense, error) {
-	panic("implement me")
+	return r.Storage.Envelopes(obj.BudgetID).FindByID(ctx, obj.EnvelopeID)
 }

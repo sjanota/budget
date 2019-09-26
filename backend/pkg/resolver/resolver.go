@@ -53,6 +53,14 @@ func (r *Resolver) Query() schema.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
+func (r *queryResolver) Category(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Category, error) {
+	return r.Storage.Categories(budgetID).FindByID(ctx, id)
+}
+
+func (r *queryResolver) Categories(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Category, error) {
+	return r.Storage.Categories(budgetID).FindAll(ctx)
+}
+
 func (r *queryResolver) Envelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Envelope, error) {
 	return r.Storage.Envelopes(budgetID).FindByID(ctx, id)
 }
@@ -86,6 +94,14 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 }
 
 type mutationResolver struct{ *Resolver }
+
+func (r *mutationResolver) CreateCategory(ctx context.Context, budgetID primitive.ObjectID, input models.CategoryInput) (*models.Category, error) {
+	return r.Storage.Categories(budgetID).Insert(ctx, input)
+}
+
+func (r *mutationResolver) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, input models.CategoryInput) (*models.Category, error) {
+	return r.Storage.Categories(budgetID).ReplaceByID(ctx, id, input)
+}
 
 func (r *mutationResolver) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input models.EnvelopeInput) (*models.Envelope, error) {
 	return r.Storage.Envelopes(budgetID).Insert(ctx, input)

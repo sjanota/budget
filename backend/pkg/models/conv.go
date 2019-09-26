@@ -62,3 +62,15 @@ func (a *Envelope) WithID(id primitive.ObjectID) *Envelope {
 	a.ID = id
 	return a
 }
+
+func (i CategoryInput) ToModel(budgetID primitive.ObjectID) *Category {
+	return &Category{
+		Name:     i.Name,
+		BudgetID: budgetID,
+	}
+}
+
+func (c *Category) WithID(id primitive.ObjectID) *Category {
+	c.ID = id
+	return c
+}
