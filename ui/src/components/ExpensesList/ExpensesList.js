@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import {
   CREATE_EXPENSE,
@@ -7,23 +7,18 @@ import {
   EXPENSES_QUERY,
   UPDATE_EXPENSE,
 } from './ExpensesList.gql';
-import Table from 'react-bootstrap/Table';
 import {
   addToList,
-  removeFromList,
   removeFromListByID,
   replaceOnListByID,
 } from '../../util/immutable';
-import { cloneDeep } from 'apollo-utilities';
 import './ExpensesList.css';
 import { DeleteButton } from '../common/DeleteButton';
-import { EditButton } from '../common/EditButton';
-import { CreateButton } from '../common/CreateButton';
-import { CancelButton } from '../common/CancelButton';
-import { SubmitButton } from '../common/SubmitButton';
 import PropTypes from 'prop-types';
 import { Expense } from './ExpensesList.types';
 import { useBudget } from '../context/budget/budget';
+import List from '../List/List';
+import * as MoneyAmount from '../../model/MoneyAmount';
 
 function handleExpenseEvent(prev, { subscriptionData }) {
   const event = subscriptionData.data.expenseEvent;
@@ -42,6 +37,20 @@ function handleExpenseEvent(prev, { subscriptionData }) {
   }
 }
 
+function prepareInput({ title, date, totalBalance, location, account }) {
+  return {
+    title,
+    date,
+    totalBalance: {
+      integer: totalBalance.integer,
+      decimal: totalBalance.decimal,
+    },
+    location,
+    accountID: account ? account.ID : null,
+    entries: [],
+  };
+}
+
 function DeleteExpenseButton({ expense }) {
   const { id: budgetID } = useBudget();
   const [deleteExpense] = useMutation(DELETE_EXPENSE, {
@@ -58,158 +67,81 @@ DeleteExpenseButton.propTypes = {
   expense: Expense,
 };
 
-function ListHeader({ onCreate }) {
+function ListHeader() {
   return (
-    <thead className={'thead-dark'}>
-      <tr>
-        <th>Tytuł</th>
-        <th>Data</th>
-        <th>Suma</th>
-        <th>Miejsce</th>
-        <th>Konto</th>
-        <th>
-          Actions
-          <CreateButton onClick={onCreate} />
-        </th>
-      </tr>
-    </thead>
+    <>
+      <th>Tytuł</th>
+      <th>Data</th>
+      <th>Suma</th>
+      <th>Miejsce</th>
+      <th>Konto</th>
+    </>
   );
 }
 
-ListHeader.propTypes = {
-  onCreate: PropTypes.func,
-};
+ListHeader.propTypes = {};
 
-function ListEntry({ expense, onEdit }) {
+function ListEntry({ entry }) {
   return (
-    <tr>
-      <td>{expense.title}</td>
-      <td>{expense.date}</td>
-      <td>
-        {expense.totalBalance.integer}.{expense.totalBalance.decimal}
-      </td>
-      <td>{expense.location}</td>
-      <td>{expense.account && expense.account.name}</td>
-      <td>
-        <DeleteExpenseButton expense={expense} />
-        <EditButton onClick={onEdit} />
-      </td>
-    </tr>
+    <>
+      <td>{entry.title}</td>
+      <td>{entry.date}</td>
+      <td>{MoneyAmount.format(entry.totalBalance)}</td>
+      <td>{entry.location}</td>
+      <td>{entry.account && entry.account.name}</td>
+    </>
   );
 }
 
 ListEntry.propTypes = {
-  expense: Expense,
-  onEdit: PropTypes.func,
+  entry: Expense.isRequired,
 };
 
-function EditEntry({ init, onCancel, onSubmit }) {
-  const [title, setTitle] = useState(init ? init.title : '');
-  const [date, setDate] = useState(init ? init.date : '');
-  const [totalBalance, setTotalBalance] = useState(
-    init ? `${init.totalBalance.integer}.${init.totalBalance.decimal}` : ''
-  );
-  const [location, setLocation] = useState(init ? init.location : '');
-
-  function onChangeCallback(callback, modify = x => x) {
-    return event => callback(modify(event.target.value));
-  }
-
-  function validateInput() {
-    const [integer, decimal] = Number(totalBalance)
-      .toFixed(2)
-      .split('.');
-    return {
-      title,
-      date,
-      totalBalance: { integer, decimal },
-      location,
-      entries: [],
-    };
+function EditEntry({ entry, setEntry }) {
+  function setValue(value) {
+    return setEntry(e => ({ ...e, ...value }));
   }
 
   return (
-    <tr>
+    <>
       <td>
         <input
-          value={title}
-          onChange={onChangeCallback(setTitle)}
+          value={entry.title}
+          onChange={event => setValue({ title: event.target.value })}
           type={'text'}
         />
       </td>
       <td>
         <input
-          value={date}
-          onChange={onChangeCallback(setDate)}
+          value={entry.date || ''}
+          onChange={event => setValue({ date: event.target.value })}
           type={'date'}
         />
       </td>
       <td>
         <input
-          value={totalBalance}
-          onChange={onChangeCallback(setTotalBalance)}
+          value={MoneyAmount.format(entry.totalBalance)}
+          onChange={event =>
+            setValue({ totalBalance: MoneyAmount.parse(event.target.value) })
+          }
           type={'number'}
         />
       </td>
       <td>
         <input
-          value={location}
-          onChange={onChangeCallback(setLocation)}
+          value={entry.location || ''}
+          onChange={event => setValue({ location: event.target.value })}
           type={'text'}
         />
       </td>
       <td />
-      <td>
-        <CancelButton onClick={onCancel} />
-        <SubmitButton
-          onClick={() => {
-            onSubmit(validateInput());
-            onCancel();
-          }}
-        />
-      </td>
-    </tr>
+    </>
   );
 }
 
 EditEntry.propTypes = {
-  init: Expense,
-  onCancel: PropTypes.func,
-  onSubmit: PropTypes.func,
-};
-
-function CreateExpenseEntry({ onCancel }) {
-  const { id: budgetID } = useBudget();
-  const [createExpense] = useMutation(CREATE_EXPENSE);
-  return (
-    <EditEntry
-      onCancel={onCancel}
-      onSubmit={input => createExpense({ variables: { input, budgetID } })}
-    />
-  );
-}
-
-CreateExpenseEntry.propTypes = {
-  onCancel: PropTypes.func,
-};
-
-function UpdateExpenseEntry({ expense, onCancel }) {
-  const { id: budgetID } = useBudget();
-  const [updateExpense] = useMutation(UPDATE_EXPENSE);
-  return (
-    <EditEntry
-      init={expense}
-      onCancel={onCancel}
-      onSubmit={input =>
-        updateExpense({ variables: { id: expense.id, input, budgetID } })
-      }
-    />
-  );
-}
-
-UpdateExpenseEntry.propTypes = {
-  expense: Expense,
-  onCancel: PropTypes.func,
+  entry: Expense.isRequired,
+  setEntry: PropTypes.func.isRequired,
 };
 
 export default function ExpensesList() {
@@ -217,8 +149,9 @@ export default function ExpensesList() {
   const { loading, error, data, subscribeToMore } = useQuery(EXPENSES_QUERY, {
     variables: { budgetID },
   });
-  const [isCreating, setIsCreating] = useState(false);
-  const [editing, setEditing] = useState([]);
+  const [deleteExpense] = useMutation(DELETE_EXPENSE);
+  const [updateExpense] = useMutation(UPDATE_EXPENSE);
+  const [createExpense] = useMutation(CREATE_EXPENSE);
 
   useEffect(() => {
     if (loading) return;
@@ -238,33 +171,27 @@ export default function ExpensesList() {
 
   return (
     <div className={'ExpensesList'}>
-      <Table striped bordered hover size={'sm'}>
-        <ListHeader onCreate={() => setIsCreating(true)} />
-        <tbody>
-          {isCreating && (
-            <CreateExpenseEntry onCancel={() => setIsCreating(false)} />
-          )}
-          {data.expenses.map(expense =>
-            editing.some(id => id === expense.id) ? (
-              <UpdateExpenseEntry
-                key={expense.id}
-                expense={cloneDeep(expense)}
-                onCancel={() =>
-                  setEditing(editing => removeFromList(editing, expense.id))
-                }
-              />
-            ) : (
-              <ListEntry
-                key={expense.id}
-                expense={expense}
-                onEdit={() =>
-                  setEditing(editing => addToList(editing, expense.id))
-                }
-              />
-            )
-          )}
-        </tbody>
-      </Table>
+      <List
+        entries={data.expenses}
+        onCreate={input =>
+          createExpense({ variables: { budgetID, input: prepareInput(input) } })
+        }
+        onDelete={id => deleteExpense({ variables: { budgetID, id } })}
+        onUpdate={(id, input) =>
+          updateExpense({
+            variables: { budgetID, id, input: prepareInput(input) },
+          })
+        }
+        renderHeader={props => <ListHeader {...props} />}
+        renderEntry={props => <ListEntry {...props} />}
+        renderEditEntry={props => <EditEntry {...props} />}
+        emptyValue={{
+          totalBalance: { integer: 0, decimal: 0 },
+          title: '',
+          location: '',
+          date: '',
+        }}
+      />
     </div>
   );
 }
