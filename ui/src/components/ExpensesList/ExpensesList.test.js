@@ -1,33 +1,43 @@
 import { mount } from 'enzyme';
 import React from 'react';
-import { MockedProvider } from "@apollo/react-testing";
-import { expense1, expense2, mockDeleteExpense, mockExpensesEvent, mockQueryExpenses } from "./ExpensesList.gql.mocks";
-import { updateComponent } from "../../testing";
-import { createMockLink } from "../../testing/apollo";
-import ExpensesList from "./ExpensesList";
-
+import { MockedProvider } from '@apollo/react-testing';
+import {
+  expense1,
+  expense2,
+  mockDeleteExpense,
+  mockExpensesEvent,
+  mockQueryExpenses,
+  MockedBudgetProvider,
+} from './ExpensesList.gql.mocks';
+import { updateComponent } from '../../testing';
+import { createMockLink } from '../../testing/apollo';
+import ExpensesList from './ExpensesList';
 
 it('displays loading initially', async () => {
   const { link } = createMockLink([]);
   console.error = jest.fn();
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
 
   expect(component.find('tbody tr')).toHaveLength(0);
   expect(component.find('p')).toExist();
-  expect(component.find('p')).toHaveText("Loading...");
+  expect(component.find('p')).toHaveText('Loading...');
 });
 
 it('displays error if occurs', async () => {
   const { link } = createMockLink([]);
   console.error = jest.fn();
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
   await updateComponent(component);
 
@@ -38,13 +48,13 @@ it('displays error if occurs', async () => {
 });
 
 it('displays queried data', async () => {
-  const { link } = createMockLink([
-    mockQueryExpenses([expense1]),
-  ]);
+  const { link } = createMockLink([mockQueryExpenses([expense1])]);
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
   await updateComponent(component);
 
@@ -52,13 +62,13 @@ it('displays queried data', async () => {
 });
 
 it('updates list on CREATED', async () => {
-  const { link, sendEvent } = createMockLink([
-    mockQueryExpenses([expense1]),
-  ]);
+  const { link, sendEvent } = createMockLink([mockQueryExpenses([expense1])]);
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
   await updateComponent(component);
   sendEvent(mockExpensesEvent({ type: 'CREATED', expense: expense2 }));
@@ -69,14 +79,13 @@ it('updates list on CREATED', async () => {
 
 it('triggers deleteExpense mutation', async () => {
   const deleteMock = mockDeleteExpense(expense1.id);
-  const { link } = createMockLink([
-    mockQueryExpenses([expense1]),
-    deleteMock
-  ]);
+  const { link } = createMockLink([mockQueryExpenses([expense1]), deleteMock]);
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
   await updateComponent(component);
 
@@ -93,9 +102,11 @@ it('updates list on DELETED', async () => {
     mockQueryExpenses([expense1, expense2]),
   ]);
   const component = mount(
-    <MockedProvider link={link}>
-      <ExpensesList />
-    </MockedProvider>
+    <MockedBudgetProvider>
+      <MockedProvider link={link}>
+        <ExpensesList />
+      </MockedProvider>
+    </MockedBudgetProvider>
   );
   await updateComponent(component);
   sendEvent(mockExpensesEvent({ type: 'DELETED', expense: expense2 }));
@@ -103,4 +114,3 @@ it('updates list on DELETED', async () => {
 
   expect(component.find('tbody tr')).toHaveLength(1);
 });
-
