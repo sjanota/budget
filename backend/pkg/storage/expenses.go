@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,6 +46,61 @@ func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primiti
 				},
 				"decimal": doc{
 					"$sum": "$totalbalance.decimal",
+				},
+			},
+		},
+		{
+			"$project": doc{
+				"_id": 0,
+				"integer": doc{
+					"$sum": list{
+						"$integer",
+						doc{
+							"$floor": doc{
+								"$divide": list{"$decimal", 100},
+							},
+						},
+					},
+				},
+				"decimal": doc{
+					"$mod": list{"$decimal", 100},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !cursor.Next(ctx) {
+		return &models.MoneyAmount{}, nil
+	}
+
+	result := &models.MoneyAmount{}
+	err = cursor.Decode(result)
+	return result, err
+}
+
+func (r *Expenses) TotalBalanceForEnvelope(ctx context.Context, accountID primitive.ObjectID) (*models.MoneyAmount, error) {
+	cursor, err := r.collection.Aggregate(ctx, []doc{
+		{"$match": doc{"budgetid": r.budgetID}},
+		{"$unwind": "$entries"},
+		{
+			"$lookup": doc{
+				"from": "categories",
+				"localField": "entries.categoryid",
+				"foreignField": "_id",
+				"as": "category",
+			},
+		},
+		{"$unwind": "$category"},
+		{
+			"$group": doc{
+				"_id": nil,
+				"integer": doc{
+					"$sum": "$entries.balance.integer",
+				},
+				"decimal": doc{
+					"$sum": "$entries.balance.decimal",
 				},
 			},
 		},

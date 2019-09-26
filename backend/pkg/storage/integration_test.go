@@ -89,7 +89,7 @@ func withDockerMongo(test func()) {
 }
 
 func testRunMongoContainer() (string, error) {
-	cmd := exec.Command("docker", "create", "--expose=27017", "-P", "--name="+containerName, "mongo:4.1")
+	cmd := exec.Command("docker", "create", "--expose=27017", "-P", "--name="+containerName, "mongo:3.6")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("cannot create mongo container: %s", out)

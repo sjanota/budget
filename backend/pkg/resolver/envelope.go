@@ -10,6 +10,6 @@ type envelopeResolver struct {
 	*Resolver
 }
 
-func (e envelopeResolver) Balance(ctx context.Context, obj *models.Envelope) (*models.MoneyAmount, error) {
-	panic("implement me")
+func (r *envelopeResolver) Balance(ctx context.Context, obj *models.Envelope) (*models.MoneyAmount, error) {
+	return r.Storage.Expenses(obj.BudgetID).TotalBalanceForEnvelope(ctx, obj.ID)
 }

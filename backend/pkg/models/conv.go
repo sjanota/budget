@@ -22,12 +22,16 @@ func (i ExpenseInput) ToModel(budgetID primitive.ObjectID) *Expense {
 	for i, entry := range i.Entries {
 		entries[i] = entry.ToModel()
 	}
+	var totalBalance MoneyAmount
+	if i.TotalBalance != nil {
+		totalBalance = *i.TotalBalance.ToModel()
+	}
 
 	return &Expense{
 		Title:        i.Title,
 		Location:     i.Location,
 		Entries:      entries,
-		TotalBalance: *i.TotalBalance.ToModel(),
+		TotalBalance: totalBalance,
 		Date:         i.Date,
 		AccountID:    i.AccountID,
 		BudgetID:     budgetID,

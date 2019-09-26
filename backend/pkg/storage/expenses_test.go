@@ -181,6 +181,58 @@ func TestExpenses_TotalBalanceForAccount(t *testing.T) {
 	assert.Equal(t, 10, balance.Decimal)
 }
 
+func TestExpenses_TotalBalanceForEnvelope(t *testing.T) {
+	ctx, budget, after := beforeWithBudget(t)
+	defer after()
+
+	envelopeIn := models.EnvelopeInput{Name: "food"}
+	envelope, err := testStorage.Envelopes(budget.ID).Insert(ctx, envelopeIn)
+	require.NoError(t, err)
+
+	categoryIn := models.CategoryInput{
+		Name:       "lunch",
+		EnvelopeID: envelope.ID,
+	}
+	category, err := testStorage.Categories(budget.ID).Insert(ctx, categoryIn)
+	require.NoError(t, err)
+
+	_, err = testStorage.Expenses(budget.ID).Insert(ctx, models.ExpenseInput{
+		Title:        "burger",
+		Entries:      []*models.ExpenseEntryInput{
+			{
+				CategoryID: category.ID,
+				Balance:    &models.MoneyAmountInput{10,60},
+			},
+			{
+				CategoryID: primitive.NewObjectID(),
+				Balance:    &models.MoneyAmountInput{10,10},
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	_, err = testStorage.Expenses(budget.ID).Insert(ctx, models.ExpenseInput{
+		Title:        "lasagne",
+		Entries:      []*models.ExpenseEntryInput{
+			{
+				CategoryID: category.ID,
+				Balance:    &models.MoneyAmountInput{10,60},
+			},
+			{
+				CategoryID: primitive.NewObjectID(),
+				Balance:    &models.MoneyAmountInput{10,10},
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	balance, err := testStorage.Expenses(budget.ID).TotalBalanceForEnvelope(ctx, envelope.ID)
+	require.NoError(t, err)
+	require.NotNil(t, balance)
+	assert.Equal(t, 21, balance.Integer)
+	assert.Equal(t, 20, balance.Decimal)
+}
+
 func TestExpenses_TotalBalanceForAccount_NotFound(t *testing.T) {
 	ctx, budget, after := beforeWithBudget(t)
 	defer after()
