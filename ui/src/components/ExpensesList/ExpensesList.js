@@ -18,6 +18,7 @@ import PropTypes from 'prop-types';
 import { Expense } from './ExpensesList.types';
 import { useBudget } from '../context/budget/budget';
 import List from '../List/List';
+import * as MoneyAmount from '../../model/MoneyAmount';
 
 function handleExpenseEvent(prev, { subscriptionData }) {
   const event = subscriptionData.data.expenseEvent;
@@ -48,17 +49,6 @@ function prepareInput({ title, date, totalBalance, location, account }) {
     accountID: account ? account.ID : null,
     entries: [],
   };
-}
-
-function parseMoneyAmount(input) {
-  const [integer, decimal] = Number(input.totalBalance)
-    .toFixed(2)
-    .split('.');
-  return { integer, decimal };
-}
-
-function formatMoneyAmount(ma) {
-  return `${ma.integer}.${ma.decimal}`;
 }
 
 function DeleteExpenseButton({ expense }) {
@@ -96,7 +86,7 @@ function ListEntry({ entry }) {
     <>
       <td>{entry.title}</td>
       <td>{entry.date}</td>
-      <td>{formatMoneyAmount(entry.totalBalance)}</td>
+      <td>{MoneyAmount.format(entry.totalBalance)}</td>
       <td>{entry.location}</td>
       <td>{entry.account && entry.account.name}</td>
     </>
@@ -130,9 +120,9 @@ function EditEntry({ entry, setEntry }) {
       </td>
       <td>
         <input
-          value={formatMoneyAmount(entry.totalBalance)}
+          value={MoneyAmount.format(entry.totalBalance)}
           onChange={event =>
-            setValue({ totalBalance: parseMoneyAmount(event.target.value) })
+            setValue({ totalBalance: MoneyAmount.parse(event.target.value) })
           }
           type={'number'}
         />
