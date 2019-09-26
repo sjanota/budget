@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DeleteButton } from '../common/DeleteButton';
-import { EditButton } from '../common/EditButton';
+import { DeleteButton } from '../DeleteButton';
+import { EditButton } from '../EditButton';
 
 export function ListEntry({ entry, onEdit, onDelete, renderEntry }) {
   return (
     <tr>
       {renderEntry({ entry })}
       <td>
-        <DeleteButton onClick={() => onDelete(entry.id)} />
+        {onDelete && <DeleteButton onClick={() => onDelete(entry.id)} />}
         <EditButton onClick={onEdit} />
       </td>
     </tr>
@@ -16,7 +16,7 @@ export function ListEntry({ entry, onEdit, onDelete, renderEntry }) {
 }
 
 ListEntry.propTypes = {
-  onDelete: PropTypes.func.isRequired,
+  onDelete: PropTypes.func,
   onEdit: PropTypes.func.isRequired,
   renderEntry: PropTypes.func.isRequired,
   entry: PropTypes.any.isRequired,

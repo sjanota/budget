@@ -18,3 +18,8 @@ export const Expense = PropTypes.shape({
   location: PropTypes.string,
   account: Account,
 });
+
+export const Envelope = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+});

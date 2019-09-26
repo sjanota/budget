@@ -14,7 +14,7 @@ import {
 } from '../../util/immutable';
 import './ExpensesList.css';
 import { useBudget } from '../context/budget/budget';
-import List from '../List/List';
+import List from '../common/List/List';
 import { EditEntry } from './EditEntry';
 import { ListEntry } from './ListEntry';
 import { ListHeader } from './ListHeader';
