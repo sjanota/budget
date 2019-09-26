@@ -8,7 +8,7 @@ import {
   mockExpensesEvent,
   mockQueryExpenses,
   MockedBudgetProvider,
-} from './ExpensesList.gql.mocks';
+} from './ExpensesList.test.mocks';
 import { updateComponent } from '../../testing';
 import { createMockLink } from '../../testing/apollo';
 import ExpensesList from './ExpensesList';
@@ -44,62 +44,14 @@ it('displays error if occurs', async () => {
   expect(console.error).toHaveBeenCalled();
   expect(component.find('tbody tr')).toHaveLength(0);
   expect(component.find('p')).toExist();
-  expect(component.find('p').text).toMatchSnapshot();
+  expect(component.find('p')).toHaveText('Error :(');
 });
 
-it('displays queried data', async () => {
-  const { link } = createMockLink([mockQueryExpenses([expense1])]);
-  const component = mount(
-    <MockedBudgetProvider>
-      <MockedProvider link={link}>
-        <ExpensesList />
-      </MockedProvider>
-    </MockedBudgetProvider>
-  );
-  await updateComponent(component);
-
-  expect(component.find('tbody tr')).toHaveLength(1);
-});
-
-it('updates list on CREATED', async () => {
-  const { link, sendEvent } = createMockLink([mockQueryExpenses([expense1])]);
-  const component = mount(
-    <MockedBudgetProvider>
-      <MockedProvider link={link}>
-        <ExpensesList />
-      </MockedProvider>
-    </MockedBudgetProvider>
-  );
-  await updateComponent(component);
-  sendEvent(mockExpensesEvent({ type: 'CREATED', expense: expense2 }));
-  await updateComponent(component);
-
-  expect(component.find('tbody tr')).toHaveLength(2);
-});
-
-it('triggers deleteExpense mutation', async () => {
+describe('When data is loaded', () => {
   const deleteMock = mockDeleteExpense(expense1.id);
-  const { link } = createMockLink([mockQueryExpenses([expense1]), deleteMock]);
-  const component = mount(
-    <MockedBudgetProvider>
-      <MockedProvider link={link}>
-        <ExpensesList />
-      </MockedProvider>
-    </MockedBudgetProvider>
-  );
-  await updateComponent(component);
-
-  const deleteButton = component.find('button[data-action="delete"]');
-  expect(deleteButton).toExist();
-
-  deleteButton.simulate('click');
-  await updateComponent(component);
-  expect(deleteMock.result).toHaveBeenCalled();
-});
-
-it('updates list on DELETED', async () => {
   const { link, sendEvent } = createMockLink([
-    mockQueryExpenses([expense1, expense2]),
+    mockQueryExpenses([expense1]),
+    deleteMock,
   ]);
   const component = mount(
     <MockedBudgetProvider>
@@ -108,9 +60,32 @@ it('updates list on DELETED', async () => {
       </MockedProvider>
     </MockedBudgetProvider>
   );
-  await updateComponent(component);
-  sendEvent(mockExpensesEvent({ type: 'DELETED', expense: expense2 }));
-  await updateComponent(component);
 
-  expect(component.find('tbody tr')).toHaveLength(1);
+  it('displays queried data', async () => {
+    await updateComponent(component);
+    expect(component.find('tbody tr')).toHaveLength(1);
+  });
+
+  it('updates list on CREATED', async () => {
+    sendEvent(mockExpensesEvent({ type: 'CREATED', expense: expense2 }));
+    await updateComponent(component);
+
+    expect(component.find('tbody tr')).toHaveLength(2);
+  });
+
+  it('updates list on DELETED', async () => {
+    sendEvent(mockExpensesEvent({ type: 'DELETED', expense: expense2 }));
+    await updateComponent(component);
+
+    expect(component.find('tbody tr')).toHaveLength(1);
+  });
+
+  it('triggers deleteExpense mutation', async () => {
+    const deleteButton = component.first().find('button[data-action="delete"]');
+    expect(deleteButton).toExist();
+
+    deleteButton.simulate('click');
+    await updateComponent(component);
+    expect(deleteMock.result).toHaveBeenCalled();
+  });
 });
