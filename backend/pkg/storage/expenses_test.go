@@ -189,18 +189,36 @@ func TestExpenses_TotalBalanceForEnvelope(t *testing.T) {
 	envelope, err := testStorage.Envelopes(budget.ID).Insert(ctx, envelopeIn)
 	require.NoError(t, err)
 
-	categoryIn := models.CategoryInput{
+	envelopeInOther := models.EnvelopeInput{Name: "travels"}
+	envelopeOther, err := testStorage.Envelopes(budget.ID).Insert(ctx, envelopeInOther)
+	require.NoError(t, err)
+
+	categoryIn1 := models.CategoryInput{
 		Name:       "lunch",
 		EnvelopeID: envelope.ID,
 	}
-	category, err := testStorage.Categories(budget.ID).Insert(ctx, categoryIn)
+	category1, err := testStorage.Categories(budget.ID).Insert(ctx, categoryIn1)
 	require.NoError(t, err)
+	categoryIn2 := models.CategoryInput{
+		Name:       "restaurants",
+		EnvelopeID: envelope.ID,
+	}
+	category2, err := testStorage.Categories(budget.ID).Insert(ctx, categoryIn2)
+	require.NoError(t, err)
+
+	categoryInOther := models.CategoryInput{
+		Name:       "airplanes",
+		EnvelopeID: envelopeOther.ID,
+	}
+	categoryOther, err := testStorage.Categories(budget.ID).Insert(ctx, categoryInOther)
+	require.NoError(t, err)
+
 
 	_, err = testStorage.Expenses(budget.ID).Insert(ctx, models.ExpenseInput{
 		Title:        "burger",
 		Entries:      []*models.ExpenseEntryInput{
 			{
-				CategoryID: category.ID,
+				CategoryID: category1.ID,
 				Balance:    &models.MoneyAmountInput{10,60},
 			},
 			{
@@ -215,7 +233,22 @@ func TestExpenses_TotalBalanceForEnvelope(t *testing.T) {
 		Title:        "lasagne",
 		Entries:      []*models.ExpenseEntryInput{
 			{
-				CategoryID: category.ID,
+				CategoryID: category2.ID,
+				Balance:    &models.MoneyAmountInput{10,60},
+			},
+			{
+				CategoryID: primitive.NewObjectID(),
+				Balance:    &models.MoneyAmountInput{10,10},
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	_, err = testStorage.Expenses(budget.ID).Insert(ctx, models.ExpenseInput{
+		Title:        "Flight to Canada",
+		Entries:      []*models.ExpenseEntryInput{
+			{
+				CategoryID: categoryOther.ID,
 				Balance:    &models.MoneyAmountInput{10,60},
 			},
 			{

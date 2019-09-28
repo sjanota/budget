@@ -80,7 +80,7 @@ func (r *Expenses) TotalBalanceForAccount(ctx context.Context, accountID primiti
 	return result, err
 }
 
-func (r *Expenses) TotalBalanceForEnvelope(ctx context.Context, accountID primitive.ObjectID) (*models.MoneyAmount, error) {
+func (r *Expenses) TotalBalanceForEnvelope(ctx context.Context, envelopeID primitive.ObjectID) (*models.MoneyAmount, error) {
 	cursor, err := r.collection.Aggregate(ctx, []doc{
 		{"$match": doc{"budgetid": r.budgetID}},
 		{"$unwind": "$entries"},
@@ -93,6 +93,7 @@ func (r *Expenses) TotalBalanceForEnvelope(ctx context.Context, accountID primit
 			},
 		},
 		{"$unwind": "$category"},
+		{"$match": doc{"category.envelopeid": envelopeID}},
 		{
 			"$group": doc{
 				"_id": nil,
