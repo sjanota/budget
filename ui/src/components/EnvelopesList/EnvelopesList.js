@@ -42,7 +42,7 @@ export function EnvelopesList() {
   return (
     <div>
       <List
-        emptyValue={{ name: '' }}
+        emptyValue={{ name: '', balance: MoneyAmount.zero() }}
         entries={data.envelopes}
         onCreate={input =>
           createEnvelope({

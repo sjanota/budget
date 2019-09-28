@@ -8,3 +8,7 @@ export function parse(string) {
 export function format(moneyAmount) {
   return `${moneyAmount.integer}.${moneyAmount.decimal}`;
 }
+
+export function zero() {
+  return { integer: 0, decimal: 0 };
+}
