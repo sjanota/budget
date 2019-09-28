@@ -9,7 +9,7 @@ import {
 } from './CategoriesList.gql';
 import { Category } from '../../model/propTypes';
 import PropTypes from 'prop-types';
-import * as MoneyAmount from '../../model/MoneyAmount';
+import { QUERY_ENVELOPES } from '../EnvelopesList/EnvelopesList.gql';
 
 export function CategoriesList() {
   const { id: budgetID } = useBudget();
@@ -85,6 +85,17 @@ ListEntry.propTypes = {
 };
 
 function EditEntry({ entry, setEntry }) {
+  const { id: budgetID } = useBudget();
+  const { loading, error, data } = useQuery(QUERY_ENVELOPES, {
+    variables: { budgetID },
+  });
+
+  if (loading) return <p>Loading...</p>;
+  if (error) {
+    console.error(error);
+    return <p>Error :(</p>;
+  }
+
   function setValue(value) {
     return setEntry(e => ({ ...e, ...value }));
   }
@@ -97,19 +108,41 @@ function EditEntry({ entry, setEntry }) {
           onChange={event => setValue({ name: event.target.value })}
         />
       </td>
-      <td>{MoneyAmount.format(entry.balance)}</td>
+      <td>
+        <select
+          value={entry.envelopeID || (entry.envelope && entry.envelope.id)}
+          onChange={event =>
+            setValue({
+              envelopeID: event.target.value,
+            })
+          }
+        >
+          <option></option>
+          {data.envelopes.map(envelope => (
+            <option key={envelope.id} value={envelope.id}>
+              {envelope.name}
+            </option>
+          ))}
+        </select>
+      </td>
     </>
   );
 }
 
 EditEntry.propTypes = {
-  entry: Category.isRequired,
+  entry: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    envelopeID: PropTypes.any,
+    envelope: PropTypes.shape({
+      id: PropTypes.any,
+    }),
+  }).isRequired,
   setEntry: PropTypes.func.isRequired,
 };
 
 function prepareInput(input) {
   return {
     name: input.name,
-    accountID: input.account.id,
+    envelopeID: input.envelopeID || input.envelope.id,
   };
 }

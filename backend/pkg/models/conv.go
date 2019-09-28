@@ -71,6 +71,7 @@ func (i CategoryInput) ToModel(budgetID primitive.ObjectID) *Category {
 	return &Category{
 		Name:     i.Name,
 		BudgetID: budgetID,
+		EnvelopeID: i.EnvelopeID,
 	}
 }
 
