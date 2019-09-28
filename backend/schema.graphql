@@ -4,6 +4,10 @@ type MoneyAmount {
   integer: Int!
   decimal: Int!
 }
+input MoneyAmountInput {
+  integer: Int!
+  decimal: Int!
+}
 
 type Expense {
   id: ID!
@@ -14,18 +18,34 @@ type Expense {
   date: Date
   account: Account
 }
+input ExpenseInput {
+  title: String!
+  location: String
+  entries: [ExpenseEntryInput!]!
+  totalBalance: MoneyAmountInput!
+  date: Date
+  accountID: ID
+}
 
 type ExpenseEntry {
   title: String!
   category: Category!
   balance: MoneyAmount!
 }
+input ExpenseEntryInput {
+  title: String!
+  categoryID: ID!
+  balance: MoneyAmountInput!
+}
 
 type Category {
   id: ID!
   name: String!
-  description: String
   envelope: Envelope!
+}
+input CategoryInput {
+  name: String!
+  envelopeID: ID!
 }
 
 type Account {
@@ -33,11 +53,17 @@ type Account {
   name: String!
   balance: MoneyAmount!
 }
+input AccountInput {
+  name: String!
+}
 
 type Envelope {
   id: ID!
   name: String!
   balance: MoneyAmount!
+}
+input EnvelopeInput {
+  name: String!
 }
 
 type AccountTransfer {
@@ -77,39 +103,6 @@ type Query {
 
   category(budgetID: ID!, id: ID!): Category
   categories(budgetID: ID!): [Category!]!
-}
-
-input ExpenseInput {
-  title: String!
-  location: String
-  entries: [ExpenseEntryInput!]!
-  totalBalance: MoneyAmountInput!
-  date: Date
-  accountID: ID
-}
-
-input ExpenseEntryInput {
-  title: String!
-  categoryID: ID!
-  balance: MoneyAmountInput!
-}
-
-input MoneyAmountInput {
-  integer: Int!
-  decimal: Int!
-}
-
-input AccountInput {
-  name: String!
-}
-
-input EnvelopeInput {
-  name: String!
-}
-
-input CategoryInput {
-  name: String!
-  envelopeID: ID!
 }
 
 type Mutation {
