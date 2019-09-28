@@ -23,3 +23,9 @@ export const Envelope = PropTypes.shape({
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
 });
+
+export const Category = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  envelope: Envelope,
+});
