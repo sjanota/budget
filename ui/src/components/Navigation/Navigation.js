@@ -25,7 +25,6 @@ export const Navigation = () => {
       <Link to={'/expenses'} label={'Expenses'} />
       <Link to={'/accounts'} label={'Accounts'} />
       <Link to={'/envelopes'} label={'Envelopes'} />
-      <Link to={'/categories'} label={'Categories'} />
     </Nav>
   );
 };
