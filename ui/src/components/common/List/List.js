@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Table } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { cloneDeep } from 'apollo-utilities';
-import { removeFromList, addToList } from '../../util/immutable';
+import { removeFromList, addToList } from '../../../util/immutable';
 import { ListHeader } from './ListHeader';
 import { EditEntry } from './EditEntry';
 import { ListEntry } from './ListEntry';
@@ -69,7 +69,7 @@ List.propTypes = {
   emptyValue: PropTypes.any.isRequired,
   entries: PropTypes.array.isRequired,
   onCreate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  onDelete: PropTypes.func,
   onUpdate: PropTypes.func.isRequired,
   renderEditEntry: PropTypes.func.isRequired,
   renderEntry: PropTypes.func.isRequired,

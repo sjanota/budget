@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { CancelButton } from '../common/CancelButton';
-import { SubmitButton } from '../common/SubmitButton';
+import { CancelButton } from '../CancelButton';
+import { SubmitButton } from '../SubmitButton';
 
 export function EditEntry({ init, onCancel, onSubmit, renderEditEntry }) {
   const [entry, setEntry] = useState(init);

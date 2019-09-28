@@ -61,7 +61,7 @@ func (r *Envelopes) FindByID(ctx context.Context, id primitive.ObjectID) (*model
 func (r *Envelopes) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.EnvelopeInput) (*models.Envelope, error) {
 	result := &models.Envelope{}
 	replacement := input.ToModel(r.budgetID)
-	err := r.replaceOne(ctx, doc{budgetID: r.budgetID}, replacement, result)
+	err := r.replaceOne(ctx, doc{budgetID: r.budgetID, _id: id}, replacement, result)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}

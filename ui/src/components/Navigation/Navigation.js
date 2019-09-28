@@ -22,10 +22,9 @@ Link.propTypes = {
 export const Navigation = () => {
   return (
     <Nav className="flex-column Navigation" variant="pills">
-      <Link to={'/expenses'} label={'Expenses'} />
-      <Link to={'/accounts'} label={'Accounts'} />
-      <Link to={'/envelopes'} label={'Envelopes'} />
-      <Link to={'/categories'} label={'Categories'} />
+      <Link to={'/expenses'} label={'Wydatki'} />
+      <Link to={'/accounts'} label={'Konta'} />
+      <Link to={'/envelopes'} label={'Koperty'} />
     </Nav>
   );
 };

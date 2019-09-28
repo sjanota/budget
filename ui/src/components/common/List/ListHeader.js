@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreateButton } from '../common/CreateButton';
+import { CreateButton } from '../CreateButton';
 import PropTypes from 'prop-types';
 
 export function ListHeader({ onCreate, renderHeader }) {
