@@ -177,7 +177,15 @@ function CategoriesList({ state, setState }) {
 CategoriesList.propTypes = {
   setState: PropTypes.func.isRequired,
   state: PropTypes.shape({
-    entries: PropTypes.arrayOf(CategoryRow.propTypes.entry),
+    entries: PropTypes.arrayOf(
+      PropTypes.shape({
+        categoryID: PropTypes.any,
+        category: PropTypes.shape({
+          id: PropTypes.any.isRequired,
+        }),
+        balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
+      })
+    ),
   }),
 };
 
