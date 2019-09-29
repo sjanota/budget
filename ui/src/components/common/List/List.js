@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Table, Modal } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { cloneDeep } from 'apollo-utilities';
@@ -26,22 +26,35 @@ export default function List({
 }) {
   const [isCreating, setIsCreating] = useState(false);
   const [editing, setEditing] = useState([]);
+  const autoFocusRef1 = useRef();
+  const autoFocusRef2 = useRef();
+
   return (
     <div className={'ExpensesList'}>
       {editMode === EDIT.MODAL && (
         <>
-          <Modal show={isCreating} onHide={() => setIsCreating(false)}>
+          <Modal
+            show={isCreating}
+            onHide={() => setIsCreating(false)}
+            onEntered={() => autoFocusRef1.current.focus()}
+          >
             {renderModalContent({
               init: cloneDeep(emptyValue),
               onCancel: () => setIsCreating(false),
               onSubmit: onCreate,
+              autoFocusRef: autoFocusRef1,
             })}
           </Modal>
-          <Modal show={editing.length > 0} onHide={() => setEditing([])}>
+          <Modal
+            show={editing.length > 0}
+            onHide={() => setEditing([])}
+            onEntered={() => autoFocusRef2.current.focus()}
+          >
             {renderModalContent({
               init: entries.find(entry => entry.id === editing[0]),
               onCancel: () => setEditing([]),
               onSubmit: input => onUpdate(editing[0], input),
+              autoFocusRef: autoFocusRef2,
             })}
           </Modal>
         </>
@@ -95,7 +108,7 @@ List.propTypes = {
   onCreate: PropTypes.func.isRequired,
   onDelete: PropTypes.func,
   onUpdate: PropTypes.func.isRequired,
-  renderEditEntry: PropTypes.func.isRequired,
+  renderEditEntry: PropTypes.func,
   renderEntry: PropTypes.func.isRequired,
   renderHeader: PropTypes.func.isRequired,
   renderModalContent: PropTypes.func,
