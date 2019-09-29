@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 import { replaceOnList } from '../../util/immutable';
 import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
 import { CreateButton } from '../common/CreateButton';
-import { EditModalContentEntry } from './EditModalContentEntry';
-import * as MoneyAmount from '../../model/MoneyAmount';
-import { MoneyAmount as MoneyAmountPropType } from '../../model/propTypes';
+import * as MoneyAmounts from '../../model/MoneyAmount';
+import { MoneyAmount } from '../../model/propTypes';
+import { useQuery } from '@apollo/react-hooks';
+import { useBudget } from '../context/budget/budget';
+import { QUERY_CATEGORIES } from '../CategoriesList/CategoriesList.gql';
 
 export function EditModalContent({ init, onCancel, onSubmit, autoFocusRef }) {
   const [state, setState] = useState(init);
@@ -37,9 +39,7 @@ export function EditModalContent({ init, onCancel, onSubmit, autoFocusRef }) {
             <AccountInput {...inputProps} />
           </Row>
           <hr />
-          <Row>
-            <CategoriesInput state={state} setState={setState} />
-          </Row>
+          <CategoriesList state={state} setState={setState} />
           <hr />
           <Row>
             <SumOutput state={state} />
@@ -53,13 +53,19 @@ export function EditModalContent({ init, onCancel, onSubmit, autoFocusRef }) {
     </>
   );
 }
-
 EditModalContent.propTypes = {
   init: PropTypes.shape({
     title: PropTypes.string,
     date: PropTypes.string,
-    totalBalance: MoneyAmountPropType,
-    entries: PropTypes.arrayOf(EditModalContentEntry.propTypes.entry),
+    totalBalance: MoneyAmount,
+    entries: PropTypes.arrayOf(
+      PropTypes.shape({
+        category: PropTypes.shape({
+          id: PropTypes.any.isRequired,
+        }),
+        balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
+      })
+    ),
   }),
   onCancel: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
@@ -137,7 +143,7 @@ CreateCategoryButton.propTypes = {
   setState: PropTypes.func.isRequired,
 };
 
-function CategoriesInput({ state, setState }) {
+function CategoriesList({ state, setState }) {
   function setEntry(idx, update) {
     return setState(s => {
       const entries = replaceOnList(s.entries, idx, {
@@ -145,8 +151,8 @@ function CategoriesInput({ state, setState }) {
         ...update,
       });
       const totalBalance = entries.reduce(
-        (acc, v) => MoneyAmount.add(acc, v.balance),
-        MoneyAmount.zero()
+        (acc, v) => MoneyAmounts.add(acc, v.balance),
+        MoneyAmounts.zero()
       );
       return {
         ...s,
@@ -157,24 +163,21 @@ function CategoriesInput({ state, setState }) {
   }
 
   return (
-    <Col>
+    <>
       <Form.Label>Kategorie</Form.Label>
       <CreateCategoryButton setState={setState} />
       {state.entries.map((entry, idx) => (
-        <EditModalContentEntry
-          key={idx}
-          entry={entry}
-          idx={idx}
-          setEntry={setEntry}
-        />
+        <Row key={idx}>
+          <CategoryRow entry={entry} idx={idx} setEntry={setEntry} />
+        </Row>
       ))}
-    </Col>
+    </>
   );
 }
-CategoriesInput.propTypes = {
+CategoriesList.propTypes = {
   setState: PropTypes.func.isRequired,
   state: PropTypes.shape({
-    entries: PropTypes.arrayOf(EditModalContentEntry.propTypes.entry),
+    entries: PropTypes.arrayOf(CategoryRow.propTypes.entry),
   }),
 };
 
@@ -188,7 +191,7 @@ function SumOutput({ state }) {
         <Form.Control
           type="number"
           placeholder="Suma"
-          value={MoneyAmount.format(state.totalBalance)}
+          value={MoneyAmounts.format(state.totalBalance)}
           readOnly={true}
         />
       </Col>
@@ -196,7 +199,7 @@ function SumOutput({ state }) {
   );
 }
 SumOutput.propTypes = {
-  state: PropTypes.shape({ totalBalance: MoneyAmountPropType }),
+  state: PropTypes.shape({ totalBalance: MoneyAmount }),
 };
 
 function CancelButton({ onCancel }) {
@@ -227,4 +230,88 @@ SubmitButton.propTypes = {
   state: PropTypes.any.isRequired,
   onSubmit: EditModalContent.propTypes.onSubmit,
   onCancel: EditModalContent.propTypes.onCancel,
+};
+
+function CategoryRow(props) {
+  return (
+    <>
+      <Col>
+        <CategoryInput {...props} />
+      </Col>
+      <Col>
+        <CategoryBalanceInput {...props} />
+      </Col>
+    </>
+  );
+}
+CategoryRow.propTypes = {
+  entry: PropTypes.shape({
+    categoryID: PropTypes.any,
+    category: PropTypes.shape({
+      id: PropTypes.any.isRequired,
+    }),
+    balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
+  }),
+  idx: PropTypes.number.isRequired,
+  setEntry: PropTypes.func.isRequired,
+};
+
+function CategoryInput({ entry, idx, setEntry }) {
+  const { id: budgetID } = useBudget();
+  const { loading, error, data } = useQuery(QUERY_CATEGORIES, {
+    variables: { budgetID },
+  });
+  if (loading) return <p>Loading...</p>;
+  if (error) {
+    console.error(error);
+    return <p>Error :(</p>;
+  }
+
+  return (
+    <Form.Control
+      as="select"
+      value={entry.categoryID || (entry.category && entry.category.id)}
+      onChange={e => setEntry(idx, { categoryID: e.target.value })}
+    >
+      <option></option>
+      {data.categories
+        .sort((c1, c2) => c1.name.localeCompare(c2))
+        .map(category => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+    </Form.Control>
+  );
+}
+CategoryInput.propTypes = {
+  entry: PropTypes.shape({
+    categoryID: PropTypes.any,
+    category: PropTypes.shape({
+      id: PropTypes.any.isRequired,
+    }),
+  }),
+  idx: PropTypes.number.isRequired,
+  setEntry: PropTypes.func.isRequired,
+};
+
+function CategoryBalanceInput({ entry, idx, setEntry }) {
+  return (
+    <Form.Control
+      type="number"
+      placeholder="Kwota"
+      value={MoneyAmounts.format(entry.balance)}
+      onChange={e => setEntry(idx, { balance: e.target.value })}
+      onBlur={() =>
+        setEntry(idx, { balance: MoneyAmounts.parse(entry.balance) })
+      }
+    />
+  );
+}
+CategoryBalanceInput.propTypes = {
+  entry: PropTypes.shape({
+    balance: PropTypes.oneOfType([MoneyAmount, PropTypes.string]).isRequired,
+  }),
+  idx: PropTypes.number.isRequired,
+  setEntry: PropTypes.func.isRequired,
 };
