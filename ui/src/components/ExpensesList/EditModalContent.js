@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import { shape, string, arrayOf, any, func, number } from 'prop-types';
 import { replaceOnList } from '../../util/immutable';
 import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
 import { CreateButton } from '../common/CreateButton';
 import * as MoneyAmounts from '../../model/MoneyAmount';
-import { MoneyAmount } from '../../model/propTypes';
+import { MoneyAmount, Expense } from '../../model/propTypes';
 import { useQuery } from '@apollo/react-hooks';
 import { useBudget } from '../context/budget/budget';
 import { QUERY_CATEGORIES } from '../CategoriesList/CategoriesList.gql';
+import { StateEntry } from './EditModalContent.propsTypes';
 
 export function EditModalContent({ init, onCancel, onSubmit, autoFocusRef }) {
   const [state, setState] = useState(init);
@@ -54,22 +55,10 @@ export function EditModalContent({ init, onCancel, onSubmit, autoFocusRef }) {
   );
 }
 EditModalContent.propTypes = {
-  init: PropTypes.shape({
-    title: PropTypes.string,
-    date: PropTypes.string,
-    totalBalance: MoneyAmount,
-    entries: PropTypes.arrayOf(
-      PropTypes.shape({
-        category: PropTypes.shape({
-          id: PropTypes.any.isRequired,
-        }),
-        balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
-      })
-    ),
-  }),
-  onCancel: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  autoFocusRef: PropTypes.any,
+  init: Expense,
+  onCancel: func.isRequired,
+  onSubmit: func.isRequired,
+  autoFocusRef: any,
 };
 
 function TitleInput({ state, autoFocusRef, setValue }) {
@@ -87,9 +76,9 @@ function TitleInput({ state, autoFocusRef, setValue }) {
   );
 }
 TitleInput.propTypes = {
-  state: PropTypes.shape({ title: PropTypes.string.isRequired }),
-  setValue: PropTypes.func.isRequired,
-  autoFocusRef: EditModalContent.propTypes.autoFocusRef,
+  state: shape({ title: string.isRequired }),
+  setValue: func.isRequired,
+  autoFocusRef: EditModalContent.autoFocusRef,
 };
 
 function DateInput({ state, setValue }) {
@@ -106,8 +95,8 @@ function DateInput({ state, setValue }) {
   );
 }
 DateInput.propTypes = {
-  state: PropTypes.shape({ date: PropTypes.string.isRequired }),
-  setValue: PropTypes.func.isRequired,
+  state: shape({ date: string.isRequired }),
+  setValue: func.isRequired,
 };
 
 function AccountInput() {
@@ -140,7 +129,7 @@ function CreateCategoryButton({ setState }) {
   );
 }
 CreateCategoryButton.propTypes = {
-  setState: PropTypes.func.isRequired,
+  setState: func.isRequired,
 };
 
 function CategoriesList({ state, setState }) {
@@ -175,17 +164,9 @@ function CategoriesList({ state, setState }) {
   );
 }
 CategoriesList.propTypes = {
-  setState: PropTypes.func.isRequired,
-  state: PropTypes.shape({
-    entries: PropTypes.arrayOf(
-      PropTypes.shape({
-        categoryID: PropTypes.any,
-        category: PropTypes.shape({
-          id: PropTypes.any.isRequired,
-        }),
-        balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
-      })
-    ),
+  setState: func.isRequired,
+  state: shape({
+    entries: arrayOf(StateEntry),
   }),
 };
 
@@ -207,7 +188,7 @@ function SumOutput({ state }) {
   );
 }
 SumOutput.propTypes = {
-  state: PropTypes.shape({ totalBalance: MoneyAmount }),
+  state: shape({ totalBalance: MoneyAmount }),
 };
 
 function CancelButton({ onCancel }) {
@@ -218,7 +199,7 @@ function CancelButton({ onCancel }) {
   );
 }
 CancelButton.propTypes = {
-  onCancel: EditModalContent.propTypes.onCancel,
+  onCancel: EditModalContent.onCancel,
 };
 
 function SubmitButton({ state, onSubmit, onCancel }) {
@@ -235,9 +216,9 @@ function SubmitButton({ state, onSubmit, onCancel }) {
   );
 }
 SubmitButton.propTypes = {
-  state: PropTypes.any.isRequired,
-  onSubmit: EditModalContent.propTypes.onSubmit,
-  onCancel: EditModalContent.propTypes.onCancel,
+  state: any.isRequired,
+  onSubmit: EditModalContent.onSubmit,
+  onCancel: EditModalContent.onCancel,
 };
 
 function CategoryRow(props) {
@@ -253,15 +234,9 @@ function CategoryRow(props) {
   );
 }
 CategoryRow.propTypes = {
-  entry: PropTypes.shape({
-    categoryID: PropTypes.any,
-    category: PropTypes.shape({
-      id: PropTypes.any.isRequired,
-    }),
-    balance: PropTypes.oneOfType([PropTypes.string, MoneyAmount]),
-  }),
-  idx: PropTypes.number.isRequired,
-  setEntry: PropTypes.func.isRequired,
+  entry: StateEntry,
+  idx: number.isRequired,
+  setEntry: func.isRequired,
 };
 
 function CategoryInput({ entry, idx, setEntry }) {
@@ -293,14 +268,9 @@ function CategoryInput({ entry, idx, setEntry }) {
   );
 }
 CategoryInput.propTypes = {
-  entry: PropTypes.shape({
-    categoryID: PropTypes.any,
-    category: PropTypes.shape({
-      id: PropTypes.any.isRequired,
-    }),
-  }),
-  idx: PropTypes.number.isRequired,
-  setEntry: PropTypes.func.isRequired,
+  entry: StateEntry,
+  idx: number.isRequired,
+  setEntry: func.isRequired,
 };
 
 function CategoryBalanceInput({ entry, idx, setEntry }) {
@@ -317,9 +287,7 @@ function CategoryBalanceInput({ entry, idx, setEntry }) {
   );
 }
 CategoryBalanceInput.propTypes = {
-  entry: PropTypes.shape({
-    balance: PropTypes.oneOfType([MoneyAmount, PropTypes.string]).isRequired,
-  }),
-  idx: PropTypes.number.isRequired,
-  setEntry: PropTypes.func.isRequired,
+  entry: StateEntry,
+  idx: number.isRequired,
+  setEntry: func.isRequired,
 };
