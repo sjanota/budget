@@ -12,12 +12,11 @@ import {
   removeFromListByID,
   replaceOnListByID,
 } from '../../util/immutable';
-import './ExpensesList.css';
 import { useBudget } from '../context/budget/budget';
-import List from '../common/List/List';
 import { ListEntry } from './ListEntry';
 import { ListHeader } from './ListHeader';
 import { EditModalContent } from './EditModalContent';
+import { List } from '../common/List/List';
 
 export default function ExpensesList() {
   const { id: budgetID } = useBudget();
@@ -47,6 +46,7 @@ export default function ExpensesList() {
   return (
     <div className={'ExpensesList'}>
       <List
+        editMode={List.EditMode.MODAL}
         entries={data.expenses}
         onCreate={input =>
           createExpense({ variables: { budgetID, input: prepareInput(input) } })
@@ -66,7 +66,6 @@ export default function ExpensesList() {
           date: '',
           entries: [],
         }}
-        editMode={List.EditMode.MODAL}
         renderModalContent={props => <EditModalContent {...props} />}
       />
     </div>
