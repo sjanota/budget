@@ -12,12 +12,11 @@ import {
   removeFromListByID,
   replaceOnListByID,
 } from '../../util/immutable';
-import './ExpensesList.css';
 import { useBudget } from '../context/budget/budget';
-import List from '../common/List/List';
-import { EditEntry } from './EditEntry';
 import { ListEntry } from './ListEntry';
 import { ListHeader } from './ListHeader';
+import { EditModalContent } from './EditModalContent';
+import { List } from '../common/List/List';
 
 export default function ExpensesList() {
   const { id: budgetID } = useBudget();
@@ -47,6 +46,7 @@ export default function ExpensesList() {
   return (
     <div className={'ExpensesList'}>
       <List
+        editMode={List.EditMode.MODAL}
         entries={data.expenses}
         onCreate={input =>
           createExpense({ variables: { budgetID, input: prepareInput(input) } })
@@ -59,13 +59,14 @@ export default function ExpensesList() {
         }
         renderHeader={props => <ListHeader {...props} />}
         renderEntry={props => <ListEntry {...props} />}
-        renderEditEntry={props => <EditEntry {...props} />}
         emptyValue={{
           totalBalance: { integer: 0, decimal: 0 },
           title: '',
           location: '',
           date: '',
+          entries: [],
         }}
+        renderModalContent={props => <EditModalContent {...props} />}
       />
     </div>
   );
@@ -87,7 +88,14 @@ function handleExpenseEvent(prev, { subscriptionData }) {
   }
 }
 
-function prepareInput({ title, date, totalBalance, location, account }) {
+function prepareInput({
+  title,
+  date,
+  totalBalance,
+  location,
+  account,
+  entries,
+}) {
   return {
     title,
     date,
@@ -97,6 +105,13 @@ function prepareInput({ title, date, totalBalance, location, account }) {
     },
     location,
     accountID: account ? account.ID : null,
-    entries: [],
+    entries: entries.map(entry => ({
+      title: '',
+      categoryID: entry.categoryID || entry.category.id,
+      balance: {
+        integer: entry.balance.integer,
+        decimal: entry.balance.decimal,
+      },
+    })),
   };
 }

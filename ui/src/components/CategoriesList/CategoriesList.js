@@ -1,5 +1,5 @@
 import React from 'react';
-import List from '../common/List/List';
+import { List } from '../common/List/List';
 import { useBudget } from '../context/budget/budget';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import {

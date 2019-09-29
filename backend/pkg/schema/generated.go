@@ -73,10 +73,9 @@ type ComplexityRoot struct {
 	}
 
 	Category struct {
-		Description func(childComplexity int) int
-		Envelope    func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Name        func(childComplexity int) int
+		Envelope func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Name     func(childComplexity int) int
 	}
 
 	Envelope struct {
@@ -287,13 +286,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Budget.Name(childComplexity), true
-
-	case "Category.description":
-		if e.complexity.Category.Description == nil {
-			break
-		}
-
-		return e.complexity.Category.Description(childComplexity), true
 
 	case "Category.envelope":
 		if e.complexity.Category.Envelope == nil {
@@ -814,6 +806,10 @@ type MoneyAmount {
   integer: Int!
   decimal: Int!
 }
+input MoneyAmountInput {
+  integer: Int!
+  decimal: Int!
+}
 
 type Expense {
   id: ID!
@@ -824,18 +820,34 @@ type Expense {
   date: Date
   account: Account
 }
+input ExpenseInput {
+  title: String!
+  location: String
+  entries: [ExpenseEntryInput!]!
+  totalBalance: MoneyAmountInput!
+  date: Date
+  accountID: ID
+}
 
 type ExpenseEntry {
   title: String!
   category: Category!
   balance: MoneyAmount!
 }
+input ExpenseEntryInput {
+  title: String!
+  categoryID: ID!
+  balance: MoneyAmountInput!
+}
 
 type Category {
   id: ID!
   name: String!
-  description: String
   envelope: Envelope!
+}
+input CategoryInput {
+  name: String!
+  envelopeID: ID!
 }
 
 type Account {
@@ -843,11 +855,17 @@ type Account {
   name: String!
   balance: MoneyAmount!
 }
+input AccountInput {
+  name: String!
+}
 
 type Envelope {
   id: ID!
   name: String!
   balance: MoneyAmount!
+}
+input EnvelopeInput {
+  name: String!
 }
 
 type AccountTransfer {
@@ -887,39 +905,6 @@ type Query {
 
   category(budgetID: ID!, id: ID!): Category
   categories(budgetID: ID!): [Category!]!
-}
-
-input ExpenseInput {
-  title: String!
-  location: String
-  entries: [ExpenseEntryInput!]!
-  totalBalance: MoneyAmountInput!
-  date: Date
-  accountID: ID
-}
-
-input ExpenseEntryInput {
-  title: String!
-  categoryID: ID!
-  balance: MoneyAmountInput!
-}
-
-input MoneyAmountInput {
-  integer: Int!
-  decimal: Int!
-}
-
-input AccountInput {
-  name: String!
-}
-
-input EnvelopeInput {
-  name: String!
-}
-
-input CategoryInput {
-  name: String!
-  envelopeID: ID!
 }
 
 type Mutation {
@@ -1902,40 +1887,6 @@ func (ec *executionContext) _Category_name(ctx context.Context, field graphql.Co
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Category_description(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Category",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Category_envelope(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
@@ -5177,8 +5128,6 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "description":
-			out.Values[i] = ec._Category_description(ctx, field, obj)
 		case "envelope":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {

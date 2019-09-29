@@ -14,6 +14,15 @@ const EXPENSE_FRAGMENT = gql`
       id
       name
     }
+    entries {
+      balance {
+        integer
+        decimal
+      }
+      category {
+        id
+      }
+    }
   }
 `;
 

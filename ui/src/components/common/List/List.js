@@ -1,77 +1,41 @@
-import React, { useState } from 'react';
-import { Table } from 'react-bootstrap';
+import React from 'react';
+import { Table } from './Table';
+import EditModalList from './EditModalList';
+import EditInlineList from './EditInlineList';
+import './List.css';
 import PropTypes from 'prop-types';
-import { cloneDeep } from 'apollo-utilities';
-import { removeFromList, addToList } from '../../../util/immutable';
-import { ListHeader } from './ListHeader';
-import { EditEntry } from './EditEntry';
-import { ListEntry } from './ListEntry';
 
-export default function List({
-  emptyValue,
-  entries,
-  onCreate,
-  onDelete,
-  onUpdate,
-  renderEditEntry,
-  renderEntry,
-  renderHeader,
-}) {
-  const [isCreating, setIsCreating] = useState(false);
-  const [editing, setEditing] = useState([]);
+List.EditMode = {
+  MODAL: 'MODAL',
+  INLINE: 'INLINE',
+};
 
-  return (
-    <div className={'ExpensesList'}>
-      <Table striped bordered hover size={'sm'}>
-        <ListHeader
-          onCreate={() => setIsCreating(true)}
-          renderHeader={renderHeader}
-        />
-        <tbody>
-          {isCreating && (
-            <EditEntry
-              init={cloneDeep(emptyValue)}
-              renderEditEntry={renderEditEntry}
-              onCancel={() => setIsCreating(false)}
-              onSubmit={onCreate}
-            />
-          )}
-          {entries.map(entry =>
-            editing.some(id => id === entry.id) ? (
-              <EditEntry
-                key={entry.id}
-                init={cloneDeep(entry)}
-                renderEditEntry={renderEditEntry}
-                onCancel={() =>
-                  setEditing(editing => removeFromList(editing, entry.id))
-                }
-                onSubmit={input => onUpdate(entry.id, input)}
-              />
-            ) : (
-              <ListEntry
-                key={entry.id}
-                entry={entry}
-                renderEntry={renderEntry}
-                onEdit={() =>
-                  setEditing(editing => addToList(editing, entry.id))
-                }
-                onDelete={onDelete}
-              />
-            )
-          )}
-        </tbody>
-      </Table>
-    </div>
-  );
+function partiallyApplyTable(renderHeader) {
+  // eslint-disable-next-line react/display-name
+  return props => <Table renderHeader={renderHeader} {...props} />;
+}
+
+export function List({ editMode, renderHeader, ...props }) {
+  const table = partiallyApplyTable(renderHeader);
+  let el;
+  switch (editMode) {
+    case List.EditMode.MODAL:
+      el = <EditModalList tableComponent={table} {...props} />;
+      break;
+    case List.EditMode.INLINE:
+      el = <EditInlineList tableComponent={table} {...props} />;
+      break;
+    default:
+  }
+
+  return <div className={'List'}>{el}</div>;
 }
 
 List.propTypes = {
-  emptyValue: PropTypes.any.isRequired,
-  entries: PropTypes.array.isRequired,
-  onCreate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func,
-  onUpdate: PropTypes.func.isRequired,
-  renderEditEntry: PropTypes.func.isRequired,
-  renderEntry: PropTypes.func.isRequired,
+  editMode: PropTypes.oneOf(Object.values(List.EditMode)),
   renderHeader: PropTypes.func.isRequired,
+};
+
+List.defaultProps = {
+  editMode: List.EditMode.INLINE,
 };
