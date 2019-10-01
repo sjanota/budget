@@ -19,7 +19,17 @@ type AccountTransfer struct {
 	Date   *string            `json:"date"`
 	From   *Account           `json:"from"`
 	To     *Account           `json:"to"`
-	Amount *MoneyAmount       `json:"amount"`
+	Amount *Amount            `json:"amount"`
+}
+
+type Amount struct {
+	Integer int `json:"integer"`
+	Decimal int `json:"decimal"`
+}
+
+type AmountInput struct {
+	Integer int `json:"integer"`
+	Decimal int `json:"decimal"`
 }
 
 type CategoryInput struct {
@@ -36,13 +46,19 @@ type EnvelopeTransfer struct {
 	Date   *string            `json:"date"`
 	From   *Envelope          `json:"from"`
 	To     *Account           `json:"to"`
-	Amount *MoneyAmount       `json:"amount"`
+	Amount *Amount            `json:"amount"`
+}
+
+type ExpenseEntry struct {
+	Title    string    `json:"title"`
+	Category *Category `json:"category"`
+	Balance  *Amount   `json:"balance"`
 }
 
 type ExpenseEntryInput struct {
 	Title      string             `json:"title"`
 	CategoryID primitive.ObjectID `json:"categoryID"`
-	Balance    *MoneyAmountInput  `json:"balance"`
+	Balance    *AmountInput       `json:"balance"`
 }
 
 type ExpenseEvent struct {
@@ -54,19 +70,9 @@ type ExpenseInput struct {
 	Title        string               `json:"title"`
 	Location     *string              `json:"location"`
 	Entries      []*ExpenseEntryInput `json:"entries"`
-	TotalBalance *MoneyAmountInput    `json:"totalBalance"`
+	TotalBalance *AmountInput         `json:"totalBalance"`
 	Date         *string              `json:"date"`
 	AccountID    *primitive.ObjectID  `json:"accountID"`
-}
-
-type MoneyAmount struct {
-	Integer int `json:"integer"`
-	Decimal int `json:"decimal"`
-}
-
-type MoneyAmountInput struct {
-	Integer int `json:"integer"`
-	Decimal int `json:"decimal"`
 }
 
 type EventType string

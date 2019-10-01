@@ -1,10 +1,10 @@
 scalar Date
 
-type MoneyAmount {
+type Amount {
   integer: Int!
   decimal: Int!
 }
-input MoneyAmountInput {
+input AmountInput {
   integer: Int!
   decimal: Int!
 }
@@ -12,9 +12,8 @@ input MoneyAmountInput {
 type Expense {
   id: ID!
   title: String!
-  location: String
   entries: [ExpenseEntry!]!
-  totalBalance: MoneyAmount!
+  totalBalance: Amount!
   date: Date
   account: Account
 }
@@ -22,7 +21,7 @@ input ExpenseInput {
   title: String!
   location: String
   entries: [ExpenseEntryInput!]!
-  totalBalance: MoneyAmountInput!
+  totalBalance: AmountInput!
   date: Date
   accountID: ID
 }
@@ -30,12 +29,12 @@ input ExpenseInput {
 type ExpenseEntry {
   title: String!
   category: Category!
-  balance: MoneyAmount!
+  balance: Amount!
 }
 input ExpenseEntryInput {
   title: String!
   categoryID: ID!
-  balance: MoneyAmountInput!
+  balance: AmountInput!
 }
 
 type Category {
@@ -51,7 +50,7 @@ input CategoryInput {
 type Account {
   id: ID!
   name: String!
-  balance: MoneyAmount!
+  balance: Amount!
 }
 input AccountInput {
   name: String!
@@ -60,7 +59,7 @@ input AccountInput {
 type Envelope {
   id: ID!
   name: String!
-  balance: MoneyAmount!
+  balance: Amount!
 }
 input EnvelopeInput {
   name: String!
@@ -71,7 +70,7 @@ type AccountTransfer {
   date: Date
   from: Account
   to: Account
-  amount: MoneyAmount!
+  amount: Amount!
 }
 
 type EnvelopeTransfer {
@@ -79,7 +78,7 @@ type EnvelopeTransfer {
   date: Date
   from: Envelope
   to: Account
-  amount: MoneyAmount!
+  amount: Amount!
 }
 
 type Budget {

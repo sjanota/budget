@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"github.com/sjanota/budget/backend/pkg/playground"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,6 +37,10 @@ func (s *Storage) Categories(budgetID primitive.ObjectID) *Categories {
 
 func (s *Storage) Budgets() *Budgets {
 	return s.budgets.session()
+}
+
+func (s *Storage) Playground() playground.Storage {
+
 }
 
 func New(uri string) (*Storage, error) {
