@@ -86,4 +86,10 @@ func TestStorage_UpdateAccount(t *testing.T) {
 }
 
 func TestStorage_UpdateAccount_NotFound(t *testing.T) {
+	ctx := before(t)
+	budget := whenSomeBudgetExists(t, ctx)
+
+	changes := models.Changes{"name": "new-name"}
+	_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
+	assert.EqualError(t, err, storage.ErrAccountDoesNotExists.Error())
 }

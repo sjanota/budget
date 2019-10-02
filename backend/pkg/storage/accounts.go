@@ -64,7 +64,7 @@ func (s *Storage) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID
 	if exists, err := s.doesAccountExist(ctx, budgetID, accountID); err != nil {
 		return nil, err
 	} else if !exists {
-		return nil, ErrAccountAlreadyExists
+		return nil, ErrAccountDoesNotExists
 	}
 
 	find := doc{
