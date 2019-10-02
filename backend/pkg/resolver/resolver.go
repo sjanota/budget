@@ -15,12 +15,24 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+type expenseCategoryResolver struct {
+	*Resolver
+}
+
+func (r *expenseCategoryResolver) Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error) {
+	return r.Storage.Categories(obj.BudgetID).FindByID(ctx, obj.CategoryID)
+}
+
+func (r *Resolver) ExpenseCategory() schema.ExpenseCategoryResolver {
+	return &expenseCategoryResolver{}
+}
+
 func (r *Resolver) Envelope() schema.EnvelopeResolver {
-	return &envelopeResolver{r}
+	return &envelopeResolver{r, r.Storage.Playground()}
 }
 
 func (r *Resolver) Account() schema.AccountResolver {
-	return &accountResolver{r}
+	return &accountResolver{r, r.Storage.Playground()}
 }
 
 func (r *Resolver) Budget() schema.BudgetResolver {
@@ -29,10 +41,6 @@ func (r *Resolver) Budget() schema.BudgetResolver {
 
 func (r *Resolver) Subscription() schema.SubscriptionResolver {
 	return &subscriptionResolver{r}
-}
-
-func (r *Resolver) ExpenseEntry() schema.ExpenseEntryResolver {
-	return &expenseEntryResolver{r}
 }
 
 func (r *Resolver) Mutation() schema.MutationResolver {

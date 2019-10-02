@@ -1,38 +1,39 @@
 package playground
 
 import (
+	"context"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 type Storage interface {
-	GetMonthlyBudget(budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID) (*models.MonthlyBudget, error)
-	GetBudget(budgetID primitive.ObjectID) (*models.Budget, error)
-	GetAccount(budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
-	GetEnvelope(budgetID primitive.ObjectID, envelopeID primitive.ObjectID) (*models.Envelope, error)
-	GetCurrentMonthlyBudget(budgetID primitive.ObjectID) (*models.MonthlyBudget, error)
-	GetCurrentExpensesForAccount(budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, accountID primitive.ObjectID) ([]*models.Expense, error)
-	EnsureMonthlyBudget(budgetID primitive.ObjectID, month time.Month, year uint) (*models.MonthlyBudget, error)
-	UpdateMonthlyBudget(budgetID primitive.ObjectID, monthlyBudget *models.MonthlyBudget) (*models.MonthlyBudget, error)
-	UpdateBudget(budget *models.Budget) (*models.Budget, error)
+	GetMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID) (*models.MonthlyBudget, error)
+	GetBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.Budget, error)
+	GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
+	GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, envelopeID primitive.ObjectID) (*models.Envelope, error)
+	GetCurrentMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.MonthlyBudget, error)
+	GetCurrentExpensesForAccount(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, accountID primitive.ObjectID) ([]*models.Expense, error)
+	EnsureMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, month time.Month, year uint) (*models.MonthlyBudget, error)
+	UpdateMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudget *models.MonthlyBudget) (*models.MonthlyBudget, error)
+	UpdateBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
 // Better to be done in memory
-func CloseMonthlyBudget(budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, storage Storage) error {
-	budget, err := storage.GetBudget(budgetID)
+func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, storage Storage) error {
+	budget, err := storage.GetBudget(ctx, budgetID)
 	if err != nil {
 		return err
 	}
 
-	monthlyBudget, err := storage.GetMonthlyBudget(budgetID, monthlyBudgetID)
+	monthlyBudget, err := storage.GetMonthlyBudget(ctx, budgetID, monthlyBudgetID)
 	if err != nil {
 		return err
 	}
 
 	// processExpenses
 	for _, expense := range monthlyBudget.Expenses {
-		account := budget.Account(expense.AccountID)
+		account := budget.Account(*expense.AccountID)
 		for _, expenseCategory := range expense.Categories {
 			category := budget.Category(expenseCategory.CategoryID)
 			envelope := budget.Envelope(category.EnvelopeID)
@@ -74,24 +75,19 @@ func CloseMonthlyBudget(budgetID primitive.ObjectID, monthlyBudgetID primitive.O
 	}
 
 	// createNextMonthlyBudget
-	nextMonthlyBudget, err := storage.EnsureMonthlyBudget(budget.ID, month, year)
+	nextMonthlyBudget, err := storage.EnsureMonthlyBudget(ctx, budget.ID, month, year)
 	if err != nil {
 		return err
 	}
 	budget.CurrentMonthID = nextMonthlyBudget.ID
 
 	// commitCurrentMonthlyBudget
-	_, err = storage.UpdateMonthlyBudget(budget.ID, monthlyBudget)
+	_, err = storage.UpdateMonthlyBudget(ctx, budget.ID, monthlyBudget)
 	if err != nil {
 		return err
 	}
 
 	// commitBudget
-	_, err = storage.UpdateBudget(budget)
+	_, err = storage.UpdateBudget(ctx, budget)
 	return err
-}
-
-// Should be possible to do as one DB operation
-func GetAccount(budgetID primitive.ObjectID, accountID primitive.ObjectID, storage Storage) (*models.Account, error) {
-
 }

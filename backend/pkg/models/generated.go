@@ -6,17 +6,14 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AccountInput struct {
-	Name string `json:"name"`
-}
-
 type AccountTransfer struct {
 	ID     primitive.ObjectID `json:"id"`
-	Date   *string            `json:"date"`
+	Date   *time.Time         `json:"date"`
 	From   *Account           `json:"from"`
 	To     *Account           `json:"to"`
 	Amount *Amount            `json:"amount"`
@@ -32,31 +29,15 @@ type AmountInput struct {
 	Decimal int `json:"decimal"`
 }
 
-type CategoryInput struct {
-	Name       string             `json:"name"`
-	EnvelopeID primitive.ObjectID `json:"envelopeID"`
-}
-
-type EnvelopeInput struct {
-	Name string `json:"name"`
-}
-
 type EnvelopeTransfer struct {
 	ID     primitive.ObjectID `json:"id"`
-	Date   *string            `json:"date"`
+	Date   *time.Time         `json:"date"`
 	From   *Envelope          `json:"from"`
 	To     *Account           `json:"to"`
 	Amount *Amount            `json:"amount"`
 }
 
-type ExpenseEntry struct {
-	Title    string    `json:"title"`
-	Category *Category `json:"category"`
-	Balance  *Amount   `json:"balance"`
-}
-
-type ExpenseEntryInput struct {
-	Title      string             `json:"title"`
+type ExpenseCategoryInput struct {
 	CategoryID primitive.ObjectID `json:"categoryID"`
 	Balance    *AmountInput       `json:"balance"`
 }
@@ -67,12 +48,11 @@ type ExpenseEvent struct {
 }
 
 type ExpenseInput struct {
-	Title        string               `json:"title"`
-	Location     *string              `json:"location"`
-	Entries      []*ExpenseEntryInput `json:"entries"`
-	TotalBalance *AmountInput         `json:"totalBalance"`
-	Date         *string              `json:"date"`
-	AccountID    *primitive.ObjectID  `json:"accountID"`
+	Title     string                  `json:"title"`
+	Location  *string                 `json:"location"`
+	Entries   []*ExpenseCategoryInput `json:"entries"`
+	Date      *time.Time              `json:"date"`
+	AccountID *primitive.ObjectID     `json:"accountID"`
 }
 
 type EventType string

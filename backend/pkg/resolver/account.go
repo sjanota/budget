@@ -15,13 +15,13 @@ type accountResolver struct {
 func (r *accountResolver) Balance(ctx context.Context, account *models.Account) (*models.Amount, error) {
 	var change models.Amount
 
-	monthlyBudget, err := r.storage.GetCurrentMonthlyBudget(account.BudgetID)
+	monthlyBudget, err := r.storage.GetCurrentMonthlyBudget(ctx, account.BudgetID)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, expense := range monthlyBudget.Expenses {
-		if expense.AccountID == account.ID {
+		if expense.AccountID != nil && *expense.AccountID == account.ID {
 			account.Balance = account.Balance.Sub(expense.Balance())
 		}
 	}

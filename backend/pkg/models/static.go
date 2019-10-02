@@ -14,27 +14,27 @@ type Budget struct {
 	CurrentMonthID primitive.ObjectID
 }
 
-func (b Budget) Category(id primitive.ObjectID) *Category {
+func (b Budget) Category(name string) *Category {
 	for _, category := range b.Categories {
-		if category.ID == id {
+		if category.Name == name {
 			return category
 		}
 	}
 	return nil
 }
 
-func (b Budget) Account(id primitive.ObjectID) *Account {
+func (b Budget) Account(name string) *Account {
 	for _, account := range b.Accounts {
-		if account.ID == id {
+		if account.Name == name {
 			return account
 		}
 	}
 	return nil
 }
 
-func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
+func (b Budget) Envelope(name string) *Envelope {
 	for _, envelope := range b.Envelopes {
-		if envelope.ID == id {
+		if envelope.Name == name {
 			return envelope
 		}
 	}
@@ -52,10 +52,9 @@ type MonthlyBudget struct {
 }
 
 type Expense struct {
-	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Categories []ExpenseCategory  `json:"categories"`
-	Date       time.Time          `json:"date"`
-	AccountID  primitive.ObjectID
+	Categories []*ExpenseCategory `json:"categories"`
+	Date       *time.Time         `json:"date"`
+	AccountID  *primitive.ObjectID
 }
 
 func (e Expense) Balance() Amount {
@@ -67,47 +66,57 @@ func (e Expense) Balance() Amount {
 }
 
 type ExpenseCategory struct {
-	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Balance    Amount             `json:"balance"`
+	Balance    Amount `json:"balance"`
 	CategoryID primitive.ObjectID
+	BudgetID   primitive.ObjectID
 }
 
 type Account struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name     string             `json:"name"`
+	Name     string `json:"name"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
 }
 
+type AccountInput struct {
+	Name string `json:"name"`
+}
+
 type Transfer struct {
-	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Balance       Amount             `json:"balance"`
-	Date          time.Time          `json:"date"`
+	Balance       Amount    `json:"balance"`
+	Date          time.Time `json:"date"`
 	FromAccountID primitive.ObjectID
 	ToAccountID   primitive.ObjectID
 }
 
 type Envelope struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name     string             `json:"name"`
-	Limit    Amount             `json:"Limit"`
+	Name     string `json:"name"`
+	Limit    Amount `json:"Limit"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
 }
 
+type EnvelopeInput struct {
+	Name  string `json:"name"`
+	Limit Amount `json:"Limit"`
+}
+
 type Plan struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Balance        Amount             `json:"balance"`
-	Executed       Amount             `json:"executed"`
-	Date           time.Time          `json:"date"`
+	Balance        Amount    `json:"balance"`
+	Executed       Amount    `json:"executed"`
+	Date           time.Time `json:"date"`
 	FromEnvelopeID primitive.ObjectID
 	ToEnvelopeID   primitive.ObjectID
 }
 
 type Category struct {
-	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name       string             `json:"name"`
-	EnvelopeID primitive.ObjectID
+	Name         string `json:"name"`
+	EnvelopeName string
+	BudgetID     primitive.ObjectID
+}
+
+type CategoryInput struct {
+	Name         string `json:"name"`
+	EnvelopeName string `json:"envelopeName"`
 }
 
 func (a Amount) Add(other Amount) Amount {

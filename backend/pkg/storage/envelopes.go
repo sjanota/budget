@@ -2,81 +2,73 @@ package storage
 
 import (
 	"context"
-
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type envelopesRepository struct {
-	*repository
-	storage *Storage
-}
+func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input *models.EnvelopeInput) (*models.Envelope, error) {
+	if exists, err := s.doesEnvelopeExist(ctx, budgetID, input.Name); err != nil {
+		return nil, err
+	} else if exists {
+		return nil, ErrEnvelopeAlreadyExists
+	}
 
-func newEnvelopesRepository(s *Storage) *envelopesRepository {
-	return &envelopesRepository{
-		repository: &repository{
-			storage:    s,
-			collection: s.db.Collection("envelopes"),
+	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit}
+	find := doc{
+		"_id": budgetID,
+	}
+	update := doc{
+		"$push": doc{
+			"envelopes": toInsert,
 		},
 	}
-}
-
-type Envelopes struct {
-	*envelopesRepository
-	budgetID primitive.ObjectID
-}
-
-func (r envelopesRepository) session(budgetID primitive.ObjectID) *Envelopes {
-	return &Envelopes{
-		envelopesRepository: &r,
-		budgetID:            budgetID,
+	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
+	if err != nil {
+		return nil, err
+	} else if res.MatchedCount == 0 {
+		return nil, ErrNoBudget
 	}
+	toInsert.BudgetID = budgetID
+	return toInsert, nil
 }
 
-func (r *Envelopes) FindAll(ctx context.Context) ([]*models.Envelope, error) {
-	result := make([]*models.Envelope, 0)
-	err := r.find(ctx, doc{budgetID: r.budgetID}, func(d decodeFunc) error {
-		e := &models.Envelope{}
-		err := d(e)
-		if err != nil {
-			return err
-		}
-		result = append(result, e)
-		return nil
-	})
-	return result, err
-}
-
-func (r *Envelopes) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Envelope, error) {
-	result := &models.Envelope{}
-	err := r.findByID(ctx, id, result)
-	if err == mongo.ErrNoDocuments {
+func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (*models.Envelope, error) {
+	find := doc{
+		"_id": budgetID,
+		"envelopes.name": envelopeName,
+	}
+	project := doc {
+		"envelopes.$": 1,
+	}
+	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
-	}
-	return result, err
-}
-
-func (r *Envelopes) ReplaceByID(ctx context.Context, id primitive.ObjectID, input models.EnvelopeInput) (*models.Envelope, error) {
-	result := &models.Envelope{}
-	replacement := input.ToModel(r.budgetID)
-	err := r.replaceOne(ctx, doc{budgetID: r.budgetID, _id: id}, replacement, result)
-	if err == mongo.ErrNoDocuments {
-		return nil, nil
-	}
-	return result, err
-}
-
-func (r *Envelopes) Insert(ctx context.Context, input models.EnvelopeInput) (*models.Envelope, error) {
-	if err := r.expectBudget(ctx, r.budgetID); err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 
-	envelope := input.ToModel(r.budgetID)
-	result, err := r.collection.InsertOne(ctx, envelope)
+	result := &models.Budget{}
+	err := res.Decode(result)
 	if err != nil {
 		return nil, err
 	}
-	return envelope.WithID(result.InsertedID.(primitive.ObjectID)), nil
+	account := result.Envelopes[0]
+	account.BudgetID = budgetID
+	return account, nil
+}
+
+func (s *Storage) doesEnvelopeExist(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (bool, error) {
+	find := doc{
+		"_id": budgetID,
+		"envelopes.name": envelopeName,
+	}
+	res := s.db.Collection(budgets).FindOne(ctx, find)
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }

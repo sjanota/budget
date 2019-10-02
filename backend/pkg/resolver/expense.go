@@ -9,6 +9,10 @@ import (
 
 type expenseResolver struct{ *Resolver }
 
+func (r *expenseResolver) Entries(ctx context.Context, obj *models.Expense) ([]*models.ExpenseCategory, error) {
+	panic("implement me")
+}
+
 func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*models.Account, error) {
 	if obj.AccountID == nil {
 		return nil, nil
@@ -21,11 +25,10 @@ func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*mo
 
 type expenseEntryResolver struct{ *Resolver }
 
-func (r *expenseEntryResolver) Category(ctx context.Context, obj *models.ExpenseEntry) (*models.Category, error) {
+func (r *expenseEntryResolver) Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error) {
 	return &models.Category{
 		ID:          obj.CategoryID,
 		Name:        "",
-		Description: nil,
 		EnvelopeID:  primitive.NewObjectID(),
 	}, nil
 }

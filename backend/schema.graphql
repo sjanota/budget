@@ -1,4 +1,4 @@
-scalar Date
+scalar Time
 
 type Amount {
   integer: Int!
@@ -11,28 +11,24 @@ input AmountInput {
 
 type Expense {
   id: ID!
-  title: String!
-  entries: [ExpenseEntry!]!
-  totalBalance: Amount!
-  date: Date
+  entries: [ExpenseCategory!]!
+  balance: Amount!
+  date: Time
   account: Account
 }
 input ExpenseInput {
   title: String!
   location: String
-  entries: [ExpenseEntryInput!]!
-  totalBalance: AmountInput!
-  date: Date
+  entries: [ExpenseCategoryInput!]!
+  date: Time
   accountID: ID
 }
 
-type ExpenseEntry {
-  title: String!
+type ExpenseCategory {
   category: Category!
   balance: Amount!
 }
-input ExpenseEntryInput {
-  title: String!
+input ExpenseCategoryInput {
   categoryID: ID!
   balance: AmountInput!
 }
@@ -54,6 +50,7 @@ type Account {
 }
 input AccountInput {
   name: String!
+  balance: AmountInput
 }
 
 type Envelope {
@@ -67,7 +64,7 @@ input EnvelopeInput {
 
 type AccountTransfer {
   id: ID!
-  date: Date
+  date: Time
   from: Account
   to: Account
   amount: Amount!
@@ -75,7 +72,7 @@ type AccountTransfer {
 
 type EnvelopeTransfer {
   id: ID!
-  date: Date
+  date: Time
   from: Envelope
   to: Account
   amount: Amount!
@@ -83,7 +80,6 @@ type EnvelopeTransfer {
 
 type Budget {
   id: ID!
-  name: String!
   expenses: [Expense!]!
 }
 

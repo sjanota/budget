@@ -13,12 +13,12 @@ type envelopeResolver struct {
 
 func (r *envelopeResolver) Balance(ctx context.Context, envelope *models.Envelope) (*models.Amount, error) {
 	var change models.Amount
-	budget, err := r.storage.GetBudget(envelope.BudgetID)
+	budget, err := r.storage.GetBudget(ctx, envelope.BudgetID)
 	if err != nil {
 		return nil, err
 	}
 
-	monthlyBudget, err := r.storage.GetCurrentMonthlyBudget(envelope.BudgetID)
+	monthlyBudget, err := r.storage.GetCurrentMonthlyBudget(ctx, envelope.BudgetID)
 	if err != nil {
 		return nil, err
 	}

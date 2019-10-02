@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -42,6 +43,7 @@ type ResolverRoot interface {
 	Category() CategoryResolver
 	Envelope() EnvelopeResolver
 	Expense() ExpenseResolver
+	ExpenseCategory() ExpenseCategoryResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
@@ -73,7 +75,6 @@ type ComplexityRoot struct {
 	Budget struct {
 		Expenses func(childComplexity int) int
 		ID       func(childComplexity int) int
-		Name     func(childComplexity int) int
 	}
 
 	Category struct {
@@ -97,18 +98,16 @@ type ComplexityRoot struct {
 	}
 
 	Expense struct {
-		Account      func(childComplexity int) int
-		Date         func(childComplexity int) int
-		Entries      func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Title        func(childComplexity int) int
-		TotalBalance func(childComplexity int) int
+		Account func(childComplexity int) int
+		Balance func(childComplexity int) int
+		Date    func(childComplexity int) int
+		Entries func(childComplexity int) int
+		ID      func(childComplexity int) int
 	}
 
-	ExpenseEntry struct {
+	ExpenseCategory struct {
 		Balance  func(childComplexity int) int
 		Category func(childComplexity int) int
-		Title    func(childComplexity int) int
 	}
 
 	ExpenseEvent struct {
@@ -148,24 +147,31 @@ type ComplexityRoot struct {
 }
 
 type AccountResolver interface {
+	ID(ctx context.Context, obj *models.Account) (primitive.ObjectID, error)
+
 	Balance(ctx context.Context, obj *models.Account) (*models.Amount, error)
 }
 type BudgetResolver interface {
-	Name(ctx context.Context, obj *models.Budget) (string, error)
 	Expenses(ctx context.Context, obj *models.Budget) ([]*models.Expense, error)
 }
 type CategoryResolver interface {
+	ID(ctx context.Context, obj *models.Category) (primitive.ObjectID, error)
+
 	Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error)
 }
 type EnvelopeResolver interface {
+	ID(ctx context.Context, obj *models.Envelope) (primitive.ObjectID, error)
+
 	Balance(ctx context.Context, obj *models.Envelope) (*models.Amount, error)
 }
 type ExpenseResolver interface {
-	Title(ctx context.Context, obj *models.Expense) (string, error)
-	Entries(ctx context.Context, obj *models.Expense) ([]*models.ExpenseEntry, error)
-	TotalBalance(ctx context.Context, obj *models.Expense) (*models.Amount, error)
-	Date(ctx context.Context, obj *models.Expense) (*string, error)
+	ID(ctx context.Context, obj *models.Expense) (primitive.ObjectID, error)
+	Entries(ctx context.Context, obj *models.Expense) ([]*models.ExpenseCategory, error)
+
 	Account(ctx context.Context, obj *models.Expense) (*models.Account, error)
+}
+type ExpenseCategoryResolver interface {
+	Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error)
 }
 type MutationResolver interface {
 	CreateBudget(ctx context.Context, name string) (*models.Budget, error)
@@ -294,13 +300,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Budget.ID(childComplexity), true
 
-	case "Budget.name":
-		if e.complexity.Budget.Name == nil {
-			break
-		}
-
-		return e.complexity.Budget.Name(childComplexity), true
-
 	case "Category.envelope":
 		if e.complexity.Category.Envelope == nil {
 			break
@@ -385,6 +384,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Expense.Account(childComplexity), true
 
+	case "Expense.balance":
+		if e.complexity.Expense.Balance == nil {
+			break
+		}
+
+		return e.complexity.Expense.Balance(childComplexity), true
+
 	case "Expense.date":
 		if e.complexity.Expense.Date == nil {
 			break
@@ -406,40 +412,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Expense.ID(childComplexity), true
 
-	case "Expense.title":
-		if e.complexity.Expense.Title == nil {
+	case "ExpenseCategory.balance":
+		if e.complexity.ExpenseCategory.Balance == nil {
 			break
 		}
 
-		return e.complexity.Expense.Title(childComplexity), true
+		return e.complexity.ExpenseCategory.Balance(childComplexity), true
 
-	case "Expense.totalBalance":
-		if e.complexity.Expense.TotalBalance == nil {
+	case "ExpenseCategory.category":
+		if e.complexity.ExpenseCategory.Category == nil {
 			break
 		}
 
-		return e.complexity.Expense.TotalBalance(childComplexity), true
-
-	case "ExpenseEntry.balance":
-		if e.complexity.ExpenseEntry.Balance == nil {
-			break
-		}
-
-		return e.complexity.ExpenseEntry.Balance(childComplexity), true
-
-	case "ExpenseEntry.category":
-		if e.complexity.ExpenseEntry.Category == nil {
-			break
-		}
-
-		return e.complexity.ExpenseEntry.Category(childComplexity), true
-
-	case "ExpenseEntry.title":
-		if e.complexity.ExpenseEntry.Title == nil {
-			break
-		}
-
-		return e.complexity.ExpenseEntry.Title(childComplexity), true
+		return e.complexity.ExpenseCategory.Category(childComplexity), true
 
 	case "ExpenseEvent.expense":
 		if e.complexity.ExpenseEvent.Expense == nil {
@@ -793,7 +778,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var parsedSchema = gqlparser.MustLoadSchema(
-	&ast.Source{Name: "schema.graphql", Input: `scalar Date
+	&ast.Source{Name: "schema.graphql", Input: `scalar Time
 
 type Amount {
   integer: Int!
@@ -806,28 +791,24 @@ input AmountInput {
 
 type Expense {
   id: ID!
-  title: String!
-  entries: [ExpenseEntry!]!
-  totalBalance: Amount!
-  date: Date
+  entries: [ExpenseCategory!]!
+  balance: Amount!
+  date: Time
   account: Account
 }
 input ExpenseInput {
   title: String!
   location: String
-  entries: [ExpenseEntryInput!]!
-  totalBalance: AmountInput!
-  date: Date
+  entries: [ExpenseCategoryInput!]!
+  date: Time
   accountID: ID
 }
 
-type ExpenseEntry {
-  title: String!
+type ExpenseCategory {
   category: Category!
   balance: Amount!
 }
-input ExpenseEntryInput {
-  title: String!
+input ExpenseCategoryInput {
   categoryID: ID!
   balance: AmountInput!
 }
@@ -849,6 +830,7 @@ type Account {
 }
 input AccountInput {
   name: String!
+  balance: AmountInput
 }
 
 type Envelope {
@@ -862,7 +844,7 @@ input EnvelopeInput {
 
 type AccountTransfer {
   id: ID!
-  date: Date
+  date: Time
   from: Account
   to: Account
   amount: Amount!
@@ -870,7 +852,7 @@ type AccountTransfer {
 
 type EnvelopeTransfer {
   id: ID!
-  date: Date
+  date: Time
   from: Envelope
   to: Account
   amount: Amount!
@@ -878,7 +860,6 @@ type EnvelopeTransfer {
 
 type Budget {
   id: ID!
-  name: String!
   expenses: [Expense!]!
 }
 
@@ -1422,13 +1403,13 @@ func (ec *executionContext) _Account_id(ctx context.Context, field graphql.Colle
 		Object:   "Account",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Account().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1585,10 +1566,10 @@ func (ec *executionContext) _AccountTransfer_date(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*time.Time)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AccountTransfer_from(ctx context.Context, field graphql.CollectedField, obj *models.AccountTransfer) (ret graphql.Marshaler) {
@@ -1807,43 +1788,6 @@ func (ec *executionContext) _Budget_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Budget_name(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Budget",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Budget().Name(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Budget_expenses(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -1894,13 +1838,13 @@ func (ec *executionContext) _Category_id(ctx context.Context, field graphql.Coll
 		Object:   "Category",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Category().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2005,13 +1949,13 @@ func (ec *executionContext) _Envelope_id(ctx context.Context, field graphql.Coll
 		Object:   "Envelope",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Envelope().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2168,10 +2112,10 @@ func (ec *executionContext) _EnvelopeTransfer_date(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*time.Time)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EnvelopeTransfer_from(ctx context.Context, field graphql.CollectedField, obj *models.EnvelopeTransfer) (ret graphql.Marshaler) {
@@ -2292,13 +2236,13 @@ func (ec *executionContext) _Expense_id(ctx context.Context, field graphql.Colle
 		Object:   "Expense",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Expense().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2314,43 +2258,6 @@ func (ec *executionContext) _Expense_id(ctx context.Context, field graphql.Colle
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Expense_title(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Expense",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Expense().Title(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Expense_entries(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
@@ -2384,13 +2291,13 @@ func (ec *executionContext) _Expense_entries(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.ExpenseEntry)
+	res := resTmp.([]*models.ExpenseCategory)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNExpenseEntry2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntry(ctx, field.Selections, res)
+	return ec.marshalNExpenseCategory2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Expense_totalBalance(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
+func (ec *executionContext) _Expense_balance(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2409,7 +2316,7 @@ func (ec *executionContext) _Expense_totalBalance(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Expense().TotalBalance(rctx, obj)
+		return obj.Balance(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2421,10 +2328,10 @@ func (ec *executionContext) _Expense_totalBalance(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Amount)
+	res := resTmp.(models.Amount)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Expense_date(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
@@ -2440,13 +2347,13 @@ func (ec *executionContext) _Expense_date(ctx context.Context, field graphql.Col
 		Object:   "Expense",
 		Field:    field,
 		Args:     nil,
-		IsMethod: true,
+		IsMethod: false,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Expense().Date(rctx, obj)
+		return obj.Date, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2455,10 +2362,10 @@ func (ec *executionContext) _Expense_date(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*time.Time)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Expense_account(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
@@ -2495,7 +2402,7 @@ func (ec *executionContext) _Expense_account(ctx context.Context, field graphql.
 	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ExpenseEntry_title(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEntry) (ret graphql.Marshaler) {
+func (ec *executionContext) _ExpenseCategory_category(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseCategory) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2505,53 +2412,16 @@ func (ec *executionContext) _ExpenseEntry_title(ctx context.Context, field graph
 		ec.Tracer.EndFieldExecution(ctx)
 	}()
 	rctx := &graphql.ResolverContext{
-		Object:   "ExpenseEntry",
+		Object:   "ExpenseCategory",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Title, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ExpenseEntry_category(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEntry) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "ExpenseEntry",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Category, nil
+		return ec.resolvers.ExpenseCategory().Category(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2569,7 +2439,7 @@ func (ec *executionContext) _ExpenseEntry_category(ctx context.Context, field gr
 	return ec.marshalNCategory2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐCategory(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ExpenseEntry_balance(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEntry) (ret graphql.Marshaler) {
+func (ec *executionContext) _ExpenseCategory_balance(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseCategory) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -2579,7 +2449,7 @@ func (ec *executionContext) _ExpenseEntry_balance(ctx context.Context, field gra
 		ec.Tracer.EndFieldExecution(ctx)
 	}()
 	rctx := &graphql.ResolverContext{
-		Object:   "ExpenseEntry",
+		Object:   "ExpenseCategory",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -2600,10 +2470,10 @@ func (ec *executionContext) _ExpenseEntry_balance(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Amount)
+	res := resTmp.(models.Amount)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ExpenseEvent_type(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseEvent) (ret graphql.Marshaler) {
@@ -4777,6 +4647,12 @@ func (ec *executionContext) unmarshalInputAccountInput(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
+		case "balance":
+			var err error
+			it.Balance, err = ec.unmarshalOAmountInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmountInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4849,18 +4725,12 @@ func (ec *executionContext) unmarshalInputEnvelopeInput(ctx context.Context, obj
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputExpenseEntryInput(ctx context.Context, obj interface{}) (models.ExpenseEntryInput, error) {
-	var it models.ExpenseEntryInput
+func (ec *executionContext) unmarshalInputExpenseCategoryInput(ctx context.Context, obj interface{}) (models.ExpenseCategoryInput, error) {
+	var it models.ExpenseCategoryInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
-		case "title":
-			var err error
-			it.Title, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "categoryID":
 			var err error
 			it.CategoryID, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
@@ -4899,19 +4769,13 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 			}
 		case "entries":
 			var err error
-			it.Entries, err = ec.unmarshalNExpenseEntryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "totalBalance":
-			var err error
-			it.TotalBalance, err = ec.unmarshalNAmountInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmountInput(ctx, v)
+			it.Entries, err = ec.unmarshalNExpenseCategoryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "date":
 			var err error
-			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			it.Date, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4947,10 +4811,19 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Account")
 		case "id":
-			out.Values[i] = ec._Account_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Account_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "name":
 			out.Values[i] = ec._Account_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5067,20 +4940,6 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "name":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Budget_name(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		case "expenses":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5118,10 +4977,19 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Category")
 		case "id":
-			out.Values[i] = ec._Category_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Category_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "name":
 			out.Values[i] = ec._Category_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5164,10 +5032,19 @@ func (ec *executionContext) _Envelope(ctx context.Context, sel ast.SelectionSet,
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Envelope")
 		case "id":
-			out.Values[i] = ec._Envelope_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Envelope_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "name":
 			out.Values[i] = ec._Envelope_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5248,11 +5125,6 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Expense")
 		case "id":
-			out.Values[i] = ec._Expense_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "title":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -5260,7 +5132,7 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Expense_title(ctx, field, obj)
+				res = ec._Expense_id(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -5280,31 +5152,13 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 				}
 				return res
 			})
-		case "totalBalance":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Expense_totalBalance(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+		case "balance":
+			out.Values[i] = ec._Expense_balance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "date":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Expense_date(ctx, field, obj)
-				return res
-			})
+			out.Values[i] = ec._Expense_date(ctx, field, obj)
 		case "account":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5327,31 +5181,35 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
-var expenseEntryImplementors = []string{"ExpenseEntry"}
+var expenseCategoryImplementors = []string{"ExpenseCategory"}
 
-func (ec *executionContext) _ExpenseEntry(ctx context.Context, sel ast.SelectionSet, obj *models.ExpenseEntry) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, expenseEntryImplementors)
+func (ec *executionContext) _ExpenseCategory(ctx context.Context, sel ast.SelectionSet, obj *models.ExpenseCategory) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, expenseCategoryImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("ExpenseEntry")
-		case "title":
-			out.Values[i] = ec._ExpenseEntry_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			out.Values[i] = graphql.MarshalString("ExpenseCategory")
 		case "category":
-			out.Values[i] = ec._ExpenseEntry_category(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ExpenseCategory_category(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "balance":
-			out.Values[i] = ec._ExpenseEntry_balance(ctx, field, obj)
+			out.Values[i] = ec._ExpenseCategory_balance(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -6175,11 +6033,11 @@ func (ec *executionContext) marshalNExpense2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 	return ec._Expense(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNExpenseEntry2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntry(ctx context.Context, sel ast.SelectionSet, v models.ExpenseEntry) graphql.Marshaler {
-	return ec._ExpenseEntry(ctx, sel, &v)
+func (ec *executionContext) marshalNExpenseCategory2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx context.Context, sel ast.SelectionSet, v models.ExpenseCategory) graphql.Marshaler {
+	return ec._ExpenseCategory(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNExpenseEntry2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntry(ctx context.Context, sel ast.SelectionSet, v []*models.ExpenseEntry) graphql.Marshaler {
+func (ec *executionContext) marshalNExpenseCategory2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx context.Context, sel ast.SelectionSet, v []*models.ExpenseCategory) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6203,7 +6061,7 @@ func (ec *executionContext) marshalNExpenseEntry2ᚕᚖgithubᚗcomᚋsjanotaᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNExpenseEntry2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntry(ctx, sel, v[i])
+			ret[i] = ec.marshalNExpenseCategory2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6216,21 +6074,21 @@ func (ec *executionContext) marshalNExpenseEntry2ᚕᚖgithubᚗcomᚋsjanotaᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNExpenseEntry2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntry(ctx context.Context, sel ast.SelectionSet, v *models.ExpenseEntry) graphql.Marshaler {
+func (ec *executionContext) marshalNExpenseCategory2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx context.Context, sel ast.SelectionSet, v *models.ExpenseCategory) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._ExpenseEntry(ctx, sel, v)
+	return ec._ExpenseCategory(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNExpenseEntryInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx context.Context, v interface{}) (models.ExpenseEntryInput, error) {
-	return ec.unmarshalInputExpenseEntryInput(ctx, v)
+func (ec *executionContext) unmarshalNExpenseCategoryInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx context.Context, v interface{}) (models.ExpenseCategoryInput, error) {
+	return ec.unmarshalInputExpenseCategoryInput(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNExpenseEntryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx context.Context, v interface{}) ([]*models.ExpenseEntryInput, error) {
+func (ec *executionContext) unmarshalNExpenseCategoryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx context.Context, v interface{}) ([]*models.ExpenseCategoryInput, error) {
 	var vSlice []interface{}
 	if v != nil {
 		if tmp1, ok := v.([]interface{}); ok {
@@ -6240,9 +6098,9 @@ func (ec *executionContext) unmarshalNExpenseEntryInput2ᚕᚖgithubᚗcomᚋsja
 		}
 	}
 	var err error
-	res := make([]*models.ExpenseEntryInput, len(vSlice))
+	res := make([]*models.ExpenseCategoryInput, len(vSlice))
 	for i := range vSlice {
-		res[i], err = ec.unmarshalNExpenseEntryInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNExpenseCategoryInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -6250,11 +6108,11 @@ func (ec *executionContext) unmarshalNExpenseEntryInput2ᚕᚖgithubᚗcomᚋsja
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNExpenseEntryInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx context.Context, v interface{}) (*models.ExpenseEntryInput, error) {
+func (ec *executionContext) unmarshalNExpenseCategoryInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx context.Context, v interface{}) (*models.ExpenseCategoryInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalNExpenseEntryInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseEntryInput(ctx, v)
+	res, err := ec.unmarshalNExpenseCategoryInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx, v)
 	return &res, err
 }
 
@@ -6555,6 +6413,18 @@ func (ec *executionContext) marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 	return ec._Account(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOAmountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmountInput(ctx context.Context, v interface{}) (models.AmountInput, error) {
+	return ec.unmarshalInputAmountInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOAmountInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmountInput(ctx context.Context, v interface{}) (*models.AmountInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOAmountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmountInput(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
 }
@@ -6598,29 +6468,6 @@ func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 		return graphql.Null
 	}
 	return ec._Category(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalODate2string(ctx context.Context, v interface{}) (string, error) {
-	return graphql.UnmarshalString(v)
-}
-
-func (ec *executionContext) marshalODate2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalString(v)
-}
-
-func (ec *executionContext) unmarshalODate2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalODate2string(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) marshalODate2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec.marshalODate2string(ctx, sel, *v)
 }
 
 func (ec *executionContext) marshalOEnvelope2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx context.Context, sel ast.SelectionSet, v models.Envelope) graphql.Marshaler {
@@ -6689,6 +6536,29 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	return graphql.MarshalTime(v)
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOTime2timeᚐTime(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
