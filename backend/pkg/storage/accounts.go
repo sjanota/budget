@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Storage) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, input *models.AccountInput) (*models.Account, error) {
-	if exists, err := s.doesAccountWithTheSameNameExist(ctx, budgetID, input.Name); err != nil {
+	if exists, err := s.budgetEntityExistsByName(ctx, budgetID, "accounts", input.Name); err != nil {
 		return nil, err
 	} else if exists {
 		return nil, ErrAccountAlreadyExists
@@ -35,33 +35,22 @@ func (s *Storage) CreateAccount(ctx context.Context, budgetID primitive.ObjectID
 	return toInsert, nil
 }
 
-func (s *Storage) GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error) {
-	find := doc{
-		"_id":          budgetID,
-		"accounts._id": accountID,
-	}
-	project := doc{
-		"accounts.$": 1,
-	}
-	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	result := &models.Budget{}
-	err := res.Decode(result)
+func (s *Storage) GetAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Account, error) {
+	budget, err := s.getBudgetByEntityID(ctx, budgetID, "accounts", id)
 	if err != nil {
 		return nil, err
 	}
-	account := result.Accounts[0]
+	if len(budget.Accounts) == 0 {
+		return nil, nil
+	}
+
+	account := budget.Accounts[0]
 	account.BudgetID = budgetID
 	return account, nil
 }
 
 func (s *Storage) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID, changes models.Changes) (*models.Account, error) {
-	if exists, err := s.doesAccountExist(ctx, budgetID, accountID); err != nil {
+	if exists, err := s.budgetEntityExistsByID(ctx, budgetID, "accounts", accountID); err != nil {
 		return nil, err
 	} else if !exists {
 		return nil, ErrAccountDoesNotExists
@@ -100,32 +89,4 @@ func (s *Storage) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID
 	account := result.Accounts[0]
 	account.BudgetID = budgetID
 	return account, nil
-}
-
-func (s *Storage) doesAccountWithTheSameNameExist(ctx context.Context, budgetID primitive.ObjectID, accountName string) (bool, error) {
-	find := doc{
-		"_id":           budgetID,
-		"accounts.name": accountName,
-	}
-	res := s.db.Collection(budgets).FindOne(ctx, find)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func (s *Storage) doesAccountExist(ctx context.Context, budgetID, accountID primitive.ObjectID) (bool, error) {
-	find := doc{
-		"_id":          budgetID,
-		"accounts._id": accountID,
-	}
-	res := s.db.Collection(budgets).FindOne(ctx, find)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }

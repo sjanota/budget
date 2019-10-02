@@ -21,6 +21,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 	assert.Equal(t, models.Amount{0, 0}, created.Balance)
 	assert.Equal(t, input.Limit, created.Limit)
 	assert.Equal(t, budget.ID, created.BudgetID)
+	assert.NotEqual(t, primitive.ObjectID{}, created.ID)
 }
 
 func TestStorage_CreateEnvelope_DuplicateName(t *testing.T) {
@@ -51,20 +52,27 @@ func TestStorage_GetEnvelope(t *testing.T) {
 	created, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
 	require.NoError(t, err)
 
-	envelope, err := testStorage.GetEnvelope(ctx, budget.ID, created.Name)
+	envelope, err := testStorage.GetEnvelope(ctx, budget.ID, created.ID)
 	require.NoError(t, err)
 	assert.Equal(t, created.Name, envelope.Name)
 	assert.Equal(t, created.Balance, envelope.Balance)
 	assert.Equal(t, created.Limit, envelope.Limit)
 	assert.Equal(t, created.BudgetID, envelope.BudgetID)
+	assert.Equal(t, created.ID, envelope.ID)
 }
 
 func TestStorage_GetEnvelope_NotFound(t *testing.T) {
 	ctx := before(t)
-	input := &models.EnvelopeInput{Name: "test-envelope", Limit: models.Amount{12, 36}}
 	budget := whenSomeBudgetExists(t, ctx)
 
-	envelope, err := testStorage.GetEnvelope(ctx, budget.ID, input.Name)
+	envelope, err := testStorage.GetEnvelope(ctx, budget.ID, primitive.NewObjectID())
 	require.NoError(t, err)
 	assert.Nil(t, envelope)
+}
+
+func TestStorage_GetEnvelope_NoBudget(t *testing.T) {
+	ctx := before(t)
+
+	_, err := testStorage.GetEnvelope(ctx, primitive.NewObjectID(), primitive.NewObjectID())
+	require.EqualError(t, err, storage.ErrNoBudget.Error())
 }

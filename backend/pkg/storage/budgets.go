@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,6 +32,57 @@ func (s *Storage) GetBudget(ctx context.Context, id primitive.ObjectID) (*models
 	res := s.db.Collection(budgets).FindOne(ctx, find)
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.Budget{}
+	err := res.Decode(result)
+	return result, err
+}
+
+func (s *Storage) budgetEntityExistsByName(ctx context.Context, budgetID primitive.ObjectID, arrayField, name string) (bool, error) {
+	find := doc{
+		"_id":                budgetID,
+		arrayField + ".name": name,
+	}
+	res := s.db.Collection(budgets).FindOne(ctx, find)
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Storage) budgetEntityExistsByID(ctx context.Context, budgetID primitive.ObjectID, arrayField string, id primitive.ObjectID) (bool, error) {
+	find := doc{
+		"_id":               budgetID,
+		arrayField + "._id": id,
+	}
+	res := s.db.Collection(budgets).FindOne(ctx, find)
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.ObjectID, arrayField string, id primitive.ObjectID) (*models.Budget, error) {
+	find := doc{
+		"_id":          budgetID,
+	}
+	project := doc{
+		arrayField: doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, ErrNoBudget
 	} else if err != nil {
 		return nil, err
 	}

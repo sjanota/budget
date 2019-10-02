@@ -5,18 +5,16 @@ import (
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input *models.EnvelopeInput) (*models.Envelope, error) {
-	if exists, err := s.doesEnvelopeExist(ctx, budgetID, input.Name); err != nil {
+	if exists, err := s.budgetEntityExistsByName(ctx, budgetID, "envelopes", input.Name); err != nil {
 		return nil, err
 	} else if exists {
 		return nil, ErrEnvelopeAlreadyExists
 	}
 
-	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit}
+	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID()}
 	find := doc{
 		"_id": budgetID,
 	}
@@ -35,41 +33,16 @@ func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectI
 	return toInsert, nil
 }
 
-func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (*models.Envelope, error) {
-	find := doc{
-		"_id":            budgetID,
-		"envelopes.name": envelopeName,
-	}
-	project := doc{
-		"envelopes.$": 1,
-	}
-	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	result := &models.Budget{}
-	err := res.Decode(result)
+func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Envelope, error) {
+	budget, err := s.getBudgetByEntityID(ctx, budgetID, "envelopes", id)
 	if err != nil {
 		return nil, err
 	}
-	account := result.Envelopes[0]
-	account.BudgetID = budgetID
-	return account, nil
-}
+	if len(budget.Envelopes) == 0 {
+		return nil, nil
+	}
 
-func (s *Storage) doesEnvelopeExist(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (bool, error) {
-	find := doc{
-		"_id":            budgetID,
-		"envelopes.name": envelopeName,
-	}
-	res := s.db.Collection(budgets).FindOne(ctx, find)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
+	envelope := budget.Envelopes[0]
+	envelope.BudgetID = budgetID
+	return envelope, nil
 }

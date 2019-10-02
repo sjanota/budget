@@ -68,6 +68,13 @@ func TestStorage_GetAccount_NotFound(t *testing.T) {
 	assert.Nil(t, account)
 }
 
+func TestStorage_GetAccount_NoBudget(t *testing.T) {
+	ctx := before(t)
+
+	_, err := testStorage.GetAccount(ctx, primitive.NewObjectID(), primitive.NewObjectID())
+	require.EqualError(t, err, storage.ErrNoBudget.Error())
+}
+
 func TestStorage_UpdateAccount(t *testing.T) {
 	ctx := before(t)
 	budget := whenSomeBudgetExists(t, ctx)
