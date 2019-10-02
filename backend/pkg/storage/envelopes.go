@@ -8,26 +8,9 @@ import (
 )
 
 func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input *models.EnvelopeInput) (*models.Envelope, error) {
-	if exists, err := s.budgetEntityExistsByName(ctx, budgetID, "envelopes", input.Name); err != nil {
-		return nil, err
-	} else if exists {
-		return nil, ErrEnvelopeAlreadyExists
-	}
-
 	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID()}
-	find := doc{
-		"_id": budgetID,
-	}
-	update := doc{
-		"$push": doc{
-			"envelopes": toInsert,
-		},
-	}
-	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
-	if err != nil {
+	if err := s.pushEntityToBudgetByName(ctx, budgetID, "envelopes", input.Name, toInsert); err != nil {
 		return nil, err
-	} else if res.MatchedCount == 0 {
-		return nil, ErrNoBudget
 	}
 	toInsert.BudgetID = budgetID
 	return toInsert, nil

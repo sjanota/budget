@@ -32,7 +32,7 @@ func TestStorage_CreateAccount_DuplicateName(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = testStorage.CreateAccount(ctx, budget.ID, input)
-	require.EqualError(t, err, storage.ErrAccountAlreadyExists.Error())
+	require.EqualError(t, err, storage.ErrAlreadyExists.Error())
 }
 
 func TestStorage_CreateAccount_NoBudget(t *testing.T) {
@@ -98,5 +98,5 @@ func TestStorage_UpdateAccount_NotFound(t *testing.T) {
 
 	changes := models.Changes{"name": "new-name"}
 	_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
-	assert.EqualError(t, err, storage.ErrAccountDoesNotExists.Error())
+	assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 }

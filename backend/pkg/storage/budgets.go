@@ -91,3 +91,31 @@ func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.Ob
 	err := res.Decode(result)
 	return result, err
 }
+
+func (s *Storage) pushEntityToBudgetByName(ctx context.Context, budgetID primitive.ObjectID, arrayField, name string, input interface{}) error {
+	if exists, err := s.budgetEntityExistsByName(ctx, budgetID, arrayField, name); err != nil {
+		return err
+	} else if exists {
+		return ErrAlreadyExists
+	}
+
+	return s.pushEntityToBudget(ctx, budgetID, arrayField, input)
+}
+
+func (s *Storage) pushEntityToBudget(ctx context.Context, budgetID primitive.ObjectID, arrayField string, input interface{}) error {
+	find := doc{
+		"_id": budgetID,
+	}
+	update := doc{
+		"$push": doc{
+			arrayField: input,
+		},
+	}
+	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
+	if err != nil {
+		return err
+	} else if res.MatchedCount == 0 {
+		return ErrNoBudget
+	}
+	return nil
+}

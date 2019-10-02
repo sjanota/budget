@@ -114,14 +114,14 @@ type Plan struct {
 }
 
 type Category struct {
-	Name         string `json:"name"`
-	EnvelopeName string
-	BudgetID     primitive.ObjectID
+	Name       string `json:"name"`
+	EnvelopeID primitive.ObjectID
+	BudgetID   primitive.ObjectID
 }
 
 type CategoryInput struct {
-	Name         string `json:"name"`
-	EnvelopeName string `json:"envelopeName"`
+	Name       string             `json:"name"`
+	EnvelopeID primitive.ObjectID `json:"envelopeID"`
 }
 
 func (a Amount) Add(other Amount) Amount {

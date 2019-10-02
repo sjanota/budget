@@ -14,20 +14,9 @@ func (s *Storage) CreateCategory(ctx context.Context, budgetID primitive.ObjectI
 		return nil, err
 	}
 
-	toInsert := &models.Category{Name: input.Name, EnvelopeName: input.EnvelopeName}
-	find := doc{
-		"_id": budgetID,
-	}
-	update := doc{
-		"$push": doc{
-			"categories": toInsert,
-		},
-	}
-	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
-	if err != nil {
+	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID}
+	if err := s.pushEntityToBudget(ctx, budgetID, "categories", toInsert); err != nil {
 		return nil, err
-	} else if res.MatchedCount == 0 {
-		return nil, ErrNoBudget
 	}
 	toInsert.BudgetID = budgetID
 	return toInsert, nil
@@ -49,7 +38,7 @@ func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.Ob
 		},
 		"envelopes": doc{
 			"$elemMatch": doc{
-				"name": input.EnvelopeName,
+				"_id": input.EnvelopeID,
 			},
 		},
 	}
@@ -67,10 +56,10 @@ func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.Ob
 	}
 
 	if len(result.Envelopes) == 0 {
-		return ErrEnvelopeDoesNotExists
+		return ErrInvalidReference
 	}
 	if len(result.Categories) == 1 {
-		return ErrCategoryAlreadyExists
+		return ErrAlreadyExists
 	}
 	return nil
 }

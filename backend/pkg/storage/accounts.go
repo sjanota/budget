@@ -10,26 +10,9 @@ import (
 )
 
 func (s *Storage) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, input *models.AccountInput) (*models.Account, error) {
-	if exists, err := s.budgetEntityExistsByName(ctx, budgetID, "accounts", input.Name); err != nil {
-		return nil, err
-	} else if exists {
-		return nil, ErrAccountAlreadyExists
-	}
-
 	toInsert := &models.Account{Name: input.Name, ID: primitive.NewObjectID()}
-	find := doc{
-		"_id": budgetID,
-	}
-	update := doc{
-		"$push": doc{
-			"accounts": toInsert,
-		},
-	}
-	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
-	if err != nil {
+	if err := s.pushEntityToBudgetByName(ctx, budgetID, "accounts", input.Name, toInsert); err != nil {
 		return nil, err
-	} else if res.MatchedCount == 0 {
-		return nil, ErrNoBudget
 	}
 	toInsert.BudgetID = budgetID
 	return toInsert, nil
@@ -53,7 +36,7 @@ func (s *Storage) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID
 	if exists, err := s.budgetEntityExistsByID(ctx, budgetID, "accounts", accountID); err != nil {
 		return nil, err
 	} else if !exists {
-		return nil, ErrAccountDoesNotExists
+		return nil, ErrDoesNotExists
 	}
 
 	find := doc{

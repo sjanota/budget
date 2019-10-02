@@ -33,7 +33,7 @@ func TestStorage_CreateEnvelope_DuplicateName(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = testStorage.CreateEnvelope(ctx, budget.ID, input)
-	require.EqualError(t, err, storage.ErrEnvelopeAlreadyExists.Error())
+	require.EqualError(t, err, storage.ErrAlreadyExists.Error())
 }
 
 func TestStorage_CreateEnvelope_NoBudget(t *testing.T) {
