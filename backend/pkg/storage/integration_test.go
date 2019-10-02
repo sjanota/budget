@@ -3,13 +3,14 @@ package storage_test
 import (
 	"context"
 	"fmt"
-	"github.com/sjanota/budget/backend/pkg/models"
-	"github.com/stretchr/testify/require"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/sjanota/budget/backend/pkg/models"
+	"github.com/stretchr/testify/require"
 
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -118,7 +119,7 @@ func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 }
 
 func whenSomeEnvelopeExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Envelope {
-	input := &models.EnvelopeInput{Name: "test-account", Limit: models.Amount{12,36}}
+	input := &models.EnvelopeInput{Name: "test-account", Limit: models.Amount{12, 36}}
 	envelope, err := testStorage.CreateEnvelope(ctx, budgetID, input)
 	require.NoError(t, err)
 	return envelope

@@ -1,12 +1,13 @@
 package storage_test
 
 import (
+	"testing"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gotest.tools/assert"
-	"testing"
 )
 
 func TestStorage_CreateCategory(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 )
 
 type Storage struct {
-	db         *mongo.Database
+	db *mongo.Database
 }
 
 func New(uri string) (*Storage, error) {

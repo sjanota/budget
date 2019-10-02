@@ -27,8 +27,8 @@ type expenseEntryResolver struct{ *Resolver }
 
 func (r *expenseEntryResolver) Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error) {
 	return &models.Category{
-		ID:          obj.CategoryID,
-		Name:        "",
-		EnvelopeID:  primitive.NewObjectID(),
+		ID:         obj.CategoryID,
+		Name:       "",
+		EnvelopeID: primitive.NewObjectID(),
 	}, nil
 }

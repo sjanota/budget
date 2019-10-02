@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,10 +37,10 @@ func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectI
 
 func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (*models.Envelope, error) {
 	find := doc{
-		"_id": budgetID,
+		"_id":            budgetID,
 		"envelopes.name": envelopeName,
 	}
-	project := doc {
+	project := doc{
 		"envelopes.$": 1,
 	}
 	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
@@ -61,7 +62,7 @@ func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, 
 
 func (s *Storage) doesEnvelopeExist(ctx context.Context, budgetID primitive.ObjectID, envelopeName string) (bool, error) {
 	find := doc{
-		"_id": budgetID,
+		"_id":            budgetID,
 		"envelopes.name": envelopeName,
 	}
 	res := s.db.Collection(budgets).FindOne(ctx, find)

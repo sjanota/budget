@@ -76,4 +76,3 @@ func (r *repository) insertOne(ctx context.Context, v interface{}) (primitive.Ob
 
 	return result.InsertedID.(primitive.ObjectID), nil
 }
-

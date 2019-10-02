@@ -1,9 +1,10 @@
 package models
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Budget struct {
@@ -13,6 +14,8 @@ type Budget struct {
 	Categories     []*Category        `json:"categories"`
 	CurrentMonthID primitive.ObjectID
 }
+
+type Changes map[string]interface{}
 
 func (b Budget) Category(name string) *Category {
 	for _, category := range b.Categories {
@@ -72,7 +75,8 @@ type ExpenseCategory struct {
 }
 
 type Account struct {
-	Name     string `json:"name"`
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name     string             `json:"name"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
 }
