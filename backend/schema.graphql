@@ -54,6 +54,7 @@ type Mutation {
   createBudget: Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
+  createCategory(budgetID: ID!, in: CategoryInput!): Category
 }
 
 schema {

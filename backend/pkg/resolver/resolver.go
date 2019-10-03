@@ -15,7 +15,7 @@ type Resolver struct {
 }
 
 func (r *Resolver) Category() schema.CategoryResolver {
-	return &categoryResolver{}
+	return &categoryResolver{r}
 }
 
 type categoryResolver struct {
@@ -48,6 +48,10 @@ func (r *Resolver) Mutation() schema.MutationResolver {
 
 type mutationResolver struct {
 	*Resolver
+}
+
+func (r *mutationResolver) CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error) {
+	return r.Storage.CreateCategory(ctx, budgetID, &in)
 }
 
 func (r *mutationResolver) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error) {
