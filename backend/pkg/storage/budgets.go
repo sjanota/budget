@@ -25,6 +25,17 @@ func (s *Storage) CreateBudget(ctx context.Context) (*models.Budget, error) {
 	return budget, nil
 }
 
+func (s *Storage) ListBudgets(ctx context.Context) ([]*models.Budget, error) {
+	cursor, err := s.db.Collection(budgets).Find(ctx, doc{})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*models.Budget, 0)
+	err = cursor.All(ctx, &result)
+	return result, err
+}
+
 func (s *Storage) GetBudget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
 	find := doc{
 		"_id": id,

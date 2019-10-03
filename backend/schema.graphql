@@ -1,37 +1,6 @@
 scalar Time
 
-type Amount {
-  integer: Int!
-  decimal: Int!
-}
-input AmountInput {
-  integer: Int!
-  decimal: Int!
-}
-
-type Expense {
-  id: ID!
-  entries: [ExpenseCategory!]!
-  balance: Amount!
-  date: Time
-  account: Account
-}
-input ExpenseInput {
-  title: String!
-  location: String
-  entries: [ExpenseCategoryInput!]!
-  date: Time
-  accountID: ID
-}
-
-type ExpenseCategory {
-  category: Category!
-  balance: Amount!
-}
-input ExpenseCategoryInput {
-  categoryID: ID!
-  balance: AmountInput!
-}
+scalar Amount
 
 type Category {
   id: ID!
@@ -50,90 +19,43 @@ type Account {
 }
 input AccountInput {
   name: String!
-  balance: AmountInput
 }
 
 type Envelope {
   id: ID!
   name: String!
   balance: Amount!
+  limit: Amount
 }
 input EnvelopeInput {
   name: String!
-}
-
-type AccountTransfer {
-  id: ID!
-  date: Time
-  from: Account
-  to: Account
-  amount: Amount!
-}
-
-type EnvelopeTransfer {
-  id: ID!
-  date: Time
-  from: Envelope
-  to: Account
-  amount: Amount!
+  limit: Amount
 }
 
 type Budget {
   id: ID!
-  expenses: [Expense!]!
+  accounts: [Account!]!
+  account(id: ID!): Account
+  envelopes: [Envelope!]!
+  envelope(id: ID!): Envelope
+  categories(filter: CategoriesFilter): [Category!]!
+  category(id: ID!): Category
+}
+input CategoriesFilter {
+  envelopeID: ID
 }
 
 type Query {
   budget(id: ID!): Budget
   budgets: [Budget!]!
-
-  expense(budgetID: ID!, id: ID!): Expense
-  expenses(budgetID: ID!): [Expense!]!
-
-  account(budgetID: ID!, id: ID!): Account
-  accounts(budgetID: ID!): [Account!]!
-
-  envelope(budgetID: ID!, id: ID!): Envelope
-  envelopes(budgetID: ID!): [Envelope!]!
-
-  category(budgetID: ID!, id: ID!): Category
-  categories(budgetID: ID!): [Category!]!
 }
 
 type Mutation {
-  createBudget(name: String!): Budget
-
-  createExpense(budgetID: ID!, input: ExpenseInput!): Expense
-  deleteExpense(budgetID: ID!, id: ID!): Expense
-  updateExpense(budgetID: ID!, id: ID!, input: ExpenseInput!): Expense
-
-  createAccount(budgetID: ID!, input: AccountInput!): Account
-  updateAccount(budgetID: ID!, id: ID!, input: AccountInput!): Account
-
-  createEnvelope(budgetID: ID!, input: EnvelopeInput!): Envelope
-  updateEnvelope(budgetID: ID!, id: ID!, input: EnvelopeInput!): Envelope
-
-  createCategory(budgetID: ID!, input: CategoryInput!): Category
-  updateCategory(budgetID: ID!, id: ID!, input: CategoryInput!): Category
-}
-
-enum EventType {
-  CREATED
-  DELETED
-  UPDATED
-}
-
-type ExpenseEvent {
-  type: EventType!
-  expense: Expense
-}
-
-type Subscription {
-  expenseEvent(budgetID: ID!): ExpenseEvent!
+  createBudget: Budget
+  createAccount(budgetID: ID!, in: AccountInput!): Account
 }
 
 schema {
   query: Query
   mutation: Mutation
-  subscription: Subscription
 }

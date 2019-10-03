@@ -60,9 +60,9 @@ func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthl
 		toEnvelope := budget.Envelope(plan.ToEnvelopeID)
 		toEnvelope.Balance = toEnvelope.Balance.Add(plan.Balance)
 		plan.Executed = plan.Balance
-		if toEnvelope.Balance.IsBiggerThan(toEnvelope.Limit) {
-			plan.Executed = plan.Balance.Sub(toEnvelope.Balance).Add(toEnvelope.Limit)
-			toEnvelope.Balance = toEnvelope.Limit
+		if toEnvelope.Limit != nil && toEnvelope.Balance.IsBiggerThan(*toEnvelope.Limit) {
+			plan.Executed = plan.Balance.Sub(toEnvelope.Balance).Add(*toEnvelope.Limit)
+			toEnvelope.Balance = *toEnvelope.Limit
 		}
 	}
 

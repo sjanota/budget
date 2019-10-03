@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+
+
 type Budget struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Accounts       []*Account         `json:"accounts"`
@@ -17,27 +19,27 @@ type Budget struct {
 
 type Changes map[string]interface{}
 
-func (b Budget) Category(name string) *Category {
+func (b Budget) Category(id primitive.ObjectID) *Category {
 	for _, category := range b.Categories {
-		if category.Name == name {
+		if category.ID == id {
 			return category
 		}
 	}
 	return nil
 }
 
-func (b Budget) Account(name string) *Account {
+func (b Budget) Account(id primitive.ObjectID) *Account {
 	for _, account := range b.Accounts {
-		if account.Name == name {
+		if account.ID == id {
 			return account
 		}
 	}
 	return nil
 }
 
-func (b Budget) Envelope(name string) *Envelope {
+func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
 	for _, envelope := range b.Envelopes {
-		if envelope.Name == name {
+		if envelope.ID == id {
 			return envelope
 		}
 	}
@@ -81,10 +83,6 @@ type Account struct {
 	BudgetID primitive.ObjectID
 }
 
-type AccountInput struct {
-	Name string `json:"name"`
-}
-
 type Transfer struct {
 	Balance       Amount    `json:"balance"`
 	Date          time.Time `json:"date"`
@@ -95,14 +93,9 @@ type Transfer struct {
 type Envelope struct {
 	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name     string             `json:"name"`
-	Limit    Amount             `json:"Limit"`
+	Limit    *Amount            `json:"Limit"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
-}
-
-type EnvelopeInput struct {
-	Name  string `json:"name"`
-	Limit Amount `json:"Limit"`
 }
 
 type Plan struct {
@@ -123,25 +116,4 @@ type Category struct {
 type CategoryInput struct {
 	Name       string             `json:"name"`
 	EnvelopeID primitive.ObjectID `json:"envelopeID"`
-}
-
-func (a Amount) Add(other Amount) Amount {
-	decimal := a.Decimal + other.Decimal
-	return Amount{
-		Integer: a.Integer + other.Integer + decimal/100,
-		Decimal: decimal % 100,
-	}
-}
-
-func (a Amount) Sub(other Amount) Amount {
-	decimal := a.Decimal - other.Decimal
-	timesOverflown := int(math.Floor(float64(a.Decimal) / float64(100)))
-	return Amount{
-		Integer: decimal + timesOverflown*100,
-		Decimal: a.Integer - other.Integer - timesOverflown,
-	}
-}
-
-func (a Amount) IsBiggerThan(other Amount) bool {
-	return a.Integer >= other.Integer && a.Decimal > other.Decimal
 }

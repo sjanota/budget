@@ -3,97 +3,18 @@
 package models
 
 import (
-	"fmt"
-	"io"
-	"strconv"
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AccountTransfer struct {
-	ID     primitive.ObjectID `json:"id"`
-	Date   *time.Time         `json:"date"`
-	From   *Account           `json:"from"`
-	To     *Account           `json:"to"`
-	Amount *Amount            `json:"amount"`
+type AccountInput struct {
+	Name string `json:"name"`
 }
 
-type Amount struct {
-	Integer int `json:"integer"`
-	Decimal int `json:"decimal"`
+type CategoriesFilter struct {
+	EnvelopeID *primitive.ObjectID `json:"envelopeID"`
 }
 
-type AmountInput struct {
-	Integer int `json:"integer"`
-	Decimal int `json:"decimal"`
-}
-
-type EnvelopeTransfer struct {
-	ID     primitive.ObjectID `json:"id"`
-	Date   *time.Time         `json:"date"`
-	From   *Envelope          `json:"from"`
-	To     *Account           `json:"to"`
-	Amount *Amount            `json:"amount"`
-}
-
-type ExpenseCategoryInput struct {
-	CategoryID primitive.ObjectID `json:"categoryID"`
-	Balance    *AmountInput       `json:"balance"`
-}
-
-type ExpenseEvent struct {
-	Type    EventType `json:"type"`
-	Expense *Expense  `json:"expense"`
-}
-
-type ExpenseInput struct {
-	Title     string                  `json:"title"`
-	Location  *string                 `json:"location"`
-	Entries   []*ExpenseCategoryInput `json:"entries"`
-	Date      *time.Time              `json:"date"`
-	AccountID *primitive.ObjectID     `json:"accountID"`
-}
-
-type EventType string
-
-const (
-	EventTypeCreated EventType = "CREATED"
-	EventTypeDeleted EventType = "DELETED"
-	EventTypeUpdated EventType = "UPDATED"
-)
-
-var AllEventType = []EventType{
-	EventTypeCreated,
-	EventTypeDeleted,
-	EventTypeUpdated,
-}
-
-func (e EventType) IsValid() bool {
-	switch e {
-	case EventTypeCreated, EventTypeDeleted, EventTypeUpdated:
-		return true
-	}
-	return false
-}
-
-func (e EventType) String() string {
-	return string(e)
-}
-
-func (e *EventType) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = EventType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid EventType", str)
-	}
-	return nil
-}
-
-func (e EventType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+type EnvelopeInput struct {
+	Name  string  `json:"name"`
+	Limit *Amount `json:"limit"`
 }

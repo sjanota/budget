@@ -17,15 +17,17 @@ autobind:
 models:
   ID:
     model: github.com/sjanota/budget/backend/pkg/models.ID
-  Account:
-    fields:
-      balance:
-        resolver: true
-  Envelope:
-    fields:
-      balance:
-        resolver: true
-  Budget:
-    fields:
-      expenses:
-        resolver: true
+  Amount:
+    model: github.com/sjanota/budget/backend/pkg/models.Amount
+#  Account:
+#    fields:
+#      balance:
+#        resolver: true
+#  Envelope:
+#    fields:
+#      balance:
+#        resolver: true
+#  Budget:
+#    fields:
+#      expenses:
+#        resolver: true
