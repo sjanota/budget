@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/sjanota/budget/backend/pkg/models"
@@ -71,7 +72,7 @@ func (s *Storage) budgetEntityExistsByID(ctx context.Context, budgetID primitive
 
 func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.ObjectID, arrayField string, id primitive.ObjectID) (*models.Budget, error) {
 	find := doc{
-		"_id":          budgetID,
+		"_id": budgetID,
 	}
 	project := doc{
 		arrayField: doc{

@@ -20,7 +20,6 @@ type Storage interface {
 	UpdateBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
-// Better to be done in memory
 func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, storage Storage) error {
 	budget, err := storage.GetBudget(ctx, budgetID)
 	if err != nil {
@@ -72,7 +71,7 @@ func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthl
 	year := monthlyBudget.Year
 	if monthlyBudget.Month == time.December {
 		month = time.January
-		year += 1
+		year++
 	}
 
 	// createNextMonthlyBudget

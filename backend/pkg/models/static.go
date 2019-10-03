@@ -94,8 +94,8 @@ type Transfer struct {
 
 type Envelope struct {
 	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name     string `json:"name"`
-	Limit    Amount `json:"Limit"`
+	Name     string             `json:"name"`
+	Limit    Amount             `json:"Limit"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
 }
@@ -114,8 +114,8 @@ type Plan struct {
 }
 
 type Category struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name       string `json:"name"`
+	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name       string             `json:"name"`
 	EnvelopeID primitive.ObjectID
 	BudgetID   primitive.ObjectID
 }
