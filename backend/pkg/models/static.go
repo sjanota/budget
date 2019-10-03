@@ -114,6 +114,7 @@ type Plan struct {
 }
 
 type Category struct {
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name       string `json:"name"`
 	EnvelopeID primitive.ObjectID
 	BudgetID   primitive.ObjectID

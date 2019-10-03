@@ -14,7 +14,7 @@ func (s *Storage) CreateCategory(ctx context.Context, budgetID primitive.ObjectI
 		return nil, err
 	}
 
-	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID}
+	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID, ID: primitive.NewObjectID()}
 	if err := s.pushEntityToBudget(ctx, budgetID, "categories", toInsert); err != nil {
 		return nil, err
 	}
@@ -22,8 +22,18 @@ func (s *Storage) CreateCategory(ctx context.Context, budgetID primitive.ObjectI
 	return toInsert, nil
 }
 
-func (s *Storage) GetCategory(ctx context.Context, budgetID primitive.ObjectID, input models.CategoryInput) (*models.Category, error) {
-	return &models.Category{}, nil
+func (s *Storage) GetCategory(ctx context.Context, budgetID, id primitive.ObjectID) (*models.Category, error) {
+	budget, err := s.getBudgetByEntityID(ctx, budgetID, "categories", id)
+	if err != nil {
+		return nil, err
+	}
+	if len(budget.Categories) == 0 {
+		return nil, nil
+	}
+
+	category := budget.Categories[0]
+	category.BudgetID = budgetID
+	return category, nil
 }
 
 func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.ObjectID, input *models.CategoryInput) error {
