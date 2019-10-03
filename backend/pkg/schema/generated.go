@@ -75,8 +75,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateAccount func(childComplexity int, budgetID primitive.ObjectID, in models.AccountInput) int
-		CreateBudget  func(childComplexity int) int
+		CreateAccount  func(childComplexity int, budgetID primitive.ObjectID, in models.AccountInput) int
+		CreateBudget   func(childComplexity int) int
+		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
 	}
 
 	Query struct {
@@ -91,6 +92,7 @@ type CategoryResolver interface {
 type MutationResolver interface {
 	CreateBudget(ctx context.Context) (*models.Budget, error)
 	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in models.AccountInput) (*models.Account, error)
+	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error)
 }
 type QueryResolver interface {
 	Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
@@ -270,6 +272,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateBudget(childComplexity), true
 
+	case "Mutation.createEnvelope":
+		if e.complexity.Mutation.CreateEnvelope == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createEnvelope_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateEnvelope(childComplexity, args["budgetID"].(primitive.ObjectID), args["in"].(models.EnvelopeInput)), true
+
 	case "Query.budget":
 		if e.complexity.Query.Budget == nil {
 			break
@@ -406,6 +420,7 @@ type Query {
 type Mutation {
   createBudget: Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
+  createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
 }
 
 schema {
@@ -489,6 +504,28 @@ func (ec *executionContext) field_Mutation_createAccount_args(ctx context.Contex
 	var arg1 models.AccountInput
 	if tmp, ok := rawArgs["in"]; ok {
 		arg1, err = ec.unmarshalNAccountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccountInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["in"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createEnvelope_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	var arg1 models.EnvelopeInput
+	if tmp, ok := rawArgs["in"]; ok {
+		arg1, err = ec.unmarshalNEnvelopeInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelopeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1279,6 +1316,47 @@ func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field g
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createEnvelope(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createEnvelope_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateEnvelope(rctx, args["budgetID"].(primitive.ObjectID), args["in"].(models.EnvelopeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Envelope)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOEnvelope2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2866,6 +2944,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createBudget(ctx, field)
 		case "createAccount":
 			out.Values[i] = ec._Mutation_createAccount(ctx, field)
+		case "createEnvelope":
+			out.Values[i] = ec._Mutation_createEnvelope(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3406,6 +3486,10 @@ func (ec *executionContext) marshalNEnvelope2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 		return graphql.Null
 	}
 	return ec._Envelope(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNEnvelopeInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelopeInput(ctx context.Context, v interface{}) (models.EnvelopeInput, error) {
+	return ec.unmarshalInputEnvelopeInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v interface{}) (primitive.ObjectID, error) {

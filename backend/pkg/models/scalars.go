@@ -2,12 +2,12 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"math"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -38,8 +38,7 @@ type Amount struct {
 }
 
 func (a *Amount) UnmarshalGQL(v interface{}) error {
-	fmt.Printf("%#v\n", v)
-	return nil
+	return mapstructure.Decode(v, a)
 }
 
 func (a Amount) MarshalGQL(w io.Writer) {

@@ -53,6 +53,7 @@ type Query {
 type Mutation {
   createBudget: Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
+  createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
 }
 
 schema {

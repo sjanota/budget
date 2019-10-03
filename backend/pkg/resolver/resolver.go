@@ -50,6 +50,10 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error) {
+	return r.Storage.CreateEnvelope(ctx, budgetID, &in)
+}
+
 func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in models.AccountInput) (*models.Account, error) {
 	return r.Storage.CreateAccount(ctx, budgetID, &in)
 }
