@@ -19,6 +19,8 @@ models:
     model: github.com/sjanota/budget/backend/pkg/models.ID
   Amount:
     model: github.com/sjanota/budget/backend/pkg/models.Amount
+  AccountUpdate:
+    model: "map[string]interface{}"
 #  Account:
 #    fields:
 #      balance:

@@ -51,6 +51,10 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Account, error) {
+	return r.Storage.UpdateAccount(ctx, budgetID, id, in)
+}
+
 func (r *mutationResolver) CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error) {
 	return r.Storage.CreateCategory(ctx, budgetID, &in)
 }

@@ -79,6 +79,7 @@ type ComplexityRoot struct {
 		CreateBudget   func(childComplexity int) int
 		CreateCategory func(childComplexity int, budgetID primitive.ObjectID, in models.CategoryInput) int
 		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
+		UpdateAccount  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 	}
 
 	Query struct {
@@ -93,6 +94,7 @@ type CategoryResolver interface {
 type MutationResolver interface {
 	CreateBudget(ctx context.Context) (*models.Budget, error)
 	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in models.AccountInput) (*models.Account, error)
+	UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Account, error)
 	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error)
 	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error)
 }
@@ -298,6 +300,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateEnvelope(childComplexity, args["budgetID"].(primitive.ObjectID), args["in"].(models.EnvelopeInput)), true
 
+	case "Mutation.updateAccount":
+		if e.complexity.Mutation.UpdateAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAccount(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{})), true
+
 	case "Query.budget":
 		if e.complexity.Query.Budget == nil {
 			break
@@ -401,6 +415,9 @@ type Account {
 input AccountInput {
   name: String!
 }
+input AccountUpdate {
+  name: String
+}
 
 type Envelope {
   id: ID!
@@ -434,6 +451,7 @@ type Query {
 type Mutation {
   createBudget: Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
+  updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
   createCategory(budgetID: ID!, in: CategoryInput!): Category
 }
@@ -568,6 +586,36 @@ func (ec *executionContext) field_Mutation_createEnvelope_args(ctx context.Conte
 		}
 	}
 	args["in"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	var arg1 primitive.ObjectID
+	if tmp, ok := rawArgs["id"]; ok {
+		arg1, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	var arg2 map[string]interface{}
+	if tmp, ok := rawArgs["in"]; ok {
+		arg2, err = ec.unmarshalNAccountUpdate2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["in"] = arg2
 	return args, nil
 }
 
@@ -1341,6 +1389,47 @@ func (ec *executionContext) _Mutation_createAccount(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateAccount(rctx, args["budgetID"].(primitive.ObjectID), args["in"].(models.AccountInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Account)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateAccount(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{}))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3022,6 +3111,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createBudget(ctx, field)
 		case "createAccount":
 			out.Values[i] = ec._Mutation_createAccount(ctx, field)
+		case "updateAccount":
+			out.Values[i] = ec._Mutation_updateAccount(ctx, field)
 		case "createEnvelope":
 			out.Values[i] = ec._Mutation_createEnvelope(ctx, field)
 		case "createCategory":
@@ -3390,6 +3481,13 @@ func (ec *executionContext) marshalNAccount2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 
 func (ec *executionContext) unmarshalNAccountInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccountInput(ctx context.Context, v interface{}) (models.AccountInput, error) {
 	return ec.unmarshalInputAccountInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNAccountUpdate2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	if v == nil {
+		return nil, nil
+	}
+	return v.(map[string]interface{}), nil
 }
 
 func (ec *executionContext) unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx context.Context, v interface{}) (models.Amount, error) {
