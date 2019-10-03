@@ -131,3 +131,40 @@ func (s *Storage) pushEntityToBudget(ctx context.Context, budgetID primitive.Obj
 	}
 	return nil
 }
+
+func (s *Storage) updateEntityInBudget(ctx context.Context, budgetID, id primitive.ObjectID, arrayField string, changes models.Changes) (*models.Budget, error) {
+	if exists, err := s.budgetEntityExistsByID(ctx, budgetID, arrayField, id); err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, ErrDoesNotExists
+	}
+
+	find := doc{
+		"_id":               budgetID,
+		arrayField + "._id": id,
+	}
+	project := doc{
+		arrayField: doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	updateFields := doc{}
+	for field, value := range changes {
+		updateFields[arrayField+".$."+field] = value
+	}
+	update := doc{
+		"$set": updateFields,
+	}
+	res := s.db.Collection(budgets).FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.Budget{}
+	err := res.Decode(result)
+	return result, err
+}

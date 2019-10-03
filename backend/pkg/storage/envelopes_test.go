@@ -12,7 +12,7 @@ import (
 
 func TestStorage_CreateEnvelope(t *testing.T) {
 	ctx := before(t)
-	input := &models.EnvelopeInput{Name: "test-envelope", Limit: models.Amount{12, 36}}
+	input := &models.EnvelopeInput{Name: "test-envelope", Limit: &models.Amount{12, 36}}
 	budget := whenSomeBudgetExists(t, ctx)
 
 	created, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
@@ -26,7 +26,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 
 func TestStorage_CreateEnvelope_DuplicateName(t *testing.T) {
 	ctx := before(t)
-	input := &models.EnvelopeInput{Name: "test-envelope", Limit: models.Amount{12, 36}}
+	input := &models.EnvelopeInput{Name: "test-envelope", Limit: &models.Amount{12, 36}}
 	budget := whenSomeBudgetExists(t, ctx)
 
 	_, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
@@ -38,7 +38,7 @@ func TestStorage_CreateEnvelope_DuplicateName(t *testing.T) {
 
 func TestStorage_CreateEnvelope_NoBudget(t *testing.T) {
 	ctx := before(t)
-	input := &models.EnvelopeInput{Name: "test-envelope", Limit: models.Amount{12, 36}}
+	input := &models.EnvelopeInput{Name: "test-envelope", Limit: &models.Amount{12, 36}}
 
 	_, err := testStorage.CreateEnvelope(ctx, primitive.NewObjectID(), input)
 	require.EqualError(t, err, storage.ErrNoBudget.Error())
@@ -46,7 +46,7 @@ func TestStorage_CreateEnvelope_NoBudget(t *testing.T) {
 
 func TestStorage_GetEnvelope(t *testing.T) {
 	ctx := before(t)
-	input := &models.EnvelopeInput{Name: "test-envelope", Limit: models.Amount{12, 36}}
+	input := &models.EnvelopeInput{Name: "test-envelope", Limit: &models.Amount{12, 36}}
 	budget := whenSomeBudgetExists(t, ctx)
 
 	created, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
@@ -75,4 +75,31 @@ func TestStorage_GetEnvelope_NoBudget(t *testing.T) {
 
 	_, err := testStorage.GetEnvelope(ctx, primitive.NewObjectID(), primitive.NewObjectID())
 	require.EqualError(t, err, storage.ErrNoBudget.Error())
+}
+
+func TestStorage_UpdateEnvelope(t *testing.T) {
+	ctx := before(t)
+	budget := whenSomeBudgetExists(t, ctx)
+	input := &models.EnvelopeInput{Name: "test-envelope", Limit: &models.Amount{12, 36}}
+
+	created, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
+	require.NoError(t, err)
+
+	changes := models.Changes{"name": "new-name", "limit": &models.Amount{36, 12}}
+	updated, err := testStorage.UpdateEnvelope(ctx, budget.ID, created.ID, changes)
+	require.NoError(t, err)
+	assert.Equal(t, changes["name"], updated.Name)
+	assert.Equal(t, created.Balance, updated.Balance)
+	assert.Equal(t, changes["limit"], updated.Limit)
+	assert.Equal(t, created.BudgetID, updated.BudgetID)
+	assert.Equal(t, created.ID, updated.ID)
+}
+
+func TestStorage_UpdateEnvelope_NotFound(t *testing.T) {
+	ctx := before(t)
+	budget := whenSomeBudgetExists(t, ctx)
+
+	changes := models.Changes{"name": "new-name"}
+	_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
+	assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 }

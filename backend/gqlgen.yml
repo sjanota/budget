@@ -21,6 +21,8 @@ models:
     model: github.com/sjanota/budget/backend/pkg/models.Amount
   AccountUpdate:
     model: "map[string]interface{}"
+  EnvelopeUpdate:
+    model: "map[string]interface{}"
 #  Account:
 #    fields:
 #      balance:

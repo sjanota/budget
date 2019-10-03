@@ -29,3 +29,14 @@ func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, 
 	envelope.BudgetID = budgetID
 	return envelope, nil
 }
+
+func (s *Storage) UpdateEnvelope(ctx context.Context, budgetID, id primitive.ObjectID, changes models.Changes) (*models.Envelope, error) {
+	budget, err := s.updateEntityInBudget(ctx, budgetID, id, "envelopes", changes)
+	if err != nil {
+		return nil, err
+	}
+
+	envelope := budget.Envelopes[0]
+	envelope.BudgetID = budgetID
+	return envelope, nil
+}

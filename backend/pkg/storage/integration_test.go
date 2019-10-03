@@ -104,14 +104,6 @@ func deleteMongoContainer() error {
 	return nil
 }
 
-func strPtr(s string) *string {
-	return &s
-}
-
-func idPtr(id primitive.ObjectID) *primitive.ObjectID {
-	return &id
-}
-
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 	budget, err := testStorage.CreateBudget(ctx)
 	require.NoError(t, err)
@@ -119,7 +111,7 @@ func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 }
 
 func whenSomeEnvelopeExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Envelope {
-	input := &models.EnvelopeInput{Name: "test-account", Limit: models.Amount{12, 36}}
+	input := &models.EnvelopeInput{Name: "test-account", Limit: &models.Amount{12, 36}}
 	envelope, err := testStorage.CreateEnvelope(ctx, budgetID, input)
 	require.NoError(t, err)
 	return envelope

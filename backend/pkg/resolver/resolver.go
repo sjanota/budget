@@ -51,6 +51,10 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Envelope, error) {
+	return r.Storage.UpdateEnvelope(ctx, budgetID, id, in)
+}
+
 func (r *mutationResolver) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Account, error) {
 	return r.Storage.UpdateAccount(ctx, budgetID, id, in)
 }
