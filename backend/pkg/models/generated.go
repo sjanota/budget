@@ -3,6 +3,8 @@
 package models
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -25,6 +27,11 @@ type ExpenseInput struct {
 	Categories  []*ExpenseCategoryInput `json:"categories"`
 	AccountID   primitive.ObjectID      `json:"accountID"`
 	TotalAmount Amount                  `json:"totalAmount"`
+}
+
+type MonthlyReportInput struct {
+	Month time.Month `json:"month"`
+	Year  int        `json:"year"`
 }
 
 type PlanInput struct {

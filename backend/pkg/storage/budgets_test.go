@@ -10,10 +10,13 @@ import (
 
 func TestStorage_CreateBudget(t *testing.T) {
 	ctx := before(t)
+	id := primitive.NewObjectID()
+	reportID := primitive.NewObjectID()
 
-	budget, err := testStorage.CreateBudget(ctx)
+	budget, err := testStorage.CreateBudget(ctx, id, reportID)
 	require.NoError(t, err)
-	assert.NotEqual(t, primitive.ObjectID{}, budget.ID)
+	assert.Equal(t, id, budget.ID)
+	assert.Equal(t, reportID, budget.CurrentMonthID)
 	assert.Empty(t, budget.Accounts)
 	assert.Empty(t, budget.Envelopes)
 	assert.Empty(t, budget.Categories)
@@ -21,14 +24,13 @@ func TestStorage_CreateBudget(t *testing.T) {
 
 func TestStorage_GetBudget(t *testing.T) {
 	ctx := before(t)
+	created := whenSomeBudgetExists(t, ctx)
 
-	inserted, err := testStorage.CreateBudget(ctx)
+	budget, err := testStorage.GetBudget(ctx, created.ID)
 	require.NoError(t, err)
-
-	budget, err := testStorage.GetBudget(ctx, inserted.ID)
-	require.NoError(t, err)
-	assert.NotEqual(t, primitive.ObjectID{}, budget.ID)
-	assert.Empty(t, budget.Accounts)
-	assert.Empty(t, budget.Envelopes)
-	assert.Empty(t, budget.Categories)
+	assert.Equal(t, created.ID, budget.ID)
+	assert.Equal(t, created.CurrentMonthID, budget.CurrentMonthID)
+	assert.Empty(t, created.Accounts, budget.Accounts)
+	assert.Empty(t, created.Envelopes, budget.Envelopes)
+	assert.Empty(t, created.Categories, budget.Categories)
 }

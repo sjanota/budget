@@ -11,8 +11,9 @@ import (
 )
 
 type Storage struct {
-	db      *mongo.Database
-	budgets *mongo.Collection
+	db             *mongo.Database
+	budgets        *mongo.Collection
+	monthlyReports *mongo.Collection
 }
 
 func New(uri string) (*Storage, error) {
@@ -29,8 +30,9 @@ func New(uri string) (*Storage, error) {
 
 	database := client.Database(cs.Database)
 	storage := &Storage{
-		db:      database,
-		budgets: database.Collection(collection.Budgets),
+		db:             database,
+		budgets:        database.Collection(collection.Budgets),
+		monthlyReports: database.Collection(collection.MonthlyReports),
 	}
 
 	return storage, nil

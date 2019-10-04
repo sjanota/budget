@@ -37,6 +37,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Budget() BudgetResolver
 	Category() CategoryResolver
 	Expense() ExpenseResolver
 	ExpenseCategory() ExpenseCategoryResolver
@@ -57,10 +58,11 @@ type ComplexityRoot struct {
 	}
 
 	Budget struct {
-		Accounts   func(childComplexity int) int
-		Categories func(childComplexity int) int
-		Envelopes  func(childComplexity int) int
-		ID         func(childComplexity int) int
+		Accounts     func(childComplexity int) int
+		Categories   func(childComplexity int) int
+		CurrentMonth func(childComplexity int) int
+		Envelopes    func(childComplexity int) int
+		ID           func(childComplexity int) int
 	}
 
 	Category struct {
@@ -126,6 +128,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type BudgetResolver interface {
+	CurrentMonth(ctx context.Context, obj *models.Budget) (*models.MonthlyReport, error)
+}
 type CategoryResolver interface {
 	Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error)
 }
@@ -206,6 +211,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Budget.Categories(childComplexity), true
+
+	case "Budget.currentMonth":
+		if e.complexity.Budget.CurrentMonth == nil {
+			break
+		}
+
+		return e.complexity.Budget.CurrentMonth(childComplexity), true
 
 	case "Budget.envelopes":
 		if e.complexity.Budget.Envelopes == nil {
@@ -612,6 +624,7 @@ type Budget {
   accounts: [Account!]!
   envelopes: [Envelope!]!
   categories: [Category!]!
+  currentMonth: MonthlyReport!
 }
 
 type Plan {
@@ -663,11 +676,15 @@ input ExpenseCategoryInput {
 }
 
 type MonthlyReport {
-  month: Month!,
-  year: Int!,
+  month: Month!
+  year: Int!
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
+}
+input MonthlyReportInput {
+  month: Month!
+  year: Int!
 }
 
 type Query {
@@ -1173,6 +1190,43 @@ func (ec *executionContext) _Budget_categories(ctx context.Context, field graphq
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNCategory2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Budget_currentMonth(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Budget",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Budget().CurrentMonth(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.MonthlyReport)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNMonthlyReport2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonthlyReport(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Category_id(ctx context.Context, field graphql.CollectedField, obj *models.Category) (ret graphql.Marshaler) {
@@ -3835,6 +3889,30 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMonthlyReportInput(ctx context.Context, obj interface{}) (models.MonthlyReportInput, error) {
+	var it models.MonthlyReportInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "month":
+			var err error
+			it.Month, err = ec.unmarshalNMonth2timeᚐMonth(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "year":
+			var err error
+			it.Year, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPlanInput(ctx context.Context, obj interface{}) (models.PlanInput, error) {
 	var it models.PlanInput
 	var asMap = obj.(map[string]interface{})
@@ -3966,23 +4044,37 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 		case "id":
 			out.Values[i] = ec._Budget_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "accounts":
 			out.Values[i] = ec._Budget_accounts(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "envelopes":
 			out.Values[i] = ec._Budget_envelopes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "categories":
 			out.Values[i] = ec._Budget_categories(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "currentMonth":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Budget_currentMonth(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5093,6 +5185,20 @@ func (ec *executionContext) marshalNMonth2timeᚐMonth(ctx context.Context, sel 
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNMonthlyReport2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonthlyReport(ctx context.Context, sel ast.SelectionSet, v models.MonthlyReport) graphql.Marshaler {
+	return ec._MonthlyReport(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonthlyReport2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonthlyReport(ctx context.Context, sel ast.SelectionSet, v *models.MonthlyReport) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._MonthlyReport(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPlan2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx context.Context, sel ast.SelectionSet, v models.Plan) graphql.Marshaler {

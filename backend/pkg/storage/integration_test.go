@@ -105,7 +105,7 @@ func deleteMongoContainer() error {
 }
 
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
-	budget, err := testStorage.CreateBudget(ctx)
+	budget, err := testStorage.CreateBudget(ctx, primitive.NewObjectID(), primitive.NewObjectID())
 	require.NoError(t, err)
 	return budget
 }

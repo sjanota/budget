@@ -47,6 +47,7 @@ type Budget {
   accounts: [Account!]!
   envelopes: [Envelope!]!
   categories: [Category!]!
+  currentMonth: MonthlyReport!
 }
 
 type Plan {
@@ -103,6 +104,10 @@ type MonthlyReport {
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
+}
+input MonthlyReportInput {
+  month: Month!
+  year: Int!
 }
 
 type Query {

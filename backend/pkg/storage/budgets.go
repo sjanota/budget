@@ -10,11 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (s *Storage) CreateBudget(ctx context.Context) (*models.Budget, error) {
+func (s *Storage) CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonthID primitive.ObjectID) (*models.Budget, error) {
 	budget := &models.Budget{
-		Accounts:   []*models.Account{},
-		Envelopes:  []*models.Envelope{},
-		Categories: []*models.Category{},
+		ID:             id,
+		Accounts:       []*models.Account{},
+		Envelopes:      []*models.Envelope{},
+		Categories:     []*models.Category{},
+		CurrentMonthID: currentMonthID,
 	}
 	result, err := s.budgets.InsertOne(ctx, budget)
 	if err != nil {

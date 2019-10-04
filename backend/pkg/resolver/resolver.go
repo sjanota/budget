@@ -4,6 +4,7 @@ package resolver
 
 import (
 	"context"
+	"time"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
@@ -13,6 +14,18 @@ import (
 
 type Resolver struct {
 	Storage *storage.Storage
+}
+
+func (r *Resolver) Budget() schema.BudgetResolver {
+	return &budgetResolver{r}
+}
+
+type budgetResolver struct {
+	*Resolver
+}
+
+func (r *budgetResolver) CurrentMonth(ctx context.Context, obj *models.Budget) (*models.MonthlyReport, error) {
+	return r.Storage.GetMonthlyReport(ctx, obj.ID, obj.CurrentMonthID)
 }
 
 func (r *Resolver) Expense() schema.ExpenseResolver {
@@ -92,5 +105,16 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive
 }
 
 func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, error) {
-	return r.Storage.CreateBudget(ctx)
+	budgetID := primitive.NewObjectID()
+	now := time.Now()
+	input := &models.MonthlyReportInput{
+		Month: now.Month(),
+		Year:  now.Year(),
+	}
+	monthlyReport, err := r.Storage.CreateMonthlyReport(ctx, budgetID, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Storage.CreateBudget(ctx, budgetID, monthlyReport.ID)
 }

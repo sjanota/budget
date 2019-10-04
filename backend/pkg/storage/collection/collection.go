@@ -1,4 +1,4 @@
 package collection
 
 const Budgets = "budgets"
-const Monthly = "monthly"
+const MonthlyReports = "monthly_reports"
