@@ -15,77 +15,70 @@ func TestStorage_CreateCategory(t *testing.T) {
 	ctx := before(t)
 	budget := whenSomeBudgetExists(t, ctx)
 	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
-	input := &models.CategoryInput{Name: "test-category", EnvelopeID: envelope.ID}
 
-	created, err := testStorage.CreateCategory(ctx, budget.ID, input)
-	require.NoError(t, err)
-	assert.Equal(t, input.Name, created.Name)
-	assert.Equal(t, input.EnvelopeID, created.EnvelopeID)
-	assert.Equal(t, budget.ID, created.BudgetID)
-	assert.NotEqual(t, primitive.ObjectID{}, created.ID)
-}
+	t.Run("Success", func(t *testing.T) {
+		input := &models.CategoryInput{Name: name(), EnvelopeID: envelope.ID}
 
-func TestStorage_CreateCategory_DuplicateName(t *testing.T) {
-	ctx := before(t)
-	budget := whenSomeBudgetExists(t, ctx)
-	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
-	input := &models.CategoryInput{Name: "test-category", EnvelopeID: envelope.ID}
+		created, err := testStorage.CreateCategory(ctx, budget.ID, input)
+		require.NoError(t, err)
+		assert.NotEqual(t, primitive.ObjectID{}, created.ID)
+		assert.Equal(t, &models.Category{
+			ID:         created.ID,
+			Name:       input.Name,
+			EnvelopeID: input.EnvelopeID,
+			BudgetID:   budget.ID,
+		}, created)
+	})
 
-	_, err := testStorage.CreateCategory(ctx, budget.ID, input)
-	require.NoError(t, err)
+	t.Run("DuplicateName", func(t *testing.T) {
+		input := &models.CategoryInput{Name: name(), EnvelopeID: envelope.ID}
 
-	_, err = testStorage.CreateCategory(ctx, budget.ID, input)
-	require.EqualError(t, err, storage.ErrAlreadyExists.Error())
-}
+		_, err := testStorage.CreateCategory(ctx, budget.ID, input)
+		require.NoError(t, err)
 
-func TestStorage_CreateCategory_EnvelopDoesNotExist(t *testing.T) {
-	ctx := before(t)
-	budget := whenSomeBudgetExists(t, ctx)
-	input := &models.CategoryInput{Name: "test-category", EnvelopeID: primitive.NewObjectID()}
+		_, err = testStorage.CreateCategory(ctx, budget.ID, input)
+		require.EqualError(t, err, storage.ErrAlreadyExists.Error())
+	})
 
-	_, err := testStorage.CreateCategory(ctx, budget.ID, input)
-	require.EqualError(t, err, storage.ErrInvalidReference.Error())
-}
+	t.Run("EnvelopDoesNotExist", func(t *testing.T) {
+		input := &models.CategoryInput{Name: name(), EnvelopeID: primitive.NewObjectID()}
 
-func TestStorage_CreateCategory_NoBudget(t *testing.T) {
-	ctx := before(t)
-	input := &models.CategoryInput{Name: "test-category", EnvelopeID: primitive.NewObjectID()}
+		_, err := testStorage.CreateCategory(ctx, budget.ID, input)
+		require.EqualError(t, err, storage.ErrInvalidReference.Error())
+	})
 
-	_, err := testStorage.CreateCategory(ctx, primitive.NewObjectID(), input)
-	require.EqualError(t, err, storage.ErrNoBudget.Error())
+	t.Run("NoBudget", func(t *testing.T) {
+		input := &models.CategoryInput{Name: name(), EnvelopeID: primitive.NewObjectID()}
+
+		_, err := testStorage.CreateCategory(ctx, primitive.NewObjectID(), input)
+		require.EqualError(t, err, storage.ErrNoBudget.Error())
+	})
+
 }
 
 func TestStorage_GetCategory(t *testing.T) {
 	ctx := before(t)
 	budget := whenSomeBudgetExists(t, ctx)
 	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
-	input := &models.CategoryInput{Name: "test-category", EnvelopeID: envelope.ID}
+	category := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
 
-	created, err := testStorage.CreateCategory(ctx, budget.ID, input)
-	require.NoError(t, err)
+	t.Run("Success", func(t *testing.T) {
+		got, err := testStorage.GetCategory(ctx, budget.ID, category.ID)
+		require.NoError(t, err)
+		assert.Equal(t, category, got)
+	})
 
-	account, err := testStorage.GetCategory(ctx, budget.ID, created.ID)
-	require.NoError(t, err)
-	assert.Equal(t, input.Name, account.Name)
-	assert.Equal(t, input.EnvelopeID, account.EnvelopeID)
-	assert.Equal(t, budget.ID, account.BudgetID)
-	assert.Equal(t, created.ID, account.ID)
-}
+	t.Run("NotFound", func(t *testing.T) {
+		category, err := testStorage.GetCategory(ctx, budget.ID, primitive.NewObjectID())
+		require.NoError(t, err)
+		assert.Nil(t, category)
+	})
 
-func TestStorage_GetCategory_NotFound(t *testing.T) {
-	ctx := before(t)
-	budget := whenSomeBudgetExists(t, ctx)
+	t.Run("NoBudget", func(t *testing.T) {
+		_, err := testStorage.GetCategory(ctx, primitive.NewObjectID(), primitive.NewObjectID())
+		require.EqualError(t, err, storage.ErrNoBudget.Error())
+	})
 
-	account, err := testStorage.GetCategory(ctx, budget.ID, primitive.NewObjectID())
-	require.NoError(t, err)
-	assert.Nil(t, account)
-}
-
-func TestStorage_GetCategory_NoBudget(t *testing.T) {
-	ctx := before(t)
-
-	_, err := testStorage.GetCategory(ctx, primitive.NewObjectID(), primitive.NewObjectID())
-	require.EqualError(t, err, storage.ErrNoBudget.Error())
 }
 
 func TestStorage_UpdateCategory(t *testing.T) {
@@ -93,23 +86,21 @@ func TestStorage_UpdateCategory(t *testing.T) {
 	budget := whenSomeBudgetExists(t, ctx)
 	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
 	otherEnvelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
-	input := &models.CategoryInput{Name: name(), EnvelopeID: envelope.ID}
-	created, err := testStorage.CreateCategory(ctx, budget.ID, input)
-	require.NoError(t, err)
+	category := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
 
 	t.Run("Success", func(t *testing.T) {
 		changes := models.Changes{"name": name(), "envelopeID": otherEnvelope.ID}
-		updated, err := testStorage.UpdateCategory(ctx, budget.ID, created.ID, changes)
+		updated, err := testStorage.UpdateCategory(ctx, budget.ID, category.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, changes["name"], updated.Name)
 		assert.Equal(t, changes["envelopeID"], updated.EnvelopeID)
 		assert.Equal(t, budget.ID, updated.BudgetID)
-		assert.Equal(t, created.ID, updated.ID)
+		assert.Equal(t, category.ID, updated.ID)
 	})
 
 	t.Run("EnvelopeDoesNotExist", func(t *testing.T) {
 		changes := models.Changes{"name": name(), "envelopeID": primitive.NewObjectID()}
-		_, err := testStorage.UpdateCategory(ctx, budget.ID, created.ID, changes)
+		_, err := testStorage.UpdateCategory(ctx, budget.ID, category.ID, changes)
 		require.EqualError(t, err, storage.ErrInvalidReference.Error())
 	})
 
