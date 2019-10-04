@@ -1,5 +1,4 @@
-scalar Time
-
+scalar Month
 scalar Amount
 
 type Category {
@@ -46,14 +45,64 @@ input EnvelopeUpdate {
 type Budget {
   id: ID!
   accounts: [Account!]!
-  account(id: ID!): Account
   envelopes: [Envelope!]!
-  envelope(id: ID!): Envelope
-  categories(filter: CategoriesFilter): [Category!]!
-  category(id: ID!): Category
+  categories: [Category!]!
 }
-input CategoriesFilter {
-  envelopeID: ID
+
+type Plan {
+  title: String
+  fromEnvelope: Envelope!
+  toEnvelope: Envelope!
+  amount: Amount!
+}
+input PlanInput {
+  title: String
+  fromEnvelopeID: ID!
+  toEnvelopeID: ID!
+  amount: Amount!
+}
+
+type Transfer {
+  title: String
+  fromAccount: Account!
+  toAccount: Account!
+  amount: Amount!
+}
+input TransferInput {
+  title: String
+  fromAccountID: ID!
+  toAccountID: ID!
+  amount: Amount!
+}
+
+type Expense {
+  title: String
+  categories: [ExpenseCategory!]!
+  account: Account!
+  totalAmount: Amount!
+}
+input ExpenseInput {
+  title: String
+  categories: [ExpenseCategoryInput!]!
+  accountID: ID!
+  totalAmount: Amount!
+}
+
+type ExpenseCategory {
+  category: Category!
+  amount: Amount!
+}
+input ExpenseCategoryInput {
+  categoryID: ID!
+  amount: Amount!
+}
+
+type MonthlyReport {
+  month: Month!
+  year: Int!
+  plans: [Plan!]!
+  expenses: [Expense!]!
+  transfers: [Transfer!]!
 }
 
 type Query {

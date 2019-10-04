@@ -15,6 +15,22 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+func (r *Resolver) Expense() schema.ExpenseResolver {
+	panic("implement me")
+}
+
+func (r *Resolver) ExpenseCategory() schema.ExpenseCategoryResolver {
+	panic("implement me")
+}
+
+func (r *Resolver) Plan() schema.PlanResolver {
+	panic("implement me")
+}
+
+func (r *Resolver) Transfer() schema.TransferResolver {
+	panic("implement me")
+}
+
 func (r *Resolver) Category() schema.CategoryResolver {
 	return &categoryResolver{r}
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"strconv"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/mitchellh/mapstructure"
@@ -29,6 +30,21 @@ func UnmarshalID(v interface{}) (primitive.ObjectID, error) {
 func MarshalID(id primitive.ObjectID) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
 		_, _ = io.WriteString(w, strconv.Quote(id.Hex()))
+	})
+}
+
+func UnmarshalMonth(v interface{}) (time.Month, error) {
+	month, ok := v.(int)
+	if !ok || month < 1 || month > 12 {
+		return 0, errors.New("ID must be an intager in a range <1;12>")
+	}
+
+	return time.Month(month), nil
+}
+
+func MarshalMonth(month time.Month) graphql.Marshaler {
+	return graphql.WriterFunc(func(w io.Writer) {
+		_, _ = io.WriteString(w, strconv.Itoa(int(month)))
 	})
 }
 

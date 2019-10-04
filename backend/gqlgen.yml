@@ -17,6 +17,8 @@ autobind:
 models:
   ID:
     model: github.com/sjanota/budget/backend/pkg/models.ID
+  Month:
+    model: github.com/sjanota/budget/backend/pkg/models.Month
   Amount:
     model: github.com/sjanota/budget/backend/pkg/models.Amount
   AccountUpdate:

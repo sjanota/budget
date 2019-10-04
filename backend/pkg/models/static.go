@@ -43,10 +43,10 @@ func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
 	return nil
 }
 
-type MonthlyBudget struct {
+type MonthlyReport struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Month     time.Month         `json:"month"`
-	Year      uint               `json:"year"`
+	Year      int                `json:"year"`
 	Expenses  []Expense          `json:"expenses"`
 	Transfers []Transfer         `json:"transfers"`
 	Plans     []Plan             `json:"plans"`
@@ -54,23 +54,24 @@ type MonthlyBudget struct {
 }
 
 type Expense struct {
+	Title      string             `json:"title"`
 	Categories []*ExpenseCategory `json:"categories"`
-	Date       *time.Time         `json:"date"`
 	AccountID  *primitive.ObjectID
+	BudgetID   primitive.ObjectID
 }
 
-func (e Expense) Balance() Amount {
+func (e Expense) TotalAmount() Amount {
 	var sum = Amount{0, 0}
 	for _, c := range e.Categories {
-		sum = sum.Add(c.Balance)
+		sum = sum.Add(c.Amount)
 	}
 	return sum
 }
 
 type ExpenseCategory struct {
-	Balance    Amount `json:"balance"`
+	Amount     Amount `json:"balance"`
 	CategoryID primitive.ObjectID
-	BudgetID   primitive.ObjectID
+	BudgetID primitive.ObjectID
 }
 
 type Account struct {
@@ -81,8 +82,8 @@ type Account struct {
 }
 
 type Transfer struct {
-	Balance       Amount    `json:"balance"`
-	Date          time.Time `json:"date"`
+	Amount        Amount `json:"balance"`
+	Title         string `json:"title"`
 	FromAccountID primitive.ObjectID
 	ToAccountID   primitive.ObjectID
 }
@@ -96,9 +97,9 @@ type Envelope struct {
 }
 
 type Plan struct {
-	Balance        Amount    `json:"balance"`
-	Executed       Amount    `json:"executed"`
-	Date           time.Time `json:"date"`
+	Title          string `json:"title"`
+	Amount         Amount `json:"balance"`
+	Executed       Amount `json:"executed"`
 	FromEnvelopeID primitive.ObjectID
 	ToEnvelopeID   primitive.ObjectID
 }

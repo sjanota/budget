@@ -9,14 +9,14 @@ import (
 )
 
 type Storage interface {
-	GetMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID) (*models.MonthlyBudget, error)
+	GetMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID) (*models.MonthlyReport, error)
 	GetBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.Budget, error)
 	GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
 	GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, envelopeID primitive.ObjectID) (*models.Envelope, error)
-	GetCurrentMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.MonthlyBudget, error)
+	GetCurrentMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.MonthlyReport, error)
 	GetCurrentExpensesForAccount(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, accountID primitive.ObjectID) ([]*models.Expense, error)
-	EnsureMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, month time.Month, year uint) (*models.MonthlyBudget, error)
-	UpdateMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudget *models.MonthlyBudget) (*models.MonthlyBudget, error)
+	EnsureMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, month time.Month, year uint) (*models.MonthlyReport, error)
+	UpdateMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudget *models.MonthlyReport) (*models.MonthlyReport, error)
 	UpdateBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
