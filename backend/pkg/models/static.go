@@ -71,7 +71,7 @@ func (e Expense) TotalAmount() Amount {
 type ExpenseCategory struct {
 	Amount     Amount `json:"balance"`
 	CategoryID primitive.ObjectID
-	BudgetID primitive.ObjectID
+	BudgetID   primitive.ObjectID
 }
 
 type Account struct {

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,7 +29,7 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 
 func (s *Storage) GetMonthlyReport(ctx context.Context, budgetID, id primitive.ObjectID) (*models.MonthlyReport, error) {
 	find := doc{
-		"_id": id,
+		"_id":      id,
 		"budgetid": budgetID,
 	}
 
