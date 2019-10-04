@@ -8,9 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const monthly = "playground-monthly"
-const budgets = "playground-budgets"
-
 func (s *Storage) GetCurrentMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID) (*models.MonthlyBudget, error) {
 	panic("implement me")
 }

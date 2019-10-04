@@ -16,7 +16,7 @@ func (s *Storage) CreateBudget(ctx context.Context) (*models.Budget, error) {
 		Envelopes:  []*models.Envelope{},
 		Categories: []*models.Category{},
 	}
-	result, err := s.db.Collection(budgets).InsertOne(ctx, budget)
+	result, err := s.budgets.InsertOne(ctx, budget)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func (s *Storage) CreateBudget(ctx context.Context) (*models.Budget, error) {
 }
 
 func (s *Storage) ListBudgets(ctx context.Context) ([]*models.Budget, error) {
-	cursor, err := s.db.Collection(budgets).Find(ctx, doc{})
+	cursor, err := s.budgets.Find(ctx, doc{})
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (s *Storage) GetBudget(ctx context.Context, id primitive.ObjectID) (*models
 		"_id": id,
 	}
 
-	res := s.db.Collection(budgets).FindOne(ctx, find)
+	res := s.budgets.FindOne(ctx, find)
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
 	} else if err != nil {
@@ -58,7 +58,7 @@ func (s *Storage) budgetEntityExistsByName(ctx context.Context, budgetID primiti
 		"_id":                budgetID,
 		arrayField + ".name": name,
 	}
-	res := s.db.Collection(budgets).FindOne(ctx, find)
+	res := s.budgets.FindOne(ctx, find)
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return false, nil
 	} else if err != nil {
@@ -72,7 +72,7 @@ func (s *Storage) budgetEntityExistsByID(ctx context.Context, budgetID primitive
 		"_id":               budgetID,
 		arrayField + "._id": id,
 	}
-	res := s.db.Collection(budgets).FindOne(ctx, find)
+	res := s.budgets.FindOne(ctx, find)
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return false, nil
 	} else if err != nil {
@@ -92,7 +92,7 @@ func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.Ob
 			},
 		},
 	}
-	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
+	res := s.budgets.FindOne(ctx, find, options.FindOne().SetProjection(project))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, ErrNoBudget
 	} else if err != nil {
@@ -123,7 +123,7 @@ func (s *Storage) pushEntityToBudget(ctx context.Context, budgetID primitive.Obj
 			arrayField: input,
 		},
 	}
-	res, err := s.db.Collection(budgets).UpdateOne(ctx, find, update)
+	res, err := s.budgets.UpdateOne(ctx, find, update)
 	if err != nil {
 		return err
 	} else if res.MatchedCount == 0 {
@@ -132,13 +132,17 @@ func (s *Storage) pushEntityToBudget(ctx context.Context, budgetID primitive.Obj
 	return nil
 }
 
-func (s *Storage) updateEntityInBudget(ctx context.Context, budgetID, id primitive.ObjectID, arrayField string, changes models.Changes) (*models.Budget, error) {
+func (s *Storage) updateAndVerifyEntityInBudget(ctx context.Context, budgetID, id primitive.ObjectID, arrayField string, changes models.Changes) (*models.Budget, error) {
 	if exists, err := s.budgetEntityExistsByID(ctx, budgetID, arrayField, id); err != nil {
 		return nil, err
 	} else if !exists {
 		return nil, ErrDoesNotExists
 	}
 
+	return s.updateEntityInBudget(ctx, budgetID, id, arrayField, changes)
+}
+
+func (s *Storage) updateEntityInBudget(ctx context.Context, budgetID, id primitive.ObjectID, arrayField string, changes models.Changes) (*models.Budget, error) {
 	find := doc{
 		"_id":               budgetID,
 		arrayField + "._id": id,
@@ -157,7 +161,7 @@ func (s *Storage) updateEntityInBudget(ctx context.Context, budgetID, id primiti
 	update := doc{
 		"$set": updateFields,
 	}
-	res := s.db.Collection(budgets).FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	res := s.budgets.FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
 	} else if err != nil {

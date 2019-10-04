@@ -3,13 +3,16 @@ package storage
 import (
 	"context"
 
+	"github.com/sjanota/budget/backend/pkg/storage/collection"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 )
 
 type Storage struct {
-	db *mongo.Database
+	db      *mongo.Database
+	budgets *mongo.Collection
 }
 
 func New(uri string) (*Storage, error) {
@@ -26,7 +29,8 @@ func New(uri string) (*Storage, error) {
 
 	database := client.Database(cs.Database)
 	storage := &Storage{
-		db: database,
+		db:      database,
+		budgets: database.Collection(collection.Budgets),
 	}
 
 	return storage, nil

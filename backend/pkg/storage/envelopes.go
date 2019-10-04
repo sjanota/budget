@@ -8,11 +8,10 @@ import (
 )
 
 func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input *models.EnvelopeInput) (*models.Envelope, error) {
-	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID()}
+	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID(), BudgetID: budgetID}
 	if err := s.pushEntityToBudgetByName(ctx, budgetID, "envelopes", input.Name, toInsert); err != nil {
 		return nil, err
 	}
-	toInsert.BudgetID = budgetID
 	return toInsert, nil
 }
 
@@ -26,17 +25,18 @@ func (s *Storage) GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, 
 	}
 
 	envelope := budget.Envelopes[0]
-	envelope.BudgetID = budgetID
 	return envelope, nil
 }
 
 func (s *Storage) UpdateEnvelope(ctx context.Context, budgetID, id primitive.ObjectID, changes models.Changes) (*models.Envelope, error) {
-	budget, err := s.updateEntityInBudget(ctx, budgetID, id, "envelopes", changes)
+	budget, err := s.updateAndVerifyEntityInBudget(ctx, budgetID, id, "envelopes", changes)
 	if err != nil {
 		return nil, err
 	}
+	if len(budget.Envelopes) == 0 {
+		return nil, nil
+	}
 
 	envelope := budget.Envelopes[0]
-	envelope.BudgetID = budgetID
 	return envelope, nil
 }

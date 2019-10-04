@@ -11,6 +11,10 @@ input CategoryInput {
   name: String!
   envelopeID: ID!
 }
+input CategoryUpdate {
+  name: String
+  envelopeID: ID
+}
 
 type Account {
   id: ID!
@@ -64,6 +68,7 @@ type Mutation {
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
   updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
   createCategory(budgetID: ID!, in: CategoryInput!): Category
+  updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
 }
 
 schema {

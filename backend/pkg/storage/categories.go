@@ -14,11 +14,10 @@ func (s *Storage) CreateCategory(ctx context.Context, budgetID primitive.ObjectI
 		return nil, err
 	}
 
-	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID, ID: primitive.NewObjectID()}
+	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID, ID: primitive.NewObjectID(), BudgetID: budgetID}
 	if err := s.pushEntityToBudget(ctx, budgetID, "categories", toInsert); err != nil {
 		return nil, err
 	}
-	toInsert.BudgetID = budgetID
 	return toInsert, nil
 }
 
@@ -32,7 +31,23 @@ func (s *Storage) GetCategory(ctx context.Context, budgetID, id primitive.Object
 	}
 
 	category := budget.Categories[0]
-	category.BudgetID = budgetID
+	return category, nil
+}
+
+func (s *Storage) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Category, error) {
+	if err := s.verifyCategoryChanges(ctx, budgetID, in); err != nil {
+		return nil, err
+	}
+
+	budget, err := s.updateEntityInBudget(ctx, budgetID, id, "categories", in)
+	if err != nil {
+		return nil, err
+	}
+	if budget == nil {
+		return nil, ErrDoesNotExists
+	}
+
+	category := budget.Categories[0]
 	return category, nil
 }
 
@@ -52,7 +67,7 @@ func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.Ob
 			},
 		},
 	}
-	res := s.db.Collection(budgets).FindOne(ctx, find, options.FindOne().SetProjection(project))
+	res := s.budgets.FindOne(ctx, find, options.FindOne().SetProjection(project))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return ErrNoBudget
 	} else if err != nil {
@@ -69,6 +84,47 @@ func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.Ob
 		return ErrInvalidReference
 	}
 	if len(result.Categories) == 1 {
+		return ErrAlreadyExists
+	}
+	return nil
+}
+
+func (s *Storage) verifyCategoryChanges(ctx context.Context, budgetID primitive.ObjectID, input map[string]interface{}) error {
+	find := doc{
+		"_id": budgetID,
+	}
+	project := doc{}
+	if name, ok := input["name"]; ok {
+		project["categories"] = doc{
+			"$elemMatch": doc{
+				"name": name,
+			},
+		}
+	}
+	if envelopeID, ok := input["envelopeID"]; ok {
+		project["envelopes"] = doc{
+			"$elemMatch": doc{
+				"_id": envelopeID,
+			},
+		}
+	}
+	res := s.budgets.FindOne(ctx, find, options.FindOne().SetProjection(project))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return ErrNoBudget
+	} else if err != nil {
+		return err
+	}
+
+	result := &models.Budget{}
+	err := res.Decode(result)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := input["envelopeID"]; ok && len(result.Envelopes) == 0 {
+		return ErrInvalidReference
+	}
+	if _, ok := input["name"]; ok && len(result.Categories) == 1 {
 		return ErrAlreadyExists
 	}
 	return nil

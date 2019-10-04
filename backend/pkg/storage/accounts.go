@@ -8,11 +8,10 @@ import (
 )
 
 func (s *Storage) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, input *models.AccountInput) (*models.Account, error) {
-	toInsert := &models.Account{Name: input.Name, ID: primitive.NewObjectID()}
+	toInsert := &models.Account{Name: input.Name, ID: primitive.NewObjectID(), BudgetID: budgetID}
 	if err := s.pushEntityToBudgetByName(ctx, budgetID, "accounts", input.Name, toInsert); err != nil {
 		return nil, err
 	}
-	toInsert.BudgetID = budgetID
 	return toInsert, nil
 }
 
@@ -26,17 +25,15 @@ func (s *Storage) GetAccount(ctx context.Context, budgetID primitive.ObjectID, i
 	}
 
 	account := budget.Accounts[0]
-	account.BudgetID = budgetID
 	return account, nil
 }
 
 func (s *Storage) UpdateAccount(ctx context.Context, budgetID, id primitive.ObjectID, changes models.Changes) (*models.Account, error) {
-	budget, err := s.updateEntityInBudget(ctx, budgetID, id, "accounts", changes)
+	budget, err := s.updateAndVerifyEntityInBudget(ctx, budgetID, id, "accounts", changes)
 	if err != nil {
 		return nil, err
 	}
 
 	account := budget.Accounts[0]
-	account.BudgetID = budgetID
 	return account, nil
 }

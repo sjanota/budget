@@ -23,6 +23,8 @@ models:
     model: "map[string]interface{}"
   EnvelopeUpdate:
     model: "map[string]interface{}"
+  CategoryUpdate:
+    model: "map[string]interface{}"
 #  Account:
 #    fields:
 #      balance:
