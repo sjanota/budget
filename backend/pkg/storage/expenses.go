@@ -86,9 +86,6 @@ func (s *Storage) validateExpenseInput(ctx context.Context, budgetID, reportID p
 }
 
 func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID primitive.ObjectID, in *models.ExpenseInput) error {
-	find := doc{
-		"_id": budgetID,
-	}
 	project := doc{
 		"accounts": doc{
 			"$elemMatch": doc{
@@ -98,24 +95,16 @@ func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID p
 		"categories": 1,
 	}
 	opts := options.FindOne().SetProjection(project)
-	res := s.budgets.FindOne(ctx, find, opts)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return ErrNoBudget
-	} else if err != nil {
-		return err
-	}
-
-	result := &models.Budget{}
-	err := res.Decode(result)
+	budget, err := s.budgets.FindOneByID(ctx, budgetID, opts)
 	if err != nil {
 		return err
 	}
 
-	if len(result.Accounts) == 0 {
+	if len(budget.Accounts) == 0 {
 		return ErrInvalidReference
 	}
 	for _, category := range in.Categories {
-		if result.Category(category.CategoryID) == nil {
+		if budget.Category(category.CategoryID) == nil {
 			return ErrInvalidReference
 		}
 	}

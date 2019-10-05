@@ -39,20 +39,11 @@ func (s *Storage) ListBudgets(ctx context.Context) ([]*models.Budget, error) {
 }
 
 func (s *Storage) GetBudget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
-	find := doc{
-		"_id": id,
-	}
-
-	res := s.budgets.FindOne(ctx, find)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
+	budget, err := s.budgets.FindOneByID(ctx, id)
+	if err == ErrNoBudget {
 		return nil, nil
-	} else if err != nil {
-		return nil, err
 	}
-
-	result := &models.Budget{}
-	err := res.Decode(result)
-	return result, err
+	return budget, err
 }
 
 func (s *Storage) budgetEntityExistsByName(ctx context.Context, budgetID primitive.ObjectID, arrayField, name string) (bool, error) {
@@ -84,9 +75,6 @@ func (s *Storage) budgetEntityExistsByID(ctx context.Context, budgetID primitive
 }
 
 func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.ObjectID, arrayField string, id primitive.ObjectID) (*models.Budget, error) {
-	find := doc{
-		"_id": budgetID,
-	}
 	project := doc{
 		arrayField: doc{
 			"$elemMatch": doc{
@@ -94,16 +82,7 @@ func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.Ob
 			},
 		},
 	}
-	res := s.budgets.FindOne(ctx, find, options.FindOne().SetProjection(project))
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return nil, ErrNoBudget
-	} else if err != nil {
-		return nil, err
-	}
-
-	result := &models.Budget{}
-	err := res.Decode(result)
-	return result, err
+	return  s.budgets.FindOneByID(ctx, budgetID, options.FindOne().SetProjection(project))
 }
 
 func (s *Storage) pushEntityToBudgetByName(ctx context.Context, budgetID primitive.ObjectID, arrayField, name string, input interface{}) error {

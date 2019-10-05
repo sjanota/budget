@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"github.com/sjanota/budget/backend/pkg/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -13,7 +15,7 @@ const MonthlyReports = "monthly_reports"
 
 type Storage struct {
 	db             *mongo.Database
-	budgets        *mongo.Collection
+	budgets        *budgetsCollection
 	monthlyReports *mongo.Collection
 }
 
@@ -32,7 +34,7 @@ func New(uri string) (*Storage, error) {
 	database := client.Database(cs.Database)
 	storage := &Storage{
 		db:             database,
-		budgets:        database.Collection(Budgets),
+		budgets:        &budgetsCollection{database.Collection(Budgets)},
 		monthlyReports: database.Collection(MonthlyReports),
 	}
 
@@ -45,4 +47,21 @@ func (s *Storage) Drop(ctx context.Context) error {
 
 func (s *Storage) Init(ctx context.Context) error {
 	return s.createMonthlyReportIndexes(ctx)
+}
+
+type budgetsCollection struct {
+	*mongo.Collection
+}
+
+func (coll *budgetsCollection) FindOneByID(ctx context.Context, id primitive.ObjectID,	opts ...*options.FindOneOptions) (*models.Budget, error) {
+	res := coll.FindOne(ctx, doc{"_id": id}, opts...)
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, ErrNoBudget
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.Budget{}
+	err := res.Decode(result)
+	return result, err
 }
