@@ -44,13 +44,24 @@ func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
 }
 
 type MonthlyReport struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Month     time.Month         `json:"month"`
-	Year      int                `json:"year"`
+	ID        MonthlyReportID `bson:"_id,omitempty"`
 	Expenses  []*Expense         `json:"expenses"`
 	Transfers []*Transfer        `json:"transfers"`
 	Plans     []*Plan            `json:"plans"`
-	BudgetID  primitive.ObjectID
+}
+
+func (r MonthlyReport) Month() time.Month {
+	return r.ID.Month
+}
+
+func (r MonthlyReport) Year() int {
+	return r.ID.Year
+}
+
+type MonthlyReportID struct {
+	Month    time.Month
+	Year     int
+	BudgetID primitive.ObjectID
 }
 
 type Expense struct {

@@ -11,8 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (s *Storage) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, reportID primitive.ObjectID, in *models.ExpenseInput) (*models.Expense, error) {
-	if err := s.validateExpenseInput(ctx, budgetID, reportID, in); err != nil {
+func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) (*models.Expense, error) {
+	if err := s.validateExpenseInput(ctx, reportID, in); err != nil {
 		return nil, err
 	}
 
@@ -21,7 +21,7 @@ func (s *Storage) CreateExpense(ctx context.Context, budgetID primitive.ObjectID
 		toInsertCategories[i] = &models.ExpenseCategory{
 			Amount:     categoryIn.Amount,
 			CategoryID: categoryIn.CategoryID,
-			BudgetID:   budgetID,
+			BudgetID:   reportID.BudgetID,
 		}
 	}
 
@@ -29,13 +29,12 @@ func (s *Storage) CreateExpense(ctx context.Context, budgetID primitive.ObjectID
 		Title:      in.Title,
 		Categories: toInsertCategories,
 		AccountID:  in.AccountID,
-		BudgetID:   budgetID,
+		BudgetID:   reportID.BudgetID,
 		Date:       in.Date,
 	}
 
 	find := doc{
 		"_id":      reportID,
-		"budgetid": budgetID,
 	}
 	update := doc{
 		"$push": doc{
@@ -51,10 +50,9 @@ func (s *Storage) CreateExpense(ctx context.Context, budgetID primitive.ObjectID
 	return toInsert, nil
 }
 
-func (s *Storage) GetExpenses(ctx context.Context, budgetID primitive.ObjectID, monthID primitive.ObjectID) ([]*models.Expense, error) {
+func (s *Storage) GetExpenses(ctx context.Context, reportID models.MonthlyReportID) ([]*models.Expense, error) {
 	find := doc{
-		"_id":      monthID,
-		"budgetid": budgetID,
+		"_id":      reportID,
 	}
 	project := doc{
 		"_id":      0,
@@ -77,12 +75,12 @@ func (s *Storage) GetExpenses(ctx context.Context, budgetID primitive.ObjectID, 
 	return result.Expenses, nil
 }
 
-func (s *Storage) validateExpenseInput(ctx context.Context, budgetID, reportID primitive.ObjectID, in *models.ExpenseInput) error {
-	if err := s.validateExpenseInputReferences(ctx, budgetID, in); err != nil {
+func (s *Storage) validateExpenseInput(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) error {
+	if err := s.validateExpenseInputReferences(ctx, reportID.BudgetID, in); err != nil {
 		return err
 	}
 
-	return s.validateExpenseInputMonth(ctx, budgetID, reportID, in)
+	return s.validateExpenseInputMonth(ctx, reportID, in)
 }
 
 func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID primitive.ObjectID, in *models.ExpenseInput) error {
@@ -111,36 +109,13 @@ func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID p
 	return nil
 }
 
-func (s *Storage) validateExpenseInputMonth(ctx context.Context, budgetID, reportID primitive.ObjectID, in *models.ExpenseInput) error {
-	find := doc{
-		"_id": reportID,
-		"budgetid": budgetID,
-	}
-	projection := doc {
-		"month": 1,
-		"year": 1,
-	}
-	opts := options.FindOne().SetProjection(projection)
-	res := s.monthlyReports.FindOne(ctx, find, opts)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return ErrNoReport
-	} else if err != nil {
-		return err
-	}
-
-	result := &models.MonthlyReport{}
-	err := res.Decode(result)
-	if err != nil {
-		return err
-	}
-
-	if result.Month != in.Date.Month {
+func (s *Storage) validateExpenseInputMonth(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) error {
+	if reportID.Month != in.Date.Month {
 		return ErrWrongDate
 	}
-	if result.Year != in.Date.Year {
+	if reportID.Year != in.Date.Year {
 		return ErrWrongDate
 	}
 
 	return nil
-
 }

@@ -154,9 +154,9 @@ func whenSomeMonthlyReportExists(t *testing.T, ctx context.Context, budgetID pri
 	return report
 }
 
-func whenSomeExpenseExists(t *testing.T, ctx context.Context, budgetID, accountID, categoryID1, categoryID2 primitive.ObjectID, report *models.MonthlyReport) *models.Expense {
+func whenSomeExpenseExists(t *testing.T, ctx context.Context, accountID, categoryID1, categoryID2 primitive.ObjectID, report *models.MonthlyReport) *models.Expense {
 	input := mock.ExpenseInput(mock.DateInReport(report), accountID, categoryID1, categoryID2)
-	expense, err := testStorage.CreateExpense(ctx, budgetID, report.ID, input)
+	expense, err := testStorage.CreateExpense(ctx, report.ID, input)
 	require.NoError(t, err)
 	return expense
 }

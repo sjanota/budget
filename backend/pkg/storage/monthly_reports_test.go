@@ -24,12 +24,9 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 		assert.NotEqual(t, primitive.ObjectID{}, report.ID)
 		assert.Equal(t, &models.MonthlyReport{
 			ID:        report.ID,
-			Month:     input.Month,
-			Year:      input.Year,
 			Expenses:  []*models.Expense{},
 			Transfers: []*models.Transfer{},
 			Plans:     []*models.Plan{},
-			BudgetID:  budget.ID,
 		}, report)
 	})
 
@@ -58,7 +55,7 @@ func TestStorage_GetMonthlyReport(t *testing.T) {
 	report := whenSomeMonthlyReportExists(t, ctx, budget.ID)
 
 	t.Run("Success", func(t *testing.T) {
-		got, err := testStorage.GetMonthlyReport(ctx, budget.ID, report.ID)
+		got, err := testStorage.GetMonthlyReport(ctx, report.ID)
 		require.NoError(t, err)
 		assert.Equal(t, report, got)
 	})

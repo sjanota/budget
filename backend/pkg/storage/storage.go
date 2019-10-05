@@ -46,7 +46,7 @@ func (s *Storage) Drop(ctx context.Context) error {
 }
 
 func (s *Storage) Init(ctx context.Context) error {
-	return s.createMonthlyReportIndexes(ctx)
+	return nil
 }
 
 type budgetsCollection struct {

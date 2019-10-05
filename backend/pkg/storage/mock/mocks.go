@@ -41,10 +41,23 @@ func ExpenseInput(date models.Date, accountID, categoryID1, categoryID2 primitiv
 	}
 }
 
+func MonthlyReportID(budgetID primitive.ObjectID, date ...models.Date) models.MonthlyReportID {
+	d := Date()
+	if len(date) > 0 {
+		d = date[0]
+	}
+
+	return models.MonthlyReportID{
+		Month:    d.Month,
+		Year:     d.Year,
+		BudgetID: budgetID,
+	}
+}
+
 func DateInReport(report *models.MonthlyReport) models.Date {
 	return models.Date{
-		Year:  report.Year,
-		Month: report.Month,
+		Year:  report.Year(),
+		Month: report.Month(),
 		Day:   rand.Int()%29 + 1,
 	}
 }
