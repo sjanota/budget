@@ -47,9 +47,9 @@ type MonthlyReport struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Month     time.Month         `json:"month"`
 	Year      int                `json:"year"`
-	Expenses  []Expense          `json:"expenses"`
-	Transfers []Transfer         `json:"transfers"`
-	Plans     []Plan             `json:"plans"`
+	Expenses  []*Expense         `json:"expenses"`
+	Transfers []*Transfer        `json:"transfers"`
+	Plans     []*Plan            `json:"plans"`
 	BudgetID  primitive.ObjectID
 }
 

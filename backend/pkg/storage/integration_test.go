@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/sjanota/budget/backend/pkg/storage/mock"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/stretchr/testify/require"
@@ -112,33 +113,22 @@ func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 }
 
 func whenSomeEnvelopeExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Envelope {
-	input := &models.EnvelopeInput{Name: name(), Limit: amount()}
+	input := &models.EnvelopeInput{Name: mock.Name(), Limit: mock.Amount()}
 	envelope, err := testStorage.CreateEnvelope(ctx, budgetID, input)
 	require.NoError(t, err)
 	return envelope
 }
 
 func whenSomeCategoryExists(t *testing.T, ctx context.Context, budgetID, envelopeID primitive.ObjectID) *models.Category {
-	input := &models.CategoryInput{Name: name(), EnvelopeID: envelopeID}
+	input := &models.CategoryInput{Name: mock.Name(), EnvelopeID: envelopeID}
 	category, err := testStorage.CreateCategory(ctx, budgetID, input)
 	require.NoError(t, err)
 	return category
 }
 
 func whenSomeAccountExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Account {
-	input := &models.AccountInput{Name: name()}
+	input := &models.AccountInput{Name: mock.Name()}
 	account, err := testStorage.CreateAccount(ctx, budgetID, input)
 	require.NoError(t, err)
 	return account
-}
-
-func name() string {
-	return primitive.NewObjectID().Hex()
-}
-
-func amount() *models.Amount {
-	return &models.Amount{
-		Integer: rand.Int(),
-		Decimal: rand.Int() % 100,
-	}
 }

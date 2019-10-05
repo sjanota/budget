@@ -1809,10 +1809,10 @@ func (ec *executionContext) _MonthlyReport_plans(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Plan)
+	res := resTmp.([]*models.Plan)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNPlan2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx, field.Selections, res)
+	return ec.marshalNPlan2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MonthlyReport_expenses(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
@@ -1846,10 +1846,10 @@ func (ec *executionContext) _MonthlyReport_expenses(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Expense)
+	res := resTmp.([]*models.Expense)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNExpense2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
+	return ec.marshalNExpense2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MonthlyReport_transfers(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
@@ -1883,10 +1883,10 @@ func (ec *executionContext) _MonthlyReport_transfers(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Transfer)
+	res := resTmp.([]*models.Transfer)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTransfer2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
+	return ec.marshalNTransfer2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5025,7 +5025,7 @@ func (ec *executionContext) marshalNExpense2githubᚗcomᚋsjanotaᚋbudgetᚋba
 	return ec._Expense(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNExpense2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx context.Context, sel ast.SelectionSet, v []models.Expense) graphql.Marshaler {
+func (ec *executionContext) marshalNExpense2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx context.Context, sel ast.SelectionSet, v []*models.Expense) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5049,7 +5049,7 @@ func (ec *executionContext) marshalNExpense2ᚕgithubᚗcomᚋsjanotaᚋbudget�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNExpense2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, sel, v[i])
+			ret[i] = ec.marshalNExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5060,6 +5060,16 @@ func (ec *executionContext) marshalNExpense2ᚕgithubᚗcomᚋsjanotaᚋbudget�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx context.Context, sel ast.SelectionSet, v *models.Expense) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Expense(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNExpenseCategory2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategory(ctx context.Context, sel ast.SelectionSet, v models.ExpenseCategory) graphql.Marshaler {
@@ -5205,7 +5215,7 @@ func (ec *executionContext) marshalNPlan2githubᚗcomᚋsjanotaᚋbudgetᚋbacke
 	return ec._Plan(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPlan2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx context.Context, sel ast.SelectionSet, v []models.Plan) graphql.Marshaler {
+func (ec *executionContext) marshalNPlan2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx context.Context, sel ast.SelectionSet, v []*models.Plan) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5229,7 +5239,7 @@ func (ec *executionContext) marshalNPlan2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋba
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPlan2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx, sel, v[i])
+			ret[i] = ec.marshalNPlan2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5240,6 +5250,16 @@ func (ec *executionContext) marshalNPlan2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋba
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNPlan2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx context.Context, sel ast.SelectionSet, v *models.Plan) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Plan(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -5260,7 +5280,7 @@ func (ec *executionContext) marshalNTransfer2githubᚗcomᚋsjanotaᚋbudgetᚋb
 	return ec._Transfer(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTransfer2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v []models.Transfer) graphql.Marshaler {
+func (ec *executionContext) marshalNTransfer2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v []*models.Transfer) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5284,7 +5304,7 @@ func (ec *executionContext) marshalNTransfer2ᚕgithubᚗcomᚋsjanotaᚋbudget�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTransfer2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, sel, v[i])
+			ret[i] = ec.marshalNTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5295,6 +5315,16 @@ func (ec *executionContext) marshalNTransfer2ᚕgithubᚗcomᚋsjanotaᚋbudget�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v *models.Transfer) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Transfer(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

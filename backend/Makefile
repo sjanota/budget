@@ -3,7 +3,8 @@
 MONGO_CONTAINER_NAME := budget-mongo
 LINT_IGNORE=should have comment or be unexported
 
-check: fmt lint test
+short: generate fmt lint
+check: short test
 
 lint:
 	@echo golint ./...

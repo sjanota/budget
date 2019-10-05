@@ -44,5 +44,5 @@ func (s *Storage) Drop(ctx context.Context) error {
 }
 
 func (s *Storage) Init(ctx context.Context) error {
-	return nil
+	return s.createMonthlyReportIndexes(ctx)
 }

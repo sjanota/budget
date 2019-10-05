@@ -3,6 +3,8 @@ package storage_test
 import (
 	"testing"
 
+	"github.com/sjanota/budget/backend/pkg/storage/mock"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +17,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 	budget := whenSomeBudgetExists(t, ctx)
 
 	t.Run("Success", func(t *testing.T) {
-		input := &models.AccountInput{Name: name()}
+		input := &models.AccountInput{Name: mock.Name()}
 
 		account, err := testStorage.CreateAccount(ctx, budget.ID, input)
 		require.NoError(t, err)
@@ -29,7 +31,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 	})
 
 	t.Run("DuplicateName", func(t *testing.T) {
-		input := &models.AccountInput{Name: name()}
+		input := &models.AccountInput{Name: mock.Name()}
 
 		_, err := testStorage.CreateAccount(ctx, budget.ID, input)
 		require.NoError(t, err)
@@ -39,7 +41,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 	})
 
 	t.Run("NoBudget", func(t *testing.T) {
-		input := &models.AccountInput{Name: name()}
+		input := &models.AccountInput{Name: mock.Name()}
 
 		_, err := testStorage.CreateAccount(ctx, primitive.NewObjectID(), input)
 		require.EqualError(t, err, storage.ErrNoBudget.Error())
@@ -75,7 +77,7 @@ func TestStorage_UpdateAccount(t *testing.T) {
 	account := whenSomeAccountExists(t, ctx, budget.ID)
 
 	t.Run("Success", func(t *testing.T) {
-		changes := models.Changes{"name": name()}
+		changes := models.Changes{"name": mock.Name()}
 		updated, err := testStorage.UpdateAccount(ctx, budget.ID, account.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, &models.Account{
@@ -87,7 +89,7 @@ func TestStorage_UpdateAccount(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		changes := models.Changes{"name": name()}
+		changes := models.Changes{"name": mock.Name()}
 		_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
 		assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 	})

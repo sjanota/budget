@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,14 +14,17 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 	toInsert := &models.MonthlyReport{
 		Month:     input.Month,
 		Year:      input.Year,
-		Expenses:  make([]models.Expense, 0),
-		Transfers: make([]models.Transfer, 0),
-		Plans:     make([]models.Plan, 0),
+		Expenses:  make([]*models.Expense, 0),
+		Transfers: make([]*models.Transfer, 0),
+		Plans:     make([]*models.Plan, 0),
 		BudgetID:  budgetID,
 	}
 
 	res, err := s.monthlyReports.InsertOne(ctx, toInsert)
 	if err != nil {
+		if isDuplicateKeyError(err) {
+			return nil, ErrAlreadyExists
+		}
 		return nil, err
 	}
 
@@ -43,4 +48,17 @@ func (s *Storage) GetMonthlyReport(ctx context.Context, budgetID, id primitive.O
 	result := &models.MonthlyReport{}
 	err := res.Decode(result)
 	return result, err
+}
+
+func (s *Storage) createMonthlyReportIndexes(ctx context.Context) error {
+	index := mongo.IndexModel{
+		Keys: doc{
+			"budgetid": 1,
+			"month":    1,
+			"year":     1,
+		},
+		Options: options.Index().SetUnique(true),
+	}
+	_, err := s.monthlyReports.Indexes().CreateOne(ctx, index)
+	return err
 }
