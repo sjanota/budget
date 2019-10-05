@@ -14,6 +14,8 @@ import (
 
 func TestBudgetResolver_CurrentMonth(t *testing.T) {
 	mock := gomock.NewController(t)
+	defer mock.Finish()
+
 	storage := mocks.NewMockBudgetResolverStorage(mock)
 	resolver := &budgetResolver{storage}
 	ctx := context.TODO()

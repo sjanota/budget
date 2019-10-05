@@ -13,6 +13,8 @@ import (
 
 func TestCategoryResolver_Envelope(t *testing.T) {
 	mock := gomock.NewController(t)
+	defer mock.Finish()
+
 	storage := mocks.NewMockCategoryResolverStorage(mock)
 	resolver := &categoryResolver{storage}
 	ctx := context.TODO()

@@ -4,7 +4,7 @@ package resolver
 
 import (
 	"context"
-	"time"
+	time "time"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
@@ -59,50 +59,5 @@ func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*mod
 }
 
 func (r *Resolver) Mutation() schema.MutationResolver {
-	return &mutationResolver{r}
-}
-
-type mutationResolver struct {
-	*Resolver
-}
-
-func (r *mutationResolver) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Category, error) {
-	return r.Storage.UpdateCategory(ctx, budgetID, id, in)
-}
-
-func (r *mutationResolver) UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Envelope, error) {
-	return r.Storage.UpdateEnvelope(ctx, budgetID, id, in)
-}
-
-func (r *mutationResolver) UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Account, error) {
-	return r.Storage.UpdateAccount(ctx, budgetID, id, in)
-}
-
-func (r *mutationResolver) CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error) {
-	return r.Storage.CreateCategory(ctx, budgetID, &in)
-}
-
-func (r *mutationResolver) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error) {
-	return r.Storage.CreateEnvelope(ctx, budgetID, &in)
-}
-
-func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in models.AccountInput) (*models.Account, error) {
-	return r.Storage.CreateAccount(ctx, budgetID, &in)
-}
-
-func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, error) {
-	budgetID := primitive.NewObjectID()
-	now := time.Now()
-	input := &models.MonthlyReportInput{
-		Month: models.Month{
-			Year:  now.Year(),
-			Month: now.Month(),
-		},
-	}
-	monthlyReport, err := r.Storage.CreateMonthlyReport(ctx, budgetID, input)
-	if err != nil {
-		return nil, err
-	}
-
-	return r.Storage.CreateBudget(ctx, budgetID, monthlyReport.ID.Month)
+	return &mutationResolver{Storage: r.Storage, Now: time.Now, NewObjectID: primitive.NewObjectID}
 }

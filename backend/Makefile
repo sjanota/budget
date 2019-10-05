@@ -3,8 +3,7 @@
 MONGO_CONTAINER_NAME := budget-mongo
 LINT_IGNORE=should have comment or be unexported\|comment on exported
 
-short: generate fmt lint
-check: short test
+check: lint test
 
 lint:
 	@echo golint ./...
@@ -12,7 +11,7 @@ lint:
 	@echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' || true
 	@exit $(shell echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' | wc -l)
 
-fmt:
+format: generate
 	go fmt ./...
 	goimports -l -w .
 
