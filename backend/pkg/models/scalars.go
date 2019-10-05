@@ -34,21 +34,6 @@ func MarshalID(id primitive.ObjectID) graphql.Marshaler {
 	})
 }
 
-func UnmarshalMonth(v interface{}) (time.Month, error) {
-	month, ok := v.(int)
-	if !ok || month < 1 || month > 12 {
-		return 0, errors.New("ID must be an intager in a range <1;12>")
-	}
-
-	return time.Month(month), nil
-}
-
-func MarshalMonth(month time.Month) graphql.Marshaler {
-	return graphql.WriterFunc(func(w io.Writer) {
-		_, _ = io.WriteString(w, strconv.Itoa(int(month)))
-	})
-}
-
 type Amount struct {
 	Integer int `json:"integer"`
 	Decimal int `json:"decimal"`
@@ -89,22 +74,60 @@ type Date struct {
 	Day   int
 }
 
-var errInvalidDate = errors.New("Date must be ISO 8601 date string")
-
-func (a *Date) UnmarshalGQL(v interface{}) error {
+func (d *Date) UnmarshalGQL(v interface{}) error {
 	s, ok := v.(string)
 	if !ok {
-		return errInvalidDate
+		return ErrMalformedDate
 	}
-	parsed, err := time.Parse(time.RFC3339, s)
+	parsed, err := time.Parse("\"2006-01-02\"", s)
 	if err != nil {
-		return errInvalidDate
+		return ErrMalformedDate
 	}
-	a.Year, a.Month, a.Day = parsed.Date()
+	d.Year, d.Month, d.Day = parsed.Date()
 	return nil
 }
 
-func (a Date) MarshalGQL(w io.Writer) {
-	s := fmt.Sprintf("%v-%v-%v", a.Year, int(a.Month), a.Day)
-	_ = json.NewEncoder(w).Encode(s)
+func (d Date) MarshalGQL(w io.Writer) {
+	s := fmt.Sprintf("\"%04d-%02d-%02d\"", d.Year, int(d.Month), d.Day)
+	_, _ = w.Write([]byte(s))
+}
+
+type Month struct {
+	Year  int
+	Month time.Month
+}
+
+func (m *Month) UnmarshalGQL(v interface{}) error {
+	s, ok := v.(string)
+	if !ok {
+		return ErrMalformedMonth
+	}
+	parsed, err := time.Parse("\"2006-01\"", s)
+	if err != nil {
+		return ErrMalformedMonth
+	}
+	m.Year, m.Month, _ = parsed.Date()
+	return nil
+}
+
+func (m Month) MarshalGQL(w io.Writer) {
+	s := fmt.Sprintf("\"%04d-%02d\"", m.Year, int(m.Month))
+	_, _ = w.Write([]byte(s))
+}
+
+func (m Month) Contains(d Date) bool {
+	return m.Month == d.Month && m.Year == d.Year
+}
+
+func (m Month) Next() Month {
+	if m.Month == time.December {
+		return Month{
+			Year:  m.Year + 1,
+			Month: time.January,
+		}
+	}
+	return Month{
+		Year:  m.Year,
+		Month: m.Month + 1,
+	}
 }

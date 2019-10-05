@@ -16,6 +16,8 @@ type Resolver struct {
 	Storage *storage.Storage
 }
 
+var _ schema.ResolverRoot = &Resolver{}
+
 func (r *Resolver) Budget() schema.BudgetResolver {
 	return &budgetResolver{r}
 }
@@ -25,7 +27,7 @@ type budgetResolver struct {
 }
 
 func (r *budgetResolver) CurrentMonth(ctx context.Context, obj *models.Budget) (*models.MonthlyReport, error) {
-	return r.Storage.GetMonthlyReport(ctx, obj.ID, obj.CurrentMonthID)
+	return r.Storage.GetMonthlyReport(ctx, models.MonthlyReportID{BudgetID: obj.ID, Month: obj.CurrentMonth})
 }
 
 func (r *Resolver) Expense() schema.ExpenseResolver {
@@ -108,13 +110,15 @@ func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, er
 	budgetID := primitive.NewObjectID()
 	now := time.Now()
 	input := &models.MonthlyReportInput{
-		Month: now.Month(),
-		Year:  now.Year(),
+		Month: models.Month{
+			Year:  now.Year(),
+			Month: now.Month(),
+		},
 	}
 	monthlyReport, err := r.Storage.CreateMonthlyReport(ctx, budgetID, input)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.Storage.CreateBudget(ctx, budgetID, monthlyReport.ID)
+	return r.Storage.CreateBudget(ctx, budgetID, monthlyReport.ID.Month)
 }

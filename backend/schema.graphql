@@ -103,14 +103,12 @@ input ExpenseCategoryInput {
 
 type MonthlyReport {
   month: Month!
-  year: Int!
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
 }
 input MonthlyReportInput {
   month: Month!
-  year: Int!
 }
 
 type Query {

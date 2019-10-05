@@ -67,19 +67,14 @@ func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthl
 	}
 
 	// getNextMonth
-	month := monthlyBudget.Month + 1
-	year := monthlyBudget.Year
-	if monthlyBudget.Month == time.December {
-		month = time.January
-		year++
-	}
+	month := monthlyBudget.Month().Next()
 
 	// createNextMonthlyBudget
-	nextMonthlyBudget, err := storage.EnsureMonthlyBudget(ctx, budget.ID, month, year)
+	nextMonthlyBudget, err := storage.EnsureMonthlyBudget(ctx, budget.ID, month.Month, month.Year)
 	if err != nil {
 		return err
 	}
-	budget.CurrentMonthID = nextMonthlyBudget.ID
+	budget.CurrentMonth = nextMonthlyBudget.ID.Month
 
 	// commitCurrentMonthlyBudget
 	_, err = storage.UpdateMonthlyBudget(ctx, budget.ID, monthlyBudget)

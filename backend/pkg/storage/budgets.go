@@ -10,13 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (s *Storage) CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonthID primitive.ObjectID) (*models.Budget, error) {
+func (s *Storage) CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error) {
 	budget := &models.Budget{
-		ID:             id,
-		Accounts:       []*models.Account{},
-		Envelopes:      []*models.Envelope{},
-		Categories:     []*models.Category{},
-		CurrentMonthID: currentMonthID,
+		ID:           id,
+		Accounts:     []*models.Account{},
+		Envelopes:    []*models.Envelope{},
+		Categories:   []*models.Category{},
+		CurrentMonth: currentMonth,
 	}
 	result, err := s.budgets.InsertOne(ctx, budget)
 	if err != nil {
@@ -82,7 +82,7 @@ func (s *Storage) getBudgetByEntityID(ctx context.Context, budgetID primitive.Ob
 			},
 		},
 	}
-	return  s.budgets.FindOneByID(ctx, budgetID, options.FindOne().SetProjection(project))
+	return s.budgets.FindOneByID(ctx, budgetID, options.FindOne().SetProjection(project))
 }
 
 func (s *Storage) pushEntityToBudgetByName(ctx context.Context, budgetID primitive.ObjectID, arrayField, name string, input interface{}) error {

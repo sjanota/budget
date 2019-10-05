@@ -12,7 +12,6 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 	toInsert := &models.MonthlyReport{
 		ID: models.MonthlyReportID{
 			Month:    input.Month,
-			Year:     input.Year,
 			BudgetID: budgetID,
 		},
 		Expenses:  make([]*models.Expense, 0),

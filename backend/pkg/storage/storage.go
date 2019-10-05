@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -53,7 +54,7 @@ type collectionExtension struct {
 	*mongo.Collection
 }
 
-func (coll *collectionExtension) FindOneByID(ctx context.Context, id interface{}, into interface{},	opts ...*options.FindOneOptions) error {
+func (coll *collectionExtension) FindOneByID(ctx context.Context, id interface{}, into interface{}, opts ...*options.FindOneOptions) error {
 	res := coll.FindOne(ctx, doc{"_id": id}, opts...)
 	if err := res.Err(); err != err {
 		return err

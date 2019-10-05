@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -96,7 +95,6 @@ type ComplexityRoot struct {
 		Month     func(childComplexity int) int
 		Plans     func(childComplexity int) int
 		Transfers func(childComplexity int) int
-		Year      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -359,13 +357,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyReport.Transfers(childComplexity), true
-
-	case "MonthlyReport.year":
-		if e.complexity.MonthlyReport.Year == nil {
-			break
-		}
-
-		return e.complexity.MonthlyReport.Year(childComplexity), true
 
 	case "Mutation.createAccount":
 		if e.complexity.Mutation.CreateAccount == nil {
@@ -688,14 +679,12 @@ input ExpenseCategoryInput {
 
 type MonthlyReport {
   month: Month!
-  year: Int!
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
 }
 input MonthlyReportInput {
   month: Month!
-  year: Int!
 }
 
 type Query {
@@ -1765,13 +1754,13 @@ func (ec *executionContext) _MonthlyReport_month(ctx context.Context, field grap
 		Object:   "MonthlyReport",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Month, nil
+		return obj.Month(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1783,47 +1772,10 @@ func (ec *executionContext) _MonthlyReport_month(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Month)
+	res := resTmp.(models.Month)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNMonth2timeᚐMonth(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _MonthlyReport_year(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "MonthlyReport",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Year, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNMonth2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonth(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MonthlyReport_plans(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
@@ -3951,13 +3903,7 @@ func (ec *executionContext) unmarshalInputMonthlyReportInput(ctx context.Context
 		switch k {
 		case "month":
 			var err error
-			it.Month, err = ec.unmarshalNMonth2timeᚐMonth(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "year":
-			var err error
-			it.Year, err = ec.unmarshalNInt2int(ctx, v)
+			it.Month, err = ec.unmarshalNMonth2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonth(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4332,11 +4278,6 @@ func (ec *executionContext) _MonthlyReport(ctx context.Context, sel ast.Selectio
 			out.Values[i] = graphql.MarshalString("MonthlyReport")
 		case "month":
 			out.Values[i] = ec._MonthlyReport_month(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "year":
-			out.Values[i] = ec._MonthlyReport_year(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -5237,32 +5178,13 @@ func (ec *executionContext) marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbso
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	return graphql.UnmarshalInt(v)
+func (ec *executionContext) unmarshalNMonth2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonth(ctx context.Context, v interface{}) (models.Month, error) {
+	var res models.Month
+	return res, res.UnmarshalGQL(v)
 }
 
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNMonth2timeᚐMonth(ctx context.Context, v interface{}) (time.Month, error) {
-	return models.UnmarshalMonth(v)
-}
-
-func (ec *executionContext) marshalNMonth2timeᚐMonth(ctx context.Context, sel ast.SelectionSet, v time.Month) graphql.Marshaler {
-	res := models.MarshalMonth(v)
-	if res == graphql.Null {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
+func (ec *executionContext) marshalNMonth2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonth(ctx context.Context, sel ast.SelectionSet, v models.Month) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNMonthlyReport2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonthlyReport(ctx context.Context, sel ast.SelectionSet, v models.MonthlyReport) graphql.Marshaler {

@@ -1,17 +1,15 @@
 package models
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Budget struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Accounts       []*Account         `json:"accounts"`
-	Envelopes      []*Envelope        `json:"envelopes"`
-	Categories     []*Category        `json:"categories"`
-	CurrentMonthID primitive.ObjectID
+	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Accounts     []*Account         `json:"accounts"`
+	Envelopes    []*Envelope        `json:"envelopes"`
+	Categories   []*Category        `json:"categories"`
+	CurrentMonth Month
 }
 
 type Changes map[string]interface{}
@@ -45,22 +43,17 @@ func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
 
 type MonthlyReport struct {
 	ID        MonthlyReportID `bson:"_id,omitempty"`
-	Expenses  []*Expense         `json:"expenses"`
-	Transfers []*Transfer        `json:"transfers"`
-	Plans     []*Plan            `json:"plans"`
+	Expenses  []*Expense      `json:"expenses"`
+	Transfers []*Transfer     `json:"transfers"`
+	Plans     []*Plan         `json:"plans"`
 }
 
-func (r MonthlyReport) Month() time.Month {
+func (r MonthlyReport) Month() Month {
 	return r.ID.Month
 }
 
-func (r MonthlyReport) Year() int {
-	return r.ID.Year
-}
-
 type MonthlyReportID struct {
-	Month    time.Month
-	Year     int
+	Month    Month
 	BudgetID primitive.ObjectID
 }
 

@@ -18,7 +18,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	otherBudget := whenSomeBudgetExists(t, ctx)
 
 	t.Run("Success", func(t *testing.T) {
-		input := &models.MonthlyReportInput{Month: mock.Month(), Year: mock.Year()}
+		input := &models.MonthlyReportInput{Month: mock.Month()}
 		report, err := testStorage.CreateMonthlyReport(ctx, budget.ID, input)
 		require.NoError(t, err)
 		assert.NotEqual(t, primitive.ObjectID{}, report.ID)
@@ -31,7 +31,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	})
 
 	t.Run("Duplicated date", func(t *testing.T) {
-		input := &models.MonthlyReportInput{Month: mock.Month(), Year: mock.Year()}
+		input := &models.MonthlyReportInput{Month: mock.Month()}
 		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, input)
 		require.NoError(t, err)
 
@@ -40,7 +40,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	})
 
 	t.Run("Duplicated date on different budget", func(t *testing.T) {
-		input := &models.MonthlyReportInput{Month: mock.Month(), Year: mock.Year()}
+		input := &models.MonthlyReportInput{Month: mock.Month()}
 		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, input)
 		require.NoError(t, err)
 

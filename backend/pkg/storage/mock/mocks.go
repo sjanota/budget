@@ -20,14 +20,6 @@ func Amount() *models.Amount {
 	}
 }
 
-func Month() time.Month {
-	return time.Month(rand.Int()%12 + 1)
-}
-
-func Year() int {
-	return rand.Int()%50 + 1990
-}
-
 func ExpenseInput(date models.Date, accountID, categoryID1, categoryID2 primitive.ObjectID) *models.ExpenseInput {
 	return &models.ExpenseInput{
 		Title: Name(),
@@ -48,24 +40,45 @@ func MonthlyReportID(budgetID primitive.ObjectID, date ...models.Date) models.Mo
 	}
 
 	return models.MonthlyReportID{
-		Month:    d.Month,
-		Year:     d.Year,
+		Month: models.Month{
+			Year:  d.Year,
+			Month: d.Month,
+		},
 		BudgetID: budgetID,
 	}
 }
 
+func day() int {
+	return rand.Int()%29 + 1
+}
+
+func year() int {
+	return rand.Int()%100 + 1990
+}
+
+func month() time.Month {
+	return time.Month(rand.Int()%12 + 1)
+}
+
 func DateInReport(report *models.MonthlyReport) models.Date {
 	return models.Date{
-		Year:  report.Year(),
-		Month: report.Month(),
-		Day:   rand.Int()%29 + 1,
+		Year:  report.Month().Year,
+		Month: report.Month().Month,
+		Day:   day(),
 	}
 }
 
 func Date() models.Date {
 	return models.Date{
-		Year:  rand.Int()%100 + 1990,
-		Month: time.Month(rand.Int()%12 + 1),
-		Day:   rand.Int()%29 + 1,
+		Year:  year(),
+		Month: month(),
+		Day:   day(),
+	}
+}
+
+func Month() models.Month {
+	return models.Month{
+		Year:  year(),
+		Month: month(),
 	}
 }

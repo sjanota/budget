@@ -32,7 +32,7 @@ func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyRepo
 	}
 
 	find := doc{
-		"_id":      reportID,
+		"_id": reportID,
 	}
 	update := doc{
 		"$push": doc{
@@ -65,7 +65,7 @@ func (s *Storage) validateExpenseInput(ctx context.Context, reportID models.Mont
 		return err
 	}
 
-	return s.validateExpenseInputMonth(ctx, reportID, in)
+	return s.validateExpenseInputMonth(reportID, in)
 }
 
 func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID primitive.ObjectID, in *models.ExpenseInput) error {
@@ -94,11 +94,8 @@ func (s *Storage) validateExpenseInputReferences(ctx context.Context, budgetID p
 	return nil
 }
 
-func (s *Storage) validateExpenseInputMonth(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) error {
-	if reportID.Month != in.Date.Month {
-		return ErrWrongDate
-	}
-	if reportID.Year != in.Date.Year {
+func (s *Storage) validateExpenseInputMonth(reportID models.MonthlyReportID, in *models.ExpenseInput) error {
+	if !reportID.Month.Contains(in.Date) {
 		return ErrWrongDate
 	}
 
