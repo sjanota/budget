@@ -81,6 +81,7 @@ type ComplexityRoot struct {
 	Expense struct {
 		Account     func(childComplexity int) int
 		Categories  func(childComplexity int) int
+		Date        func(childComplexity int) int
 		Title       func(childComplexity int) int
 		TotalAmount func(childComplexity int) int
 	}
@@ -295,6 +296,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Expense.Categories(childComplexity), true
+
+	case "Expense.date":
+		if e.complexity.Expense.Date == nil {
+			break
+		}
+
+		return e.complexity.Expense.Date(childComplexity), true
 
 	case "Expense.title":
 		if e.complexity.Expense.Title == nil {
@@ -577,6 +585,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema.graphql", Input: `scalar Month
 scalar Amount
+scalar Date
 
 type Category {
   id: ID!
@@ -658,12 +667,14 @@ type Expense {
   categories: [ExpenseCategory!]!
   account: Account!
   totalAmount: Amount!
+  date: Date!
 }
 input ExpenseInput {
   title: String
   categories: [ExpenseCategoryInput!]!
   accountID: ID!
   totalAmount: Amount!
+  date: Date!
 }
 
 type ExpenseCategory {
@@ -1513,10 +1524,10 @@ func (ec *executionContext) _Expense_title(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Expense_categories(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
@@ -1628,6 +1639,43 @@ func (ec *executionContext) _Expense_totalAmount(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Expense_date(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Expense",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Date)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ExpenseCategory_category(ctx context.Context, field graphql.CollectedField, obj *models.ExpenseCategory) (ret graphql.Marshaler) {
@@ -3883,6 +3931,12 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4205,6 +4259,11 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 			})
 		case "totalAmount":
 			out.Values[i] = ec._Expense_totalAmount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "date":
+			out.Values[i] = ec._Expense_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -4957,6 +5016,15 @@ func (ec *executionContext) unmarshalNCategoryUpdate2map(ctx context.Context, v 
 		return nil, nil
 	}
 	return v.(map[string]interface{}), nil
+}
+
+func (ec *executionContext) unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
+	var res models.Date
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNEnvelope2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx context.Context, sel ast.SelectionSet, v models.Envelope) graphql.Marshaler {

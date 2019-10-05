@@ -54,9 +54,10 @@ type MonthlyReport struct {
 }
 
 type Expense struct {
-	Title      string             `json:"title"`
+	Title      *string            `json:"title"`
 	Categories []*ExpenseCategory `json:"categories"`
-	AccountID  *primitive.ObjectID
+	Date       Date               `json:"date"`
+	AccountID  primitive.ObjectID
 	BudgetID   primitive.ObjectID
 }
 

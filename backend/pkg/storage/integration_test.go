@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pkg/errors"
+
 	"github.com/sjanota/budget/backend/pkg/storage/mock"
 
 	"github.com/sjanota/budget/backend/pkg/models"
@@ -34,23 +36,17 @@ func TestMain(m *testing.M) {
 	os.Exit(retCode)
 }
 
-func before(t *testing.T) context.Context {
-	drop(t)
+func before() context.Context {
 	return context.Background()
 }
 
-func drop(t *testing.T) {
-	t.Log("Drop DB")
-	err := testStorage.Drop(context.Background())
+func initDB() error {
+	log.Println("Init DB")
+	err := testStorage.Init(context.Background())
 	if err != nil {
-		t.Fatalf("Cannot drop DB: %s", err)
+		return errors.Wrap(err, "while initializing DB")
 	}
-
-	t.Log("Init DB")
-	err = testStorage.Init(context.Background())
-	if err != nil {
-		t.Fatalf("Cannot init DB: %s", err)
-	}
+	return nil
 }
 
 func withDockerMongo(test func()) {
@@ -58,7 +54,12 @@ func withDockerMongo(test func()) {
 		log.Println("Deleting mongo container")
 		err := deleteMongoContainer()
 		if err != nil {
-			panic(err)
+			log.Println(err)
+		}
+
+		err = pruneVolumes()
+		if err != nil {
+			log.Println(err)
 		}
 	}()
 	log.Println("Creating mongo container")
@@ -67,13 +68,17 @@ func withDockerMongo(test func()) {
 		panic(err)
 	}
 
-	fmt.Println(port)
 	testStorage, err = storage.New("mongodb://localhost:" + port + "/test-db")
 	if err != nil {
-		panic(fmt.Errorf("cannot create testStorage: %s", err))
+		panic(errors.Wrap(err, "while creating testStorage"))
 	}
 
-	log.Println("Port", port)
+	err = initDB()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("DB port", port)
 	log.Println("Running tests")
 	test()
 }
@@ -106,6 +111,15 @@ func deleteMongoContainer() error {
 	return nil
 }
 
+func pruneVolumes() error {
+	cmd := exec.Command("docker", "volume", "prune")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("cannot prune volumes: %s", out)
+	}
+	return nil
+}
+
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 	budget, err := testStorage.CreateBudget(ctx, primitive.NewObjectID(), primitive.NewObjectID())
 	require.NoError(t, err)
@@ -113,22 +127,36 @@ func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
 }
 
 func whenSomeEnvelopeExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Envelope {
-	input := &models.EnvelopeInput{Name: mock.Name(), Limit: mock.Amount()}
+	input := &models.EnvelopeInput{Name: *mock.Name(), Limit: mock.Amount()}
 	envelope, err := testStorage.CreateEnvelope(ctx, budgetID, input)
 	require.NoError(t, err)
 	return envelope
 }
 
 func whenSomeCategoryExists(t *testing.T, ctx context.Context, budgetID, envelopeID primitive.ObjectID) *models.Category {
-	input := &models.CategoryInput{Name: mock.Name(), EnvelopeID: envelopeID}
+	input := &models.CategoryInput{Name: *mock.Name(), EnvelopeID: envelopeID}
 	category, err := testStorage.CreateCategory(ctx, budgetID, input)
 	require.NoError(t, err)
 	return category
 }
 
 func whenSomeAccountExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Account {
-	input := &models.AccountInput{Name: mock.Name()}
+	input := &models.AccountInput{Name: *mock.Name()}
 	account, err := testStorage.CreateAccount(ctx, budgetID, input)
 	require.NoError(t, err)
 	return account
+}
+
+func whenSomeMonthlyReportExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.MonthlyReport {
+	input := &models.MonthlyReportInput{Month: mock.Month(), Year: mock.Year()}
+	report, err := testStorage.CreateMonthlyReport(ctx, budgetID, input)
+	require.NoError(t, err)
+	return report
+}
+
+func whenSomeExpenseExists(t *testing.T, ctx context.Context, budgetID, accountID, categoryID1, categoryID2 primitive.ObjectID, report *models.MonthlyReport) *models.Expense {
+	input := mock.ExpenseInput(mock.DateInReport(report), accountID, categoryID1, categoryID2)
+	expense, err := testStorage.CreateExpense(ctx, budgetID, report.ID, input)
+	require.NoError(t, err)
+	return expense
 }

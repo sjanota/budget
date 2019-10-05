@@ -20,7 +20,6 @@ type Storage interface {
 	UpdateBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
-//noinspection GoUnusedExportedFunction
 func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, storage Storage) error {
 	budget, err := storage.GetBudget(ctx, budgetID)
 	if err != nil {
@@ -34,7 +33,7 @@ func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthl
 
 	// processExpenses
 	for _, expense := range monthlyBudget.Expenses {
-		account := budget.Account(*expense.AccountID)
+		account := budget.Account(expense.AccountID)
 		for _, expenseCategory := range expense.Categories {
 			category := budget.Category(expenseCategory.CategoryID)
 			envelope := budget.Envelope(category.EnvelopeID)

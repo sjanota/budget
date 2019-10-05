@@ -13,11 +13,11 @@ import (
 )
 
 func TestStorage_CreateAccount(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 
 	t.Run("Success", func(t *testing.T) {
-		input := &models.AccountInput{Name: mock.Name()}
+		input := &models.AccountInput{Name: *mock.Name()}
 
 		account, err := testStorage.CreateAccount(ctx, budget.ID, input)
 		require.NoError(t, err)
@@ -31,7 +31,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 	})
 
 	t.Run("DuplicateName", func(t *testing.T) {
-		input := &models.AccountInput{Name: mock.Name()}
+		input := &models.AccountInput{Name: *mock.Name()}
 
 		_, err := testStorage.CreateAccount(ctx, budget.ID, input)
 		require.NoError(t, err)
@@ -41,7 +41,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 	})
 
 	t.Run("NoBudget", func(t *testing.T) {
-		input := &models.AccountInput{Name: mock.Name()}
+		input := &models.AccountInput{Name: *mock.Name()}
 
 		_, err := testStorage.CreateAccount(ctx, primitive.NewObjectID(), input)
 		require.EqualError(t, err, storage.ErrNoBudget.Error())
@@ -49,7 +49,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 }
 
 func TestStorage_GetAccount(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 	created := whenSomeAccountExists(t, ctx, budget.ID)
 
@@ -72,12 +72,12 @@ func TestStorage_GetAccount(t *testing.T) {
 }
 
 func TestStorage_UpdateAccount(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 	account := whenSomeAccountExists(t, ctx, budget.ID)
 
 	t.Run("Success", func(t *testing.T) {
-		changes := models.Changes{"name": mock.Name()}
+		changes := models.Changes{"name": *mock.Name()}
 		updated, err := testStorage.UpdateAccount(ctx, budget.ID, account.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, &models.Account{
@@ -89,7 +89,7 @@ func TestStorage_UpdateAccount(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		changes := models.Changes{"name": mock.Name()}
+		changes := models.Changes{"name": *mock.Name()}
 		_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
 		assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 	})

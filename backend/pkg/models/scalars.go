@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"strconv"
@@ -80,4 +81,30 @@ func (a Amount) Sub(other Amount) Amount {
 
 func (a Amount) IsBiggerThan(other Amount) bool {
 	return a.Integer >= other.Integer && a.Decimal > other.Decimal
+}
+
+type Date struct {
+	Year  int
+	Month time.Month
+	Day   int
+}
+
+var errInvalidDate = errors.New("Date must be ISO 8601 date string")
+
+func (a *Date) UnmarshalGQL(v interface{}) error {
+	s, ok := v.(string)
+	if !ok {
+		return errInvalidDate
+	}
+	parsed, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return errInvalidDate
+	}
+	a.Year, a.Month, a.Day = parsed.Date()
+	return nil
+}
+
+func (a Date) MarshalGQL(w io.Writer) {
+	s := fmt.Sprintf("%v-%v-%v", a.Year, int(a.Month), a.Day)
+	_ = json.NewEncoder(w).Encode(s)
 }

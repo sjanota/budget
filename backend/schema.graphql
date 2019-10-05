@@ -1,5 +1,6 @@
 scalar Month
 scalar Amount
+scalar Date
 
 type Category {
   id: ID!
@@ -81,12 +82,14 @@ type Expense {
   categories: [ExpenseCategory!]!
   account: Account!
   totalAmount: Amount!
+  date: Date!
 }
 input ExpenseInput {
   title: String
   categories: [ExpenseCategoryInput!]!
   accountID: ID!
   totalAmount: Amount!
+  date: Date!
 }
 
 type ExpenseCategory {

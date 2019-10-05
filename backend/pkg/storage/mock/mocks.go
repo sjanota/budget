@@ -8,8 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func Name() string {
-	return primitive.NewObjectID().Hex()
+func Name() *string {
+	name := primitive.NewObjectID().Hex()
+	return &name
 }
 
 func Amount() *models.Amount {
@@ -25,4 +26,33 @@ func Month() time.Month {
 
 func Year() int {
 	return rand.Int()%50 + 1990
+}
+
+func ExpenseInput(date models.Date, accountID, categoryID1, categoryID2 primitive.ObjectID) *models.ExpenseInput {
+	return &models.ExpenseInput{
+		Title: Name(),
+		Categories: []*models.ExpenseCategoryInput{
+			{categoryID1, *Amount()},
+			{categoryID2, *Amount()},
+		},
+		AccountID:   accountID,
+		TotalAmount: models.Amount{},
+		Date:        date,
+	}
+}
+
+func DateInReport(report *models.MonthlyReport) models.Date {
+	return models.Date{
+		Year:  report.Year,
+		Month: report.Month,
+		Day:   rand.Int()%29 + 1,
+	}
+}
+
+func Date() models.Date {
+	return models.Date{
+		Year:  rand.Int()%100 + 1990,
+		Month: time.Month(rand.Int()%12 + 1),
+		Day:   rand.Int()%29 + 1,
+	}
 }

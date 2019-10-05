@@ -13,11 +13,11 @@ import (
 )
 
 func TestStorage_CreateEnvelope(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 
 	t.Run("Success", func(t *testing.T) {
-		input := &models.EnvelopeInput{Name: mock.Name(), Limit: mock.Amount()}
+		input := &models.EnvelopeInput{Name: *mock.Name(), Limit: mock.Amount()}
 
 		created, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
 		require.NoError(t, err)
@@ -32,7 +32,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 	})
 
 	t.Run("DuplicatedName", func(t *testing.T) {
-		input := &models.EnvelopeInput{Name: mock.Name(), Limit: mock.Amount()}
+		input := &models.EnvelopeInput{Name: *mock.Name(), Limit: mock.Amount()}
 		budget := whenSomeBudgetExists(t, ctx)
 
 		_, err := testStorage.CreateEnvelope(ctx, budget.ID, input)
@@ -43,7 +43,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 	})
 
 	t.Run("NoBudget", func(t *testing.T) {
-		input := &models.EnvelopeInput{Name: mock.Name(), Limit: mock.Amount()}
+		input := &models.EnvelopeInput{Name: *mock.Name(), Limit: mock.Amount()}
 
 		_, err := testStorage.CreateEnvelope(ctx, primitive.NewObjectID(), input)
 		require.EqualError(t, err, storage.ErrNoBudget.Error())
@@ -52,7 +52,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 }
 
 func TestStorage_GetEnvelope(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
 
@@ -75,13 +75,13 @@ func TestStorage_GetEnvelope(t *testing.T) {
 }
 
 func TestStorage_UpdateEnvelope(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
 
 	t.Run("Success", func(t *testing.T) {
 
-		changes := models.Changes{"name": mock.Name(), "limit": mock.Amount()}
+		changes := models.Changes{"name": *mock.Name(), "limit": mock.Amount()}
 		updated, err := testStorage.UpdateEnvelope(ctx, budget.ID, envelope.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, &models.Envelope{
@@ -94,7 +94,7 @@ func TestStorage_UpdateEnvelope(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		changes := models.Changes{"name": mock.Name()}
+		changes := models.Changes{"name": *mock.Name()}
 		_, err := testStorage.UpdateAccount(ctx, budget.ID, primitive.NewObjectID(), changes)
 		assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 	})

@@ -27,6 +27,7 @@ type ExpenseInput struct {
 	Categories  []*ExpenseCategoryInput `json:"categories"`
 	AccountID   primitive.ObjectID      `json:"accountID"`
 	TotalAmount Amount                  `json:"totalAmount"`
+	Date        Date                    `json:"date"`
 }
 
 type MonthlyReportInput struct {

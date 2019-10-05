@@ -10,9 +10,11 @@ import (
 
 var (
 	ErrNoBudget         = errors.New("budget does not exist")
+	ErrNoReport         = errors.New("monthly report does not exist")
 	ErrAlreadyExists    = errors.New("already exists")
 	ErrDoesNotExists    = errors.New("does not exist")
 	ErrInvalidReference = errors.New("invalid reference to other resource")
+	ErrWrongDate        = errors.New("wrong month")
 )
 
 func isDuplicateKeyError(err error) bool {

@@ -9,7 +9,7 @@ import (
 )
 
 func TestStorage_CreateBudget(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	id := primitive.NewObjectID()
 	reportID := primitive.NewObjectID()
 
@@ -23,7 +23,7 @@ func TestStorage_CreateBudget(t *testing.T) {
 }
 
 func TestStorage_GetBudget(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	created := whenSomeBudgetExists(t, ctx)
 
 	budget, err := testStorage.GetBudget(ctx, created.ID)

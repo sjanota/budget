@@ -13,7 +13,7 @@ import (
 )
 
 func TestStorage_CreateMonthlyReport(t *testing.T) {
-	ctx := before(t)
+	ctx := before()
 	budget := whenSomeBudgetExists(t, ctx)
 	otherBudget := whenSomeBudgetExists(t, ctx)
 
@@ -49,5 +49,17 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 
 		_, err = testStorage.CreateMonthlyReport(ctx, otherBudget.ID, input)
 		require.NoError(t, err)
+	})
+}
+
+func TestStorage_GetMonthlyReport(t *testing.T) {
+	ctx := before()
+	budget := whenSomeBudgetExists(t, ctx)
+	report := whenSomeMonthlyReportExists(t, ctx, budget.ID)
+
+	t.Run("Success", func(t *testing.T) {
+		got, err := testStorage.GetMonthlyReport(ctx, budget.ID, report.ID)
+		require.NoError(t, err)
+		assert.Equal(t, report, got)
 	})
 }
