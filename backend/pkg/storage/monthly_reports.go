@@ -31,18 +31,9 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 }
 
 func (s *Storage) GetMonthlyReport(ctx context.Context, id models.MonthlyReportID) (*models.MonthlyReport, error) {
-	find := doc{
-		"_id":      id,
-	}
-
-	res := s.monthlyReports.FindOne(ctx, find)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
+	result, err := s.monthlyReports.FindOneByID(ctx, id)
+	if err == mongo.ErrNoDocuments {
 		return nil, nil
-	} else if err != nil {
-		return nil, err
 	}
-
-	result := &models.MonthlyReport{}
-	err := res.Decode(result)
 	return result, err
 }

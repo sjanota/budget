@@ -3,8 +3,6 @@ package storage
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/sjanota/budget/backend/pkg/models"
@@ -51,27 +49,14 @@ func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyRepo
 }
 
 func (s *Storage) GetExpenses(ctx context.Context, reportID models.MonthlyReportID) ([]*models.Expense, error) {
-	find := doc{
-		"_id":      reportID,
-	}
 	project := doc{
-		"_id":      0,
 		"expenses": 1,
 	}
 	opts := options.FindOne().SetProjection(project)
-	res := s.monthlyReports.FindOne(ctx, find, opts)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return nil, ErrNoReport
-	} else if err != nil {
-		return nil, err
-	}
-
-	result := &models.MonthlyReport{}
-	err := res.Decode(result)
+	result, err := s.monthlyReports.FindOneByID(ctx, reportID, opts)
 	if err != nil {
 		return nil, err
 	}
-
 	return result.Expenses, nil
 }
 

@@ -15,8 +15,8 @@ const MonthlyReports = "monthly_reports"
 
 type Storage struct {
 	db             *mongo.Database
-	budgets        *budgetsCollection
-	monthlyReports *mongo.Collection
+	budgets        *budgets
+	monthlyReports *monthlyReports
 }
 
 func New(uri string) (*Storage, error) {
@@ -34,8 +34,8 @@ func New(uri string) (*Storage, error) {
 	database := client.Database(cs.Database)
 	storage := &Storage{
 		db:             database,
-		budgets:        &budgetsCollection{database.Collection(Budgets)},
-		monthlyReports: database.Collection(MonthlyReports),
+		budgets:        &budgets{&collectionExtension{database.Collection(Budgets)}},
+		monthlyReports: &monthlyReports{&collectionExtension{database.Collection(MonthlyReports)}},
 	}
 
 	return storage, nil
@@ -49,19 +49,40 @@ func (s *Storage) Init(ctx context.Context) error {
 	return nil
 }
 
-type budgetsCollection struct {
+type collectionExtension struct {
 	*mongo.Collection
 }
 
-func (coll *budgetsCollection) FindOneByID(ctx context.Context, id primitive.ObjectID,	opts ...*options.FindOneOptions) (*models.Budget, error) {
+func (coll *collectionExtension) FindOneByID(ctx context.Context, id interface{}, into interface{},	opts ...*options.FindOneOptions) error {
 	res := coll.FindOne(ctx, doc{"_id": id}, opts...)
-	if err := res.Err(); err == mongo.ErrNoDocuments {
-		return nil, ErrNoBudget
-	} else if err != nil {
-		return nil, err
+	if err := res.Err(); err != err {
+		return err
 	}
+	return res.Decode(into)
+}
 
+type budgets struct {
+	*collectionExtension
+}
+
+func (coll *budgets) FindOneByID(ctx context.Context, id primitive.ObjectID, opts ...*options.FindOneOptions) (*models.Budget, error) {
 	result := &models.Budget{}
-	err := res.Decode(result)
+	err := coll.collectionExtension.FindOneByID(ctx, id, result, opts...)
+	if err == mongo.ErrNoDocuments {
+		return nil, ErrNoBudget
+	}
+	return result, err
+}
+
+type monthlyReports struct {
+	*collectionExtension
+}
+
+func (coll *monthlyReports) FindOneByID(ctx context.Context, id models.MonthlyReportID, opts ...*options.FindOneOptions) (*models.MonthlyReport, error) {
+	result := &models.MonthlyReport{}
+	err := coll.collectionExtension.FindOneByID(ctx, id, result, opts...)
+	if err == mongo.ErrNoDocuments {
+		return nil, ErrNoReport
+	}
 	return result, err
 }
