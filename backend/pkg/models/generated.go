@@ -28,10 +28,6 @@ type ExpenseInput struct {
 	Date        Date                    `json:"date"`
 }
 
-type MonthlyReportInput struct {
-	Month Month `json:"month"`
-}
-
 type PlanInput struct {
 	Title          *string            `json:"title"`
 	FromEnvelopeID primitive.ObjectID `json:"fromEnvelopeID"`

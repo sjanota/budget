@@ -97,7 +97,7 @@ func (mr *MockMutationResolverStorageMockRecorder) CreateEnvelope(arg0, arg1, ar
 }
 
 // CreateMonthlyReport mocks base method
-func (m *MockMutationResolverStorage) CreateMonthlyReport(arg0 context.Context, arg1 primitive.ObjectID, arg2 *models.MonthlyReportInput) (*models.MonthlyReport, error) {
+func (m *MockMutationResolverStorage) CreateMonthlyReport(arg0 context.Context, arg1 primitive.ObjectID, arg2 models.Month) (*models.MonthlyReport, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateMonthlyReport", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.MonthlyReport)

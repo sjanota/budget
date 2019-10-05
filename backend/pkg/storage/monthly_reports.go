@@ -8,10 +8,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, input *models.MonthlyReportInput) (*models.MonthlyReport, error) {
+func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error) {
 	toInsert := &models.MonthlyReport{
 		ID: models.MonthlyReportID{
-			Month:    input.Month,
+			Month:    month,
 			BudgetID: budgetID,
 		},
 		Expenses:  make([]*models.Expense, 0),

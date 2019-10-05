@@ -107,9 +107,6 @@ type MonthlyReport {
   expenses: [Expense!]!
   transfers: [Transfer!]!
 }
-input MonthlyReportInput {
-  month: Month!
-}
 
 type Query {
   budget(id: ID!): Budget

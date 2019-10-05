@@ -16,13 +16,13 @@ type MutationResolverStorage interface {
 	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in *models.CategoryInput) (*models.Category, error)
 	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in *models.EnvelopeInput) (*models.Envelope, error)
 	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in *models.AccountInput) (*models.Account, error)
-	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, in *models.MonthlyReportInput) (*models.MonthlyReport, error)
+	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error)
 	CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error)
 }
 
 type mutationResolver struct {
-	Storage MutationResolverStorage
-	Now func() time.Time
+	Storage     MutationResolverStorage
+	Now         func() time.Time
 	NewObjectID func() primitive.ObjectID
 }
 
@@ -57,10 +57,7 @@ func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, er
 		Year:  now.Year(),
 		Month: now.Month(),
 	}
-	input := &models.MonthlyReportInput{
-		Month: month,
-	}
-	_, err := r.Storage.CreateMonthlyReport(ctx, budgetID, input)
+	_, err := r.Storage.CreateMonthlyReport(ctx, budgetID, month)
 	if err != nil {
 		return nil, err
 	}

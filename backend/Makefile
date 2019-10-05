@@ -3,6 +3,8 @@
 MONGO_CONTAINER_NAME := budget-mongo
 LINT_IGNORE=should have comment or be unexported\|comment on exported
 
+
+all: format check
 check: lint test
 
 lint:

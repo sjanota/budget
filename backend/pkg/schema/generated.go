@@ -683,9 +683,6 @@ type MonthlyReport {
   expenses: [Expense!]!
   transfers: [Transfer!]!
 }
-input MonthlyReportInput {
-  month: Month!
-}
 
 type Query {
   budget(id: ID!): Budget
@@ -3886,24 +3883,6 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 		case "date":
 			var err error
 			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputMonthlyReportInput(ctx context.Context, obj interface{}) (models.MonthlyReportInput, error) {
-	var it models.MonthlyReportInput
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "month":
-			var err error
-			it.Month, err = ec.unmarshalNMonth2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐMonth(ctx, v)
 			if err != nil {
 				return it, err
 			}

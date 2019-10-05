@@ -2,6 +2,9 @@ package resolver
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/sjanota/budget/backend/pkg/mocks"
@@ -9,8 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
-	"time"
 )
 
 func TestMutationResolver_CreateBudget(t *testing.T) {
@@ -29,11 +30,10 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		expectedMonth := models.Month{Month: now.Month(), Year: now.Year()}
-		expectedInput := models.MonthlyReportInput{expectedMonth}
 		expectedBudget := mocks.Budget()
 
 		storage.EXPECT().
-			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(&expectedInput)).
+			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
 			Return(mocks.MonthlyReport(), nil)
 
 		storage.EXPECT().
@@ -47,11 +47,10 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 
 	t.Run("CreateMonthlyReport error", func(t *testing.T) {
 		expectedMonth := models.Month{Month: now.Month(), Year: now.Year()}
-		expectedInput := models.MonthlyReportInput{expectedMonth}
 		expectedErr := errors.New("test error")
 
 		storage.EXPECT().
-			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(&expectedInput)).
+			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
 			Return(nil, expectedErr)
 
 		_, err := resolver.CreateBudget(ctx)
@@ -60,11 +59,10 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 
 	t.Run("CreateBudget error", func(t *testing.T) {
 		expectedMonth := models.Month{Month: now.Month(), Year: now.Year()}
-		expectedInput := models.MonthlyReportInput{expectedMonth}
 		expectedErr := errors.New("test error")
 
 		storage.EXPECT().
-			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(&expectedInput)).
+			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
 			Return(mocks.MonthlyReport(), nil)
 
 		storage.EXPECT().
