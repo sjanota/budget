@@ -1,7 +1,7 @@
 .PHONY: mongo
 
 MONGO_CONTAINER_NAME := budget-mongo
-LINT_IGNORE=should have comment or be unexported
+LINT_IGNORE=should have comment or be unexported\|comment on exported
 
 short: generate fmt lint
 check: short test

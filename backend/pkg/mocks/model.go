@@ -1,4 +1,4 @@
-package mock
+package mocks
 
 import (
 	"math/rand"
@@ -80,5 +80,62 @@ func Month() models.Month {
 	return models.Month{
 		Year:  year(),
 		Month: month(),
+	}
+}
+
+func Budget() *models.Budget {
+	return &models.Budget{
+		ID:           primitive.NewObjectID(),
+		Accounts:     []*models.Account{Account()},
+		Envelopes:    []*models.Envelope{Envelope()},
+		Categories:   []*models.Category{Category()},
+		CurrentMonth: Month(),
+	}
+}
+
+func Category() *models.Category {
+	return &models.Category{
+		ID:         primitive.NewObjectID(),
+		Name:       *Name(),
+		EnvelopeID: primitive.NewObjectID(),
+		BudgetID:   primitive.NewObjectID(),
+	}
+}
+
+func Account() *models.Account {
+	return &models.Account{
+		ID:       primitive.NewObjectID(),
+		Name:     *Name(),
+		Balance:  *Amount(),
+		BudgetID: primitive.NewObjectID(),
+	}
+}
+
+func Envelope() *models.Envelope {
+	return &models.Envelope{
+		ID:       primitive.NewObjectID(),
+		Name:     *Name(),
+		Limit:    Amount(),
+		Balance:  *Amount(),
+		BudgetID: primitive.NewObjectID(),
+	}
+}
+
+func MonthlyReport() *models.MonthlyReport {
+	return &models.MonthlyReport{
+		ID:        MonthlyReportID(primitive.NewObjectID()),
+		Expenses:  []*models.Expense{Expense()},
+		Transfers: []*models.Transfer{},
+		Plans:     []*models.Plan{},
+	}
+}
+
+func Expense() *models.Expense {
+	return &models.Expense{
+		Title:      Name(),
+		Categories: []*models.ExpenseCategory{},
+		Date:       Date(),
+		AccountID:  primitive.NewObjectID(),
+		BudgetID:   primitive.NewObjectID(),
 	}
 }

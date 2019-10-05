@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/99designs/gqlgen v0.9.3
 	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/golang/mock v1.3.1
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/handlers v1.4.2

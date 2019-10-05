@@ -19,15 +19,7 @@ type Resolver struct {
 var _ schema.ResolverRoot = &Resolver{}
 
 func (r *Resolver) Budget() schema.BudgetResolver {
-	return &budgetResolver{r}
-}
-
-type budgetResolver struct {
-	*Resolver
-}
-
-func (r *budgetResolver) CurrentMonth(ctx context.Context, obj *models.Budget) (*models.MonthlyReport, error) {
-	return r.Storage.GetMonthlyReport(ctx, models.MonthlyReportID{BudgetID: obj.ID, Month: obj.CurrentMonth})
+	return &budgetResolver{r.Storage}
 }
 
 func (r *Resolver) Expense() schema.ExpenseResolver {
@@ -47,15 +39,7 @@ func (r *Resolver) Transfer() schema.TransferResolver {
 }
 
 func (r *Resolver) Category() schema.CategoryResolver {
-	return &categoryResolver{r}
-}
-
-type categoryResolver struct {
-	*Resolver
-}
-
-func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error) {
-	return r.Storage.GetEnvelope(ctx, obj.BudgetID, obj.EnvelopeID)
+	return &categoryResolver{r.Storage}
 }
 
 func (r *Resolver) Query() schema.QueryResolver {

@@ -52,9 +52,20 @@ func (r MonthlyReport) Month() Month {
 	return r.ID.Month
 }
 
+func (r MonthlyReport) WithBudget(budget Budget) MonthlyReport {
+	r.ID = r.ID.WithBudget(budget)
+	return r
+}
+
 type MonthlyReportID struct {
 	Month    Month
 	BudgetID primitive.ObjectID
+}
+
+func (id MonthlyReportID) WithBudget(budget Budget) MonthlyReportID {
+	id.BudgetID = budget.ID
+	id.Month = budget.CurrentMonth
+	return id
 }
 
 type Expense struct {
@@ -114,6 +125,16 @@ type Category struct {
 	Name       string             `json:"name"`
 	EnvelopeID primitive.ObjectID
 	BudgetID   primitive.ObjectID
+}
+
+func (c Category) WithBudget(budgetID primitive.ObjectID) Category {
+	c.BudgetID = budgetID
+	return c
+}
+
+func (c Category) WithEnvelope(envelopeID primitive.ObjectID) Category {
+	c.EnvelopeID = envelopeID
+	return c
 }
 
 type CategoryInput struct {
