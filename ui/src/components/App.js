@@ -3,7 +3,7 @@ import Dashboard from './Dashboard';
 import Buttons from './Buttons';
 import { Switch, Route } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import Navbar from './Navbar';
+import Topbar from './Topbar';
 import SBAdmin2 from './template/SBAdmin2';
 
 export default function App() {
@@ -12,7 +12,7 @@ export default function App() {
       <Sidebar />
       <div id="content-wrapper" className="d-flex flex-column">
         <div id="content">
-          <Navbar />
+          <Topbar />
           <Switch>
             <Route path="/buttons" component={Buttons} />
             <Route path="/" component={Dashboard} />

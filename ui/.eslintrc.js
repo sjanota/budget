@@ -21,7 +21,7 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['react', 'prettier', 'jest'],
-  rules: {},
+  rules: { 'react/display-name': 'off' },
   settings: {
     react: {
       createClass: 'createReactClass',
