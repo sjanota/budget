@@ -121,6 +121,7 @@ type Mutation {
   updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
   createCategory(budgetID: ID!, in: CategoryInput!): Category
   updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
+  createExpense(budgetID: ID!, in: ExpenseInput!): Expense
 }
 
 schema {

@@ -3,7 +3,7 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/sjanota/budget/backend/pkg/mocks"
+	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 	"github.com/sjanota/budget/backend/pkg/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +18,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	otherBudget := whenSomeBudgetExists(t, ctx)
 
 	t.Run("Success", func(t *testing.T) {
-		month := mocks.Month()
+		month := mock_models.Month()
 		report, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
 		require.NoError(t, err)
 		assert.NotEqual(t, primitive.ObjectID{}, report.ID)
@@ -31,7 +31,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	})
 
 	t.Run("Duplicated date", func(t *testing.T) {
-		month := mocks.Month()
+		month := mock_models.Month()
 		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
 		require.NoError(t, err)
 
@@ -40,7 +40,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 	})
 
 	t.Run("Duplicated date on different budget", func(t *testing.T) {
-		month := mocks.Month()
+		month := mock_models.Month()
 		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
 		require.NoError(t, err)
 

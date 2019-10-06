@@ -1,7 +1,7 @@
 .PHONY: mongo
 
 MONGO_CONTAINER_NAME := budget-mongo
-LINT_IGNORE=should have comment or be unexported\|comment on exported
+LINT_IGNORE=should have comment or be unexported\|comment on exported\|pkg/.*/mocks/[^/]*: don't use an underscore in package name
 
 
 all: format check
@@ -9,7 +9,7 @@ check: lint test
 
 lint:
 	@echo golint ./...
-	$(eval out = $(shell golint ./... | grep -v '$(LINT_IGNORE)' | sed s/$$/xxx/))
+	$(eval out = $(shell golint ./... | grep -v "$(LINT_IGNORE)" | sed s/$$/xxx/))
 	@echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' || true
 	@exit $(shell echo "$(out)" | sed $$'s/xxx[ ]*/\\\n/g' | grep -v '^$$' | wc -l)
 

@@ -8,18 +8,39 @@ import (
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
-	"github.com/sjanota/budget/backend/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//go:generate mockgen -destination=mocks/generated_storage.go github.com/sjanota/budget/backend/pkg/resolver Storage
+type Storage interface {
+	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in *models.EnvelopeInput) (*models.Envelope, error)
+	GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Envelope, error)
+	UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Envelope, error)
+
+	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error)
+	GetMonthlyReport(ctx context.Context, id models.MonthlyReportID) (*models.MonthlyReport, error)
+
+	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in *models.CategoryInput) (*models.Category, error)
+	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Category, error)
+
+	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in *models.AccountInput) (*models.Account, error)
+	UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Account, error)
+
+	CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error)
+	GetBudget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
+	ListBudgets(ctx context.Context) ([]*models.Budget, error)
+
+	CreateExpense(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) (*models.Expense, error)
+}
+
 type Resolver struct {
-	Storage *storage.Storage
+	Storage Storage
 }
 
 var _ schema.ResolverRoot = &Resolver{}
 
 func (r *Resolver) Budget() schema.BudgetResolver {
-	return &budgetResolver{r.Storage}
+	return &budgetResolver{r}
 }
 
 func (r *Resolver) Expense() schema.ExpenseResolver {
@@ -39,7 +60,7 @@ func (r *Resolver) Transfer() schema.TransferResolver {
 }
 
 func (r *Resolver) Category() schema.CategoryResolver {
-	return &categoryResolver{r.Storage}
+	return &categoryResolver{r}
 }
 
 func (r *Resolver) Query() schema.QueryResolver {
@@ -59,5 +80,5 @@ func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*mod
 }
 
 func (r *Resolver) Mutation() schema.MutationResolver {
-	return &mutationResolver{Storage: r.Storage, Now: time.Now, NewObjectID: primitive.NewObjectID}
+	return &mutationResolver{Resolver: r, Now: time.Now, NewObjectID: primitive.NewObjectID}
 }

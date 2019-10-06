@@ -4,26 +4,40 @@ import (
 	"context"
 	"time"
 
+	"github.com/sjanota/budget/backend/pkg/schema"
+	"github.com/sjanota/budget/backend/pkg/storage"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-//go:generate mockgen -destination=../mocks/mutation_resolver_storage.go -package=mocks github.com/sjanota/budget/backend/pkg/resolver MutationResolverStorage
-type MutationResolverStorage interface {
-	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Category, error)
-	UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Envelope, error)
-	UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Account, error)
-	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in *models.CategoryInput) (*models.Category, error)
-	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in *models.EnvelopeInput) (*models.Envelope, error)
-	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in *models.AccountInput) (*models.Account, error)
-	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error)
-	CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error)
-}
+var _ schema.MutationResolver = &mutationResolver{}
 
 type mutationResolver struct {
-	Storage     MutationResolverStorage
+	*Resolver
 	Now         func() time.Time
 	NewObjectID func() primitive.ObjectID
+}
+
+func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error) {
+	budget, err := r.Query().Budget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+
+	reportID := models.MonthlyReportID{
+		Month:    budget.CurrentMonth,
+		BudgetID: budgetID,
+	}
+	expense, err := r.Storage.CreateExpense(ctx, reportID, &in)
+	if err == storage.ErrNoReport {
+		_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth)
+		if err == storage.ErrAlreadyExists || err == nil {
+			expense, err = r.CreateExpense(ctx, budgetID, in)
+		}
+	}
+
+	return expense, err
 }
 
 func (r *mutationResolver) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Category, error) {

@@ -5,10 +5,13 @@ import (
 	"errors"
 	"testing"
 
+	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
+
+	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sjanota/budget/backend/pkg/mocks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,11 +19,11 @@ func TestBudgetResolver_CurrentMonth(t *testing.T) {
 	mock := gomock.NewController(t)
 	defer mock.Finish()
 
-	storage := mocks.NewMockBudgetResolverStorage(mock)
-	resolver := &budgetResolver{storage}
+	storage := mock_resolver.NewMockStorage(mock)
+	resolver := &budgetResolver{Resolver: &Resolver{Storage: storage}}
 	ctx := context.TODO()
-	budget := mocks.Budget()
-	report := mocks.MonthlyReport().WithBudget(*budget)
+	budget := mock_models.Budget()
+	report := mock_models.MonthlyReport().WithBudget(*budget)
 
 	t.Run("Success", func(t *testing.T) {
 		storage.EXPECT().

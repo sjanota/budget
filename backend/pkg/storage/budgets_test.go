@@ -3,7 +3,8 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/sjanota/budget/backend/pkg/mocks"
+	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ import (
 func TestStorage_CreateBudget(t *testing.T) {
 	ctx := before()
 	id := primitive.NewObjectID()
-	currentMonth := mocks.Month()
+	currentMonth := mock_models.Month()
 
 	budget, err := testStorage.CreateBudget(ctx, id, currentMonth)
 	require.NoError(t, err)

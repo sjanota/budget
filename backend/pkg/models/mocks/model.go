@@ -1,4 +1,5 @@
-package mocks
+// Package mock_models contains utility functions to create mocked objects from models package
+package mock_models
 
 import (
 	"math/rand"

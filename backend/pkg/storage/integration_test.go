@@ -11,9 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sjanota/budget/backend/pkg/mocks"
-
 	"github.com/sjanota/budget/backend/pkg/models"
+	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sjanota/budget/backend/pkg/storage"
@@ -121,41 +120,41 @@ func pruneVolumes() error {
 }
 
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
-	budget, err := testStorage.CreateBudget(ctx, primitive.NewObjectID(), mocks.Month())
+	budget, err := testStorage.CreateBudget(ctx, primitive.NewObjectID(), mock_models.Month())
 	require.NoError(t, err)
 	return budget
 }
 
 func whenSomeEnvelopeExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Envelope {
-	input := &models.EnvelopeInput{Name: *mocks.Name(), Limit: mocks.Amount()}
+	input := &models.EnvelopeInput{Name: *mock_models.Name(), Limit: mock_models.Amount()}
 	envelope, err := testStorage.CreateEnvelope(ctx, budgetID, input)
 	require.NoError(t, err)
 	return envelope
 }
 
 func whenSomeCategoryExists(t *testing.T, ctx context.Context, budgetID, envelopeID primitive.ObjectID) *models.Category {
-	input := &models.CategoryInput{Name: *mocks.Name(), EnvelopeID: envelopeID}
+	input := &models.CategoryInput{Name: *mock_models.Name(), EnvelopeID: envelopeID}
 	category, err := testStorage.CreateCategory(ctx, budgetID, input)
 	require.NoError(t, err)
 	return category
 }
 
 func whenSomeAccountExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.Account {
-	input := &models.AccountInput{Name: *mocks.Name()}
+	input := &models.AccountInput{Name: *mock_models.Name()}
 	account, err := testStorage.CreateAccount(ctx, budgetID, input)
 	require.NoError(t, err)
 	return account
 }
 
 func whenSomeMonthlyReportExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.MonthlyReport {
-	month := mocks.Month()
+	month := mock_models.Month()
 	report, err := testStorage.CreateMonthlyReport(ctx, budgetID, month)
 	require.NoError(t, err)
 	return report
 }
 
 func whenSomeExpenseExists(t *testing.T, ctx context.Context, accountID, categoryID1, categoryID2 primitive.ObjectID, report *models.MonthlyReport) *models.Expense {
-	input := mocks.ExpenseInput(mocks.DateInReport(report), accountID, categoryID1, categoryID2)
+	input := mock_models.ExpenseInput(mock_models.DateInReport(report), accountID, categoryID1, categoryID2)
 	expense, err := testStorage.CreateExpense(ctx, report.ID, input)
 	require.NoError(t, err)
 	return expense

@@ -5,9 +5,12 @@ import (
 	"testing"
 	"time"
 
+	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
+
+	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
+
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
-	"github.com/sjanota/budget/backend/pkg/mocks"
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,11 +21,11 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 	mock := gomock.NewController(t)
 	defer mock.Finish()
 
-	storage := mocks.NewMockMutationResolverStorage(mock)
+	storage := mock_resolver.NewMockStorage(mock)
 	now := time.Date(2020, time.March, 30, 0, 0, 0, 0, time.UTC)
 	budgetID := primitive.NewObjectID()
 	resolver := &mutationResolver{
-		Storage:     storage,
+		Resolver:    &Resolver{Storage: storage},
 		Now:         func() time.Time { return now },
 		NewObjectID: func() primitive.ObjectID { return budgetID },
 	}
@@ -30,11 +33,11 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		expectedMonth := models.Month{Month: now.Month(), Year: now.Year()}
-		expectedBudget := mocks.Budget()
+		expectedBudget := mock_models.Budget()
 
 		storage.EXPECT().
 			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
-			Return(mocks.MonthlyReport(), nil)
+			Return(mock_models.MonthlyReport(), nil)
 
 		storage.EXPECT().
 			CreateBudget(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
@@ -63,7 +66,7 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 
 		storage.EXPECT().
 			CreateMonthlyReport(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
-			Return(mocks.MonthlyReport(), nil)
+			Return(mock_models.MonthlyReport(), nil)
 
 		storage.EXPECT().
 			CreateBudget(gomock.Eq(ctx), gomock.Eq(budgetID), gomock.Eq(expectedMonth)).
@@ -72,5 +75,10 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 		_, err := resolver.CreateBudget(ctx)
 		require.Equal(t, expectedErr, err)
 	})
+}
 
+func TestMutationResolver_CreateExpense(t *testing.T) {
+	t.Run("Report exists", func(t *testing.T) {
+
+	})
 }
