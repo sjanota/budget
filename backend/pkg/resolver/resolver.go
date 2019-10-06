@@ -30,13 +30,22 @@ type Storage interface {
 	ListBudgets(ctx context.Context) ([]*models.Budget, error)
 
 	CreateExpense(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) (*models.Expense, error)
+	GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error)
 }
+
+var _ schema.ResolverRoot = &Resolver{}
 
 type Resolver struct {
 	Storage Storage
 }
 
-var _ schema.ResolverRoot = &Resolver{}
+func (r *Resolver) Account() schema.AccountResolver {
+	return &accountResolver{r}
+}
+
+func (r *Resolver) Envelope() schema.EnvelopeResolver {
+	panic("implement me")
+}
 
 func (r *Resolver) Budget() schema.BudgetResolver {
 	return &budgetResolver{r}

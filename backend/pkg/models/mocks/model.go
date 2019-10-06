@@ -16,7 +16,7 @@ func Name() *string {
 
 func Amount() *models.Amount {
 	return &models.Amount{
-		Integer: rand.Int(),
+		Integer: rand.Int() % 10000000,
 		Decimal: rand.Int() % 100,
 	}
 }
@@ -41,18 +41,18 @@ func ExpenseCategoryInput() *models.ExpenseCategoryInput {
 	}
 }
 
-func MonthlyReportID(budgetID primitive.ObjectID, date ...models.Date) models.MonthlyReportID {
-	d := Date()
-	if len(date) > 0 {
-		d = date[0]
+func ExpenseCategory() *models.ExpenseCategory {
+	return &models.ExpenseCategory{
+		Amount:     *Amount(),
+		CategoryID: primitive.NewObjectID(),
+		BudgetID:   primitive.NewObjectID(),
 	}
+}
 
+func MonthlyReportID() models.MonthlyReportID {
 	return models.MonthlyReportID{
-		Month: models.Month{
-			Year:  d.Year,
-			Month: d.Month,
-		},
-		BudgetID: budgetID,
+		Month: Month(),
+		BudgetID: primitive.NewObjectID(),
 	}
 }
 
@@ -131,7 +131,7 @@ func Envelope() *models.Envelope {
 
 func MonthlyReport() *models.MonthlyReport {
 	return &models.MonthlyReport{
-		ID:        MonthlyReportID(primitive.NewObjectID()),
+		ID:        MonthlyReportID(),
 		Expenses:  []*models.Expense{Expense()},
 		Transfers: []*models.Transfer{},
 		Plans:     []*models.Plan{},

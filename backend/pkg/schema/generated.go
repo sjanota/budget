@@ -36,8 +36,10 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Account() AccountResolver
 	Budget() BudgetResolver
 	Category() CategoryResolver
+	Envelope() EnvelopeResolver
 	Expense() ExpenseResolver
 	ExpenseCategory() ExpenseCategoryResolver
 	Mutation() MutationResolver
@@ -128,11 +130,17 @@ type ComplexityRoot struct {
 	}
 }
 
+type AccountResolver interface {
+	Balance(ctx context.Context, obj *models.Account) (*models.Amount, error)
+}
 type BudgetResolver interface {
 	CurrentMonth(ctx context.Context, obj *models.Budget) (*models.MonthlyReport, error)
 }
 type CategoryResolver interface {
 	Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error)
+}
+type EnvelopeResolver interface {
+	Balance(ctx context.Context, obj *models.Envelope) (*models.Amount, error)
 }
 type ExpenseResolver interface {
 	Account(ctx context.Context, obj *models.Expense) (*models.Account, error)
@@ -1054,13 +1062,13 @@ func (ec *executionContext) _Account_balance(ctx context.Context, field graphql.
 		Object:   "Account",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Balance, nil
+		return ec.resolvers.Account().Balance(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1072,10 +1080,10 @@ func (ec *executionContext) _Account_balance(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Amount)
+	res := resTmp.(*models.Amount)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+	return ec.marshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Budget_id(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
@@ -1461,13 +1469,13 @@ func (ec *executionContext) _Envelope_balance(ctx context.Context, field graphql
 		Object:   "Envelope",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Balance, nil
+		return ec.resolvers.Envelope().Balance(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1479,10 +1487,10 @@ func (ec *executionContext) _Envelope_balance(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Amount)
+	res := resTmp.(*models.Amount)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+	return ec.marshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Envelope_limit(ctx context.Context, field graphql.CollectedField, obj *models.Envelope) (ret graphql.Marshaler) {
@@ -4064,18 +4072,27 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Account_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Account_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "balance":
-			out.Values[i] = ec._Account_balance(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Account_balance(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4203,18 +4220,27 @@ func (ec *executionContext) _Envelope(ctx context.Context, sel ast.SelectionSet,
 		case "id":
 			out.Values[i] = ec._Envelope_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Envelope_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "balance":
-			out.Values[i] = ec._Envelope_balance(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Envelope_balance(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "limit":
 			out.Values[i] = ec._Envelope_limit(ctx, field, obj)
 		default:
@@ -4888,6 +4914,24 @@ func (ec *executionContext) unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋb
 }
 
 func (ec *executionContext) marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx context.Context, sel ast.SelectionSet, v models.Amount) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx context.Context, v interface{}) (*models.Amount, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx context.Context, sel ast.SelectionSet, v *models.Amount) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
 	return v
 }
 

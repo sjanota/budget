@@ -71,8 +71,12 @@ type MonthlyReportID struct {
 
 func (id MonthlyReportID) WithBudget(budget Budget) MonthlyReportID {
 	id.BudgetID = budget.ID
-	id.Month = budget.CurrentMonth
 	return id
+}
+
+func (id MonthlyReportID) WithMonth(month Month) *MonthlyReportID {
+	id.Month = month
+	return &id
 }
 
 type Expense struct {
@@ -91,10 +95,20 @@ func (e Expense) TotalAmount() Amount {
 	return sum
 }
 
+func (e Expense) WithCategories(categories ...*ExpenseCategory) *Expense {
+	e.Categories = categories
+	return &e
+}
+
 type ExpenseCategory struct {
 	Amount     Amount `json:"balance"`
 	CategoryID primitive.ObjectID
 	BudgetID   primitive.ObjectID
+}
+
+func (c ExpenseCategory) WithAmount(amount Amount) *ExpenseCategory {
+	c.Amount = amount
+	return &c
 }
 
 type Account struct {
@@ -102,6 +116,11 @@ type Account struct {
 	Name     string             `json:"name"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
+}
+
+func (a Account) WithBudget(budgetID primitive.ObjectID) *Account {
+	a.BudgetID = budgetID
+	return &a
 }
 
 type Transfer struct {

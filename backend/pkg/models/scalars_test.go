@@ -139,3 +139,10 @@ func TestMonth_Next(t *testing.T) {
 		})
 	}
 }
+
+func TestAmount_Add(t *testing.T) {
+	term1 := models.Amount{12, 62}
+	term2 := models.Amount{23, 83}
+	expected := models.Amount{36, 45}
+	assert.Equal(t, expected, term1.Add(term2))
+}

@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"context"
 	"testing"
 
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
@@ -76,8 +77,9 @@ func TestStorage_CreateExpense(t *testing.T) {
 				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
 				mock_models.ExpenseCategoryInput().WithCategory(category2.ID),
 			)
+		reportID := mock_models.MonthlyReportID().WithBudget(*budget).WithMonth(input.Date.ToMonth())
 
-		_, err := testStorage.CreateExpense(ctx, mock_models.MonthlyReportID(budget.ID, input.Date), input)
+		_, err := testStorage.CreateExpense(ctx, *reportID, input)
 		require.EqualError(t, err, storage.ErrNoReport.Error())
 	})
 
@@ -113,7 +115,34 @@ func TestStorage_GetExpenses(t *testing.T) {
 	})
 
 	t.Run("Report does not exist", func(t *testing.T) {
-		_, err := testStorage.GetExpenses(ctx, mock_models.MonthlyReportID(budget.ID))
+		reportID := mock_models.MonthlyReportID().WithBudget(*budget)
+		_, err := testStorage.GetExpenses(ctx, reportID)
 		require.EqualError(t, err, storage.ErrNoReport.Error())
+	})
+}
+
+func TestStorage_GetExpensesTotalForAccount(t *testing.T) {
+	ctx := context.Background()
+	budget := whenSomeBudgetExists(t, ctx)
+	report := whenSomeMonthlyReportExists(t, ctx, budget.ID)
+	account1 := whenSomeAccountExists(t, ctx, budget.ID)
+	account2 := whenSomeAccountExists(t, ctx, budget.ID)
+	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
+	category := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
+	expense1 := whenSomeExpenseExists(t, ctx, account1.ID, category.ID, category.ID, report)
+	expense2 := whenSomeExpenseExists(t, ctx, account1.ID, category.ID, category.ID, report)
+	_ = whenSomeExpenseExists(t, ctx, account2.ID, category.ID, category.ID, report)
+
+	t.Run("Report exists", func(t *testing.T) {
+		expectedTotal := expense1.TotalAmount().Add(expense2.TotalAmount())
+		total, err := testStorage.GetExpensesTotalForAccount(ctx, report.ID, account1.ID)
+		require.NoError(t, err)
+		assert.Equal(t, expectedTotal, total)
+	})
+
+	t.Run("Report does not exist", func(t *testing.T) {
+		total, err := testStorage.GetExpensesTotalForAccount(ctx, mock_models.MonthlyReportID(), account1.ID)
+		require.NoError(t, err)
+		assert.Equal(t, models.Amount{}, total)
 	})
 }

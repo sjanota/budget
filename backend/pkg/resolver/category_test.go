@@ -19,7 +19,6 @@ func TestCategoryResolver_Envelope(t *testing.T) {
 	testCategory := mock_models.Category().WithBudget(testBudget.ID).WithEnvelope(testEnvelope.ID)
 	testErr := errors.New("test error")
 
-
 	t.Run("Success", func(t *testing.T) {
 		resolver, storageExpect, after := before(t)
 		defer after()

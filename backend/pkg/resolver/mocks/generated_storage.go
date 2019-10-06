@@ -6,11 +6,10 @@ package mock_resolver
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
+	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface
@@ -154,6 +153,21 @@ func (m *MockStorage) GetEnvelope(arg0 context.Context, arg1, arg2 primitive.Obj
 func (mr *MockStorageMockRecorder) GetEnvelope(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnvelope", reflect.TypeOf((*MockStorage)(nil).GetEnvelope), arg0, arg1, arg2)
+}
+
+// GetExpensesTotalForAccount mocks base method
+func (m *MockStorage) GetExpensesTotalForAccount(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (*models.Amount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExpensesTotalForAccount", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.Amount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExpensesTotalForAccount indicates an expected call of GetExpensesTotalForAccount
+func (mr *MockStorageMockRecorder) GetExpensesTotalForAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpensesTotalForAccount", reflect.TypeOf((*MockStorage)(nil).GetExpensesTotalForAccount), arg0, arg1, arg2)
 }
 
 // GetMonthlyReport mocks base method

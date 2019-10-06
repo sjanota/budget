@@ -60,6 +60,49 @@ func (s *Storage) GetExpenses(ctx context.Context, reportID models.MonthlyReport
 	return result.Expenses, nil
 }
 
+func (s *Storage) GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error) {
+	result, err := s.monthlyReports.Aggregate(ctx, list{
+		doc{"$match": doc{"_id": reportID}},
+		doc{"$project": doc{"expenses": 1, "_id": 0}},
+		doc{"$unwind": "$expenses"},
+		doc{"$unwind": "$expenses.categories"},
+		doc{"$match": doc{"expenses.accountid": accountID}},
+		doc{"$group": doc{
+			"_id": nil,
+			"integer": doc{
+				"$sum": "$expenses.categories.amount.integer",
+			},
+			"decimal": doc{
+				"$sum": "$expenses.categories.amount.decimal",
+			},
+		}},
+		doc{"$project": doc{
+			"_id": 0,
+			"integer": doc{
+				"$sum": list{"$integer", doc{
+					"$floor": doc{
+						"$divide": list{"$decimal", 100},
+					},
+				},
+				},
+			},
+			"decimal": doc{
+				"$mod": list{"$decimal", 100},
+			},
+		}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !result.Next(ctx) {
+		return &models.Amount{}, nil
+	}
+
+	amount := &models.Amount{}
+	err = result.Decode(&amount)
+	return amount, err
+}
+
 func (s *Storage) validateExpenseInput(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) error {
 	if err := s.validateExpenseInputReferences(ctx, reportID.BudgetID, in); err != nil {
 		return err

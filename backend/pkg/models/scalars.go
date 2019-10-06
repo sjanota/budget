@@ -74,6 +74,13 @@ type Date struct {
 	Day   int
 }
 
+func (d Date) ToMonth() Month {
+	return Month{
+		Year:  d.Year,
+		Month: d.Month,
+	}
+}
+
 func (d *Date) UnmarshalGQL(v interface{}) error {
 	s, ok := v.(string)
 	if !ok {

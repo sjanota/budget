@@ -27,15 +27,15 @@ models:
     model: "map[string]interface{}"
   CategoryUpdate:
     model: "map[string]interface{}"
-#  Account:
-#    fields:
-#      balance:
-#        resolver: true
-#  Envelope:
-#    fields:
-#      balance:
-#        resolver: true
-#  Budget:
-#    fields:
-#      expenses:
-#        resolver: true
+  Account:
+    fields:
+      balance:
+        resolver: true
+  Envelope:
+    fields:
+      balance:
+        resolver: true
+  Budget:
+    fields:
+      expenses:
+        resolver: true
