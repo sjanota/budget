@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { SidebarGroup } from './SidebarGroup';
 import { useTemplate } from '../Context';
+import './Sidebar.css';
 
 export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
   const { sidebarToggled, toggleSidebar } = useTemplate();
@@ -42,6 +43,7 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
       <div className="text-center d-none d-md-inline">
         <button
           className="rounded-circle border-0"
+          id="sidebarToggle"
           onClick={toggleSidebar}
         ></button>
       </div>
