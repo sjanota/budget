@@ -3,14 +3,19 @@ import { TemplateProvider } from './Context';
 import PropTypes from 'prop-types';
 import { Switch, Route } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
+import Sidebar from './Sidebar/Sidebar';
 
-export default function SBAdmin2({ sidebar, topbar, children, copyright }) {
-  const Sidebar = sidebar;
+export default function SBAdmin2({
+  sidebarProps,
+  topbar,
+  children,
+  copyright,
+}) {
   const Topbar = topbar;
   return (
     <TemplateProvider>
       <div id="wrapper">
-        <Sidebar />
+        <Sidebar {...sidebarProps} />
         <div id="content-wrapper" className="d-flex flex-column">
           <div id="content">
             <Topbar />
