@@ -42,7 +42,6 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
       <div className="text-center d-none d-md-inline">
         <button
           className="rounded-circle border-0"
-          id="sidebarToggle"
           onClick={toggleSidebar}
         ></button>
       </div>
