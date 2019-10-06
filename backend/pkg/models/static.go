@@ -60,7 +60,7 @@ func (r MonthlyReport) Month() Month {
 }
 
 func (r MonthlyReport) WithBudget(budget Budget) MonthlyReport {
-	r.ID = r.ID.WithBudget(budget)
+	r.ID = *r.ID.WithBudget(budget).WithMonth(budget.CurrentMonth)
 	return r
 }
 
@@ -69,9 +69,9 @@ type MonthlyReportID struct {
 	BudgetID primitive.ObjectID
 }
 
-func (id MonthlyReportID) WithBudget(budget Budget) MonthlyReportID {
+func (id MonthlyReportID) WithBudget(budget Budget) *MonthlyReportID {
 	id.BudgetID = budget.ID
-	return id
+	return &id
 }
 
 func (id MonthlyReportID) WithMonth(month Month) *MonthlyReportID {
@@ -136,6 +136,11 @@ type Envelope struct {
 	Limit    *Amount            `json:"Limit"`
 	Balance  Amount
 	BudgetID primitive.ObjectID
+}
+
+func (e Envelope) WithBudget(budgetID primitive.ObjectID) *Envelope {
+	e.BudgetID = budgetID
+	return &e
 }
 
 type Plan struct {

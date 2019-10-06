@@ -31,6 +31,7 @@ type Storage interface {
 
 	CreateExpense(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) (*models.Expense, error)
 	GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error)
+	GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (*models.Amount, error)
 }
 
 var _ schema.ResolverRoot = &Resolver{}
@@ -44,7 +45,7 @@ func (r *Resolver) Account() schema.AccountResolver {
 }
 
 func (r *Resolver) Envelope() schema.EnvelopeResolver {
-	panic("implement me")
+	return &envelopeResolver{r}
 }
 
 func (r *Resolver) Budget() schema.BudgetResolver {

@@ -51,7 +51,7 @@ func ExpenseCategory() *models.ExpenseCategory {
 
 func MonthlyReportID() models.MonthlyReportID {
 	return models.MonthlyReportID{
-		Month: Month(),
+		Month:    Month(),
 		BudgetID: primitive.NewObjectID(),
 	}
 }

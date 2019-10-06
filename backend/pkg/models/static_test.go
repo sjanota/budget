@@ -1,9 +1,10 @@
-package models
+package models_test
 
 import (
+	"testing"
+
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestExpense_TotalAmount(t *testing.T) {

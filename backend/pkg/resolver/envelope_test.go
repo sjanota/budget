@@ -14,10 +14,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccountResolver_Balance(t *testing.T) {
+func TestEnvelopeResolver_Balance(t *testing.T) {
 	ctx := context.TODO()
 	testBudget := mock_models.Budget()
-	testAccount := mock_models.Account().WithBudget(testBudget.ID)
+	testEnvelope := mock_models.Envelope().WithBudget(testBudget.ID)
 	testAmount := mock_models.Amount()
 	testErr := errors.New("test error")
 	expectedReportID := models.MonthlyReportID{
@@ -30,9 +30,9 @@ func TestAccountResolver_Balance(t *testing.T) {
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(testAmount, nil)
+		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(testAmount, nil)
 
-		balance, err := resolver.Account().Balance(ctx, testAccount)
+		balance, err := resolver.Envelope().Balance(ctx, testEnvelope)
 		require.NoError(t, err)
 		assert.Equal(t, testAmount, balance)
 	})
@@ -43,18 +43,18 @@ func TestAccountResolver_Balance(t *testing.T) {
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(nil, testErr)
 
-		_, err := resolver.Account().Balance(ctx, testAccount)
+		_, err := resolver.Envelope().Balance(ctx, testEnvelope)
 		require.Equal(t, testErr, err)
 	})
 
-	t.Run("GetExpensesTotalForAccount error", func(t *testing.T) {
+	t.Run("GetExpensesTotalForEnvelope error", func(t *testing.T) {
 		resolver, expectStorage, after := before(t)
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(nil, testErr)
+		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(nil, testErr)
 
-		_, err := resolver.Account().Balance(ctx, testAccount)
+		_, err := resolver.Envelope().Balance(ctx, testEnvelope)
 		require.Equal(t, testErr, err)
 	})
 }
