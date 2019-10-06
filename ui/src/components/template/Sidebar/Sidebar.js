@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { SidebarGroup } from './SidebarGroup';
+import { useTemplate } from '../Context';
 
 export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
-  const [toggled, setToggled] = useState(false);
+  const { sidebarToggled, toggleSidebar } = useTemplate();
   const classNames = classnames(
     'navbar-nav',
     'bg-gradient-primary',
     'sidebar',
     'sidebar-dark',
     'accordion',
-    { toggled }
+    { toggled: sidebarToggled }
   );
   return (
     <ul className={classNames} id="accordionSidebar">
@@ -42,7 +43,7 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
         <button
           className="rounded-circle border-0"
           id="sidebarToggle"
-          onClick={() => setToggled(toggled => !toggled)}
+          onClick={toggleSidebar}
         ></button>
       </div>
     </ul>
