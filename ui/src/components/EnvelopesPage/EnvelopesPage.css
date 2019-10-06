@@ -1,7 +1,0 @@
-.EnvelopesPage {
-  display: flex;
-}
-
-.EnvelopesPage > * {
-  flex-grow: 1;
-}
