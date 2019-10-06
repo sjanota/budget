@@ -1,9 +1,11 @@
 import React from 'react';
+import PageHeader from './template/Page/PageHeader';
+import Page from './template/Page/Page';
 
 export default function Buttons() {
   return (
-    <div className="container-fluid">
-      <h1 className="h3 mb-4 text-gray-800">Buttons</h1>
+    <Page>
+      <PageHeader title="Buttons" />
 
       <div className="row">
         <div className="col-lg-6">
@@ -185,6 +187,6 @@ export default function Buttons() {
           </div>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }

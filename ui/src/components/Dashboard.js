@@ -1,19 +1,15 @@
 import React from 'react';
+import Page from './template/Page/Page';
+import PageHeaderWithButton from './template/Page/PageHeaderWithButton';
 
 export default function Dashboard() {
   return (
-    <div className="container-fluid">
-      <div className="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 className="h3 mb-0 text-gray-800">Dashboard</h1>
-        <a
-          href="#"
-          className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-        >
-          <i className="fas fa-download fa-sm text-white-50"></i> Generate
-          Report
-        </a>
-      </div>
-
+    <Page>
+      <PageHeaderWithButton
+        title="Dashboard"
+        btnText="Generate Report"
+        faIcon="fa-donwload"
+      />
       <div className="row">
         <div className="col-xl-3 col-md-6 mb-4">
           <div className="card border-left-primary shadow h-100 py-2">
@@ -399,6 +395,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }
