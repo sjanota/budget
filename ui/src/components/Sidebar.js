@@ -1,5 +1,5 @@
 import React from 'react';
-import TemplateSidebar from './template/Sidebar';
+import TemplateSidebar from './template/Sidebar/Sidebar';
 
 export default function Sidebar() {
   return (

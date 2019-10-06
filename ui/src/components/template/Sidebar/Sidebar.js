@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import SidebarCollapsibleLink from './SidebarCollapsibleLink';
 import classnames from 'classnames';
-import SidebarSimpleLink from './SidebarSimpleLink';
+import PropTypes from 'prop-types';
+import { SidebarGroup } from './SidebarGroup';
 
 export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
   const [toggled, setToggled] = useState(false);
@@ -29,21 +29,11 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
       <hr className="sidebar-divider my-0" />
 
       {config.map((group, idx) => (
-        <>
-          {group.name && <div className="sidebar-heading">{group.name}</div>}
-          {group.entries.map(entry =>
-            entry.to !== undefined ? (
-              <SidebarSimpleLink key={entry.name} {...entry} />
-            ) : (
-              <SidebarCollapsibleLink
-                key={entry.name}
-                parent="accordionSidebar"
-                {...entry}
-              />
-            )
-          )}
-          {idx !== config.length - 1 && <hr className="sidebar-divider" />}
-        </>
+        <SidebarGroup
+          key={group.name || idx}
+          group={group}
+          isLast={idx !== config.length - 1}
+        />
       ))}
 
       <hr className="sidebar-divider d-none d-md-block" />
@@ -58,3 +48,9 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
     </ul>
   );
 }
+
+Sidebar.propTypes = {
+  config: PropTypes.arrayOf(SidebarGroup.propTypes.group).isRequired,
+  renderBrandIcon: PropTypes.func.isRequired,
+  renderBrandName: PropTypes.func.isRequired,
+};
