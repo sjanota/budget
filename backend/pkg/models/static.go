@@ -41,6 +41,13 @@ func (b Budget) Envelope(id primitive.ObjectID) *Envelope {
 	return nil
 }
 
+func (b Budget) CurrentMonthID() MonthlyReportID {
+	return MonthlyReportID{
+		Month:    b.CurrentMonth,
+		BudgetID: b.ID,
+	}
+}
+
 type MonthlyReport struct {
 	ID        MonthlyReportID `bson:"_id,omitempty"`
 	Expenses  []*Expense      `json:"expenses"`
@@ -140,4 +147,24 @@ func (c Category) WithEnvelope(envelopeID primitive.ObjectID) Category {
 type CategoryInput struct {
 	Name       string             `json:"name"`
 	EnvelopeID primitive.ObjectID `json:"envelopeID"`
+}
+
+func (i ExpenseInput) WithDate(date Date) *ExpenseInput {
+	i.Date = date
+	return &i
+}
+
+func (i ExpenseInput) WithAccount(accountID primitive.ObjectID) *ExpenseInput {
+	i.AccountID = accountID
+	return &i
+}
+
+func (i ExpenseInput) WithCategories(categories ...*ExpenseCategoryInput) *ExpenseInput {
+	i.Categories = categories
+	return &i
+}
+
+func (i ExpenseCategoryInput) WithCategory(categoryID primitive.ObjectID) *ExpenseCategoryInput {
+	i.CategoryID = categoryID
+	return &i
 }

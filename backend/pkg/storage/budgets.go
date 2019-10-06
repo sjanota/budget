@@ -10,9 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (s *Storage) CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error) {
+func (s *Storage) CreateBudget(ctx context.Context, currentMonth models.Month) (*models.Budget, error) {
 	budget := &models.Budget{
-		ID:           id,
 		Accounts:     []*models.Account{},
 		Envelopes:    []*models.Envelope{},
 		Categories:   []*models.Category{},

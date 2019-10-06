@@ -52,18 +52,18 @@ func (mr *MockStorageMockRecorder) CreateAccount(arg0, arg1, arg2 interface{}) *
 }
 
 // CreateBudget mocks base method
-func (m *MockStorage) CreateBudget(arg0 context.Context, arg1 primitive.ObjectID, arg2 models.Month) (*models.Budget, error) {
+func (m *MockStorage) CreateBudget(arg0 context.Context, arg1 models.Month) (*models.Budget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBudget", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateBudget", arg0, arg1)
 	ret0, _ := ret[0].(*models.Budget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateBudget indicates an expected call of CreateBudget
-func (mr *MockStorageMockRecorder) CreateBudget(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) CreateBudget(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBudget", reflect.TypeOf((*MockStorage)(nil).CreateBudget), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBudget", reflect.TypeOf((*MockStorage)(nil).CreateBudget), arg0, arg1)
 }
 
 // CreateCategory mocks base method

@@ -33,7 +33,7 @@ func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive
 	if err == storage.ErrNoReport {
 		_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth)
 		if err == storage.ErrAlreadyExists || err == nil {
-			expense, err = r.CreateExpense(ctx, budgetID, in)
+			expense, err = r.Storage.CreateExpense(ctx, reportID, &in)
 		}
 	}
 
@@ -65,16 +65,10 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive
 }
 
 func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, error) {
-	budgetID := r.NewObjectID()
 	now := r.Now()
 	month := models.Month{
 		Year:  now.Year(),
 		Month: now.Month(),
 	}
-	_, err := r.Storage.CreateMonthlyReport(ctx, budgetID, month)
-	if err != nil {
-		return nil, err
-	}
-
-	return r.Storage.CreateBudget(ctx, budgetID, month)
+	return r.Storage.CreateBudget(ctx, month)
 }

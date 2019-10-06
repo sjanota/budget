@@ -21,16 +21,23 @@ func Amount() *models.Amount {
 	}
 }
 
-func ExpenseInput(date models.Date, accountID, categoryID1, categoryID2 primitive.ObjectID) *models.ExpenseInput {
+func ExpenseInput() *models.ExpenseInput {
 	return &models.ExpenseInput{
 		Title: Name(),
 		Categories: []*models.ExpenseCategoryInput{
-			{categoryID1, *Amount()},
-			{categoryID2, *Amount()},
+			ExpenseCategoryInput(),
+			ExpenseCategoryInput(),
 		},
-		AccountID:   accountID,
-		TotalAmount: models.Amount{},
-		Date:        date,
+		AccountID:   primitive.NewObjectID(),
+		TotalAmount: *Amount(),
+		Date:        Date(),
+	}
+}
+
+func ExpenseCategoryInput() *models.ExpenseCategoryInput {
+	return &models.ExpenseCategoryInput{
+		CategoryID: primitive.NewObjectID(),
+		Amount:     *Amount(),
 	}
 }
 

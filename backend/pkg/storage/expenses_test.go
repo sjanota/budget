@@ -6,8 +6,6 @@ import (
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
 	"github.com/sjanota/budget/backend/pkg/storage"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -25,7 +23,13 @@ func TestStorage_CreateExpense(t *testing.T) {
 	account := whenSomeAccountExists(t, ctx, budget.ID)
 
 	t.Run("Success", func(t *testing.T) {
-		input := mock_models.ExpenseInput(mock_models.DateInReport(report), account.ID, category1.ID, category2.ID)
+		input := mock_models.ExpenseInput().
+			WithDate(mock_models.DateInReport(report)).
+			WithAccount(account.ID).
+			WithCategories(
+				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
+				mock_models.ExpenseCategoryInput().WithCategory(category2.ID),
+			)
 
 		created, err := testStorage.CreateExpense(ctx, report.ID, input)
 		require.NoError(t, err)
@@ -42,28 +46,48 @@ func TestStorage_CreateExpense(t *testing.T) {
 	})
 
 	t.Run("Account does not exist", func(t *testing.T) {
-		input := mock_models.ExpenseInput(mock_models.DateInReport(report), primitive.NewObjectID(), category1.ID, category2.ID)
+		input := mock_models.ExpenseInput().
+			WithDate(mock_models.DateInReport(report)).
+			WithCategories(
+				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
+				mock_models.ExpenseCategoryInput().WithCategory(category2.ID),
+			)
 
 		_, err := testStorage.CreateExpense(ctx, report.ID, input)
 		require.EqualError(t, err, storage.ErrInvalidReference.Error())
 	})
 
 	t.Run("One of categories does not exist", func(t *testing.T) {
-		input := mock_models.ExpenseInput(mock_models.DateInReport(report), account.ID, category1.ID, primitive.NewObjectID())
-
+		input := mock_models.ExpenseInput().
+			WithDate(mock_models.DateInReport(report)).
+			WithAccount(account.ID).
+			WithCategories(
+				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
+				mock_models.ExpenseCategoryInput(),
+			)
 		_, err := testStorage.CreateExpense(ctx, report.ID, input)
 		require.EqualError(t, err, storage.ErrInvalidReference.Error())
 	})
 
 	t.Run("Report does not exist", func(t *testing.T) {
-		input := mock_models.ExpenseInput(mock_models.Date(), account.ID, category1.ID, category2.ID)
+		input := mock_models.ExpenseInput().
+			WithAccount(account.ID).
+			WithCategories(
+				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
+				mock_models.ExpenseCategoryInput().WithCategory(category2.ID),
+			)
 
 		_, err := testStorage.CreateExpense(ctx, mock_models.MonthlyReportID(budget.ID, input.Date), input)
 		require.EqualError(t, err, storage.ErrNoReport.Error())
 	})
 
 	t.Run("Date does not match report", func(t *testing.T) {
-		input := mock_models.ExpenseInput(mock_models.Date(), account.ID, category1.ID, category2.ID)
+		input := mock_models.ExpenseInput().
+			WithAccount(account.ID).
+			WithCategories(
+				mock_models.ExpenseCategoryInput().WithCategory(category1.ID),
+				mock_models.ExpenseCategoryInput().WithCategory(category2.ID),
+			)
 
 		_, err := testStorage.CreateExpense(ctx, report.ID, input)
 		require.EqualError(t, err, storage.ErrWrongDate.Error())

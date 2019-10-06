@@ -26,7 +26,7 @@ type Storage interface {
 	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in *models.AccountInput) (*models.Account, error)
 	UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Account, error)
 
-	CreateBudget(ctx context.Context, id primitive.ObjectID, currentMonth models.Month) (*models.Budget, error)
+	CreateBudget(ctx context.Context, currentMonth models.Month) (*models.Budget, error)
 	GetBudget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
 	ListBudgets(ctx context.Context) ([]*models.Budget, error)
 

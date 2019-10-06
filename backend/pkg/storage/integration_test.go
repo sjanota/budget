@@ -120,7 +120,7 @@ func pruneVolumes() error {
 }
 
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
-	budget, err := testStorage.CreateBudget(ctx, primitive.NewObjectID(), mock_models.Month())
+	budget, err := testStorage.CreateBudget(ctx, mock_models.Month())
 	require.NoError(t, err)
 	return budget
 }
@@ -154,7 +154,13 @@ func whenSomeMonthlyReportExists(t *testing.T, ctx context.Context, budgetID pri
 }
 
 func whenSomeExpenseExists(t *testing.T, ctx context.Context, accountID, categoryID1, categoryID2 primitive.ObjectID, report *models.MonthlyReport) *models.Expense {
-	input := mock_models.ExpenseInput(mock_models.DateInReport(report), accountID, categoryID1, categoryID2)
+	input := mock_models.ExpenseInput().
+		WithDate(mock_models.DateInReport(report)).
+		WithAccount(accountID).
+		WithCategories(
+			mock_models.ExpenseCategoryInput().WithCategory(categoryID1),
+			mock_models.ExpenseCategoryInput().WithCategory(categoryID2),
+		)
 	expense, err := testStorage.CreateExpense(ctx, report.ID, input)
 	require.NoError(t, err)
 	return expense

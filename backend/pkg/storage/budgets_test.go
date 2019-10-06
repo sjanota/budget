@@ -3,24 +3,25 @@ package storage_test
 import (
 	"testing"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestStorage_CreateBudget(t *testing.T) {
 	ctx := before()
-	id := primitive.NewObjectID()
 	currentMonth := mock_models.Month()
 
-	budget, err := testStorage.CreateBudget(ctx, id, currentMonth)
+	budget, err := testStorage.CreateBudget(ctx, currentMonth)
 	require.NoError(t, err)
+	assert.NotEqual(t, primitive.ObjectID{}, budget.ID)
 	assert.Equal(t, &models.Budget{
-		ID:           id,
+		ID:           budget.ID,
 		Accounts:     []*models.Account{},
 		Envelopes:    []*models.Envelope{},
 		Categories:   []*models.Category{},

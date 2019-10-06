@@ -11,12 +11,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/golang/mock/gomock"
+	. "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBudgetResolver_CurrentMonth(t *testing.T) {
-	mock := gomock.NewController(t)
+	mock := NewController(t)
 	defer mock.Finish()
 
 	storage := mock_resolver.NewMockStorage(mock)
@@ -26,9 +26,7 @@ func TestBudgetResolver_CurrentMonth(t *testing.T) {
 	report := mock_models.MonthlyReport().WithBudget(*budget)
 
 	t.Run("Success", func(t *testing.T) {
-		storage.EXPECT().
-			GetMonthlyReport(gomock.Eq(ctx), gomock.Eq(report.ID)).
-			Return(&report, nil)
+		storage.EXPECT().GetMonthlyReport(Eq(ctx), Eq(report.ID)).Return(&report, nil)
 
 		actualReport, err := resolver.CurrentMonth(ctx, budget)
 		require.NoError(t, err)
@@ -37,9 +35,7 @@ func TestBudgetResolver_CurrentMonth(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
 		err := errors.New("test error")
-		storage.EXPECT().
-			GetMonthlyReport(gomock.Eq(ctx), gomock.Eq(report.ID)).
-			Return(nil, err)
+		storage.EXPECT().GetMonthlyReport(Eq(ctx), Eq(report.ID)).Return(nil, err)
 
 		_, actualErr := resolver.CurrentMonth(ctx, budget)
 		require.Equal(t, err, actualErr)
