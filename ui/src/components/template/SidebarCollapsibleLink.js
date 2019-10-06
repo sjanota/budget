@@ -3,12 +3,11 @@ import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router';
 import classnames from 'classnames';
 
-export default function NavCollapsible({
-  id,
+export default function SidebarCollapsibleLink({
   name,
-  labeledBy,
   parent,
   sections,
+  faIcon,
 }) {
   const location = useLocation();
   let isActive = false;
@@ -20,10 +19,9 @@ export default function NavCollapsible({
     isActive = true;
   }
 
-  console.log(location, isActive);
-
   const classNames = classnames('nav-item', { active: isActive });
-
+  const id = 'nav--' + name;
+  const iconClasses = classnames('fas', 'fa-fw', faIcon);
   return (
     <li className={classNames}>
       <a
@@ -34,15 +32,10 @@ export default function NavCollapsible({
         aria-expanded="true"
         aria-controls={id}
       >
-        <i className="fas fa-fw fa-cog"></i>
+        <i className={iconClasses}></i>
         <span>{name}</span>
       </a>
-      <div
-        id={id}
-        className="collapse"
-        aria-labelledby={labeledBy}
-        data-parent={'#' + parent}
-      >
+      <div id={id} className="collapse" data-parent={'#' + parent}>
         {sections.map(({ name, routes }) => {
           return (
             <div key={name} className="bg-white py-2 collapse-inner rounded">
