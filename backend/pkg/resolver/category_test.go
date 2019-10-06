@@ -6,8 +6,6 @@ import (
 
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
-	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
-
 	. "github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -15,29 +13,31 @@ import (
 )
 
 func TestCategoryResolver_Envelope(t *testing.T) {
-	mock := NewController(t)
-	defer mock.Finish()
-
-	storage := mock_resolver.NewMockStorage(mock)
-	resolver := &categoryResolver{Resolver: &Resolver{Storage: storage}}
 	ctx := context.TODO()
-	budget := mock_models.Budget()
-	envelope := mock_models.Envelope()
-	category := mock_models.Category().WithBudget(budget.ID).WithEnvelope(envelope.ID)
+	testBudget := mock_models.Budget()
+	testEnvelope := mock_models.Envelope()
+	testCategory := mock_models.Category().WithBudget(testBudget.ID).WithEnvelope(testEnvelope.ID)
+	testErr := errors.New("test error")
+
 
 	t.Run("Success", func(t *testing.T) {
-		storage.EXPECT().GetEnvelope(Eq(ctx), Eq(budget.ID), Eq(envelope.ID)).Return(envelope, nil)
+		resolver, storageExpect, after := before(t)
+		defer after()
 
-		actualEnvelope, err := resolver.Envelope(ctx, &category)
+		storageExpect.GetEnvelope(Eq(ctx), Eq(testBudget.ID), Eq(testEnvelope.ID)).Return(testEnvelope, nil)
+
+		envelope, err := resolver.Category().Envelope(ctx, &testCategory)
 		require.NoError(t, err)
-		assert.True(t, actualEnvelope == envelope)
+		assert.Equal(t, testEnvelope, envelope)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		err := errors.New("test error")
-		storage.EXPECT().GetEnvelope(Eq(ctx), Eq(budget.ID), Eq(envelope.ID)).Return(nil, err)
+		resolver, storageExpect, after := before(t)
+		defer after()
 
-		_, actualErr := resolver.Envelope(ctx, &category)
-		require.Equal(t, err, actualErr)
+		storageExpect.GetEnvelope(Eq(ctx), Eq(testBudget.ID), Eq(testEnvelope.ID)).Return(nil, testErr)
+
+		_, err := resolver.Category().Envelope(ctx, &testCategory)
+		require.Equal(t, testErr, err)
 	})
 }

@@ -7,8 +7,6 @@ import (
 
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
-	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
-
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/golang/mock/gomock"
@@ -16,28 +14,29 @@ import (
 )
 
 func TestBudgetResolver_CurrentMonth(t *testing.T) {
-	mock := NewController(t)
-	defer mock.Finish()
-
-	storage := mock_resolver.NewMockStorage(mock)
-	resolver := &budgetResolver{Resolver: &Resolver{Storage: storage}}
 	ctx := context.TODO()
-	budget := mock_models.Budget()
-	report := mock_models.MonthlyReport().WithBudget(*budget)
+	testBudget := mock_models.Budget()
+	testReport := mock_models.MonthlyReport().WithBudget(*testBudget)
+	testErr := errors.New("test error")
 
 	t.Run("Success", func(t *testing.T) {
-		storage.EXPECT().GetMonthlyReport(Eq(ctx), Eq(report.ID)).Return(&report, nil)
+		resolver, storageExpect, after := before(t)
+		defer after()
 
-		actualReport, err := resolver.CurrentMonth(ctx, budget)
+		storageExpect.GetMonthlyReport(Eq(ctx), Eq(testReport.ID)).Return(&testReport, nil)
+
+		actualReport, err := resolver.Budget().CurrentMonth(ctx, testBudget)
 		require.NoError(t, err)
-		assert.True(t, actualReport == &report)
+		assert.True(t, actualReport == &testReport)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		err := errors.New("test error")
-		storage.EXPECT().GetMonthlyReport(Eq(ctx), Eq(report.ID)).Return(nil, err)
+		resolver, storageExpect, after := before(t)
+		defer after()
 
-		_, actualErr := resolver.CurrentMonth(ctx, budget)
-		require.Equal(t, err, actualErr)
+		storageExpect.GetMonthlyReport(Eq(ctx), Eq(testReport.ID)).Return(nil, testErr)
+
+		_, err := resolver.Budget().CurrentMonth(ctx, testBudget)
+		require.Equal(t, testErr, err)
 	})
 }

@@ -4,7 +4,6 @@ package resolver
 
 import (
 	"context"
-	time "time"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
@@ -80,5 +79,5 @@ func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*mod
 }
 
 func (r *Resolver) Mutation() schema.MutationResolver {
-	return &mutationResolver{Resolver: r, Now: time.Now, NewObjectID: primitive.NewObjectID}
+	return &mutationResolver{Resolver: r}
 }

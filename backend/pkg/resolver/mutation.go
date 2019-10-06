@@ -15,8 +15,6 @@ var _ schema.MutationResolver = &mutationResolver{}
 
 type mutationResolver struct {
 	*Resolver
-	Now         func() time.Time
-	NewObjectID func() primitive.ObjectID
 }
 
 func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error) {
@@ -65,7 +63,7 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive
 }
 
 func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, error) {
-	now := r.Now()
+	now := time.Now()
 	month := models.Month{
 		Year:  now.Year(),
 		Month: now.Month(),
