@@ -16,18 +16,18 @@ export default function Topbar() {
           <TopbarMenu name="Alerts center" faIcon="bell" counter={0}>
             <TopbarAlert
               highlighted={true}
-              faIcon="fa-file-alt"
+              faIcon="file-alt"
               date="December 12, 2019"
               text="A new monthly report is ready to download!"
             />
             <TopbarAlert
-              faIcon="fa-donate"
+              faIcon="donate"
               date="December 7, 2019"
               variant="success"
               text="$290.29 has been deposited into your account!"
             />
             <TopbarAlert
-              faIcon="fa-exclamation-triangle"
+              faIcon="exclamation-triangle"
               date="December 2, 2019"
               variant="warning"
               text="Spending Alert: We've noticed unusually high spending for your

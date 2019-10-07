@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 export default function SidebarSimpleLink({ name, to, faIcon }) {
-  const iconClasses = classnames('fas', 'fa-fw', faIcon);
+  const iconClasses = classnames('fas', 'fa-fw', `fa-${faIcon}`);
   return (
     <li className="nav-item">
       <NavLink className="nav-link" exact to={to}>

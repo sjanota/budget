@@ -9,7 +9,7 @@ export default function TopbarAlert({
   text,
   highlighted,
 }) {
-  const iconClasses = classnames('fas', 'text-white', faIcon);
+  const iconClasses = classnames('fas', 'text-white', `fa-${faIcon}`);
   const iconBgClasses = classnames('icon-circle', `bg-${variant}`);
   const textClasses = classnames({ 'font-weight-bold': highlighted });
   return (

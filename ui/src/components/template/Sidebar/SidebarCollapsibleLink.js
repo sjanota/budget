@@ -20,7 +20,7 @@ export default function SidebarCollapsibleLink({
   const isActive = oneOfRoutsMatchesLocation(sections, location);
   const classNames = classnames('nav-item', { active: isActive });
   const id = 'sidebar--' + name;
-  const iconClasses = classnames('fas', 'fa-fw', faIcon);
+  const iconClasses = classnames('fas', 'fa-fw', `fa-${faIcon}`);
   return (
     <li className={classNames}>
       <span

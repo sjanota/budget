@@ -1,13 +1,13 @@
 export const sidebarConfig = [
   {
-    entries: [{ name: 'Dashboard', to: '/', faIcon: 'fa-tachometer-alt' }],
+    entries: [{ name: 'Dashboard', to: '/', faIcon: 'tachometer-alt' }],
   },
   {
     name: 'Interface',
     entries: [
       {
         name: 'Components',
-        faIcon: 'fa-cog',
+        faIcon: 'cog',
         sections: [
           {
             name: 'Custom Components',
@@ -20,7 +20,7 @@ export const sidebarConfig = [
       },
       {
         name: 'Utilities',
-        faIcon: 'fa-wrench',
+        faIcon: 'wrench',
         sections: [
           {
             name: 'Custom Utilities',
@@ -40,7 +40,7 @@ export const sidebarConfig = [
     entries: [
       {
         name: 'Pages',
-        faIcon: 'fa-folder',
+        faIcon: 'folder',
         sections: [
           {
             name: 'Login Screens',
@@ -62,12 +62,12 @@ export const sidebarConfig = [
       {
         name: 'Charts',
         to: '/charts',
-        faIcon: 'fa-chart-area',
+        faIcon: 'chart-area',
       },
       {
         name: 'Tables',
         to: '/tables',
-        faIcon: 'fa-table',
+        faIcon: 'table',
       },
     ],
   },
