@@ -6,7 +6,7 @@ import TopbarSearch from './template/Topbar/TopbarSearch';
 import { TopbarMenu } from './template/Topbar/TopbarMenu';
 import TopbarUser from './template/Topbar/TopbarUser';
 
-export default function Navbar() {
+export default function Topbar() {
   return (
     <TemplateTopbar
       renderContext={props => <TopbarSearch {...props} />}
