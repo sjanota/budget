@@ -1,6 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-export default function TopbarSearch({ onSearch }) {
+function TopbarSearch({ onSearch }) {
   return (
     <div className="input-group">
       <input
@@ -18,3 +19,52 @@ export default function TopbarSearch({ onSearch }) {
     </div>
   );
 }
+TopbarSearch.propTypes = {
+  onSearch: PropTypes.func,
+};
+
+function TopbarSearchExpanded(props) {
+  return (
+    <form className="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+      <TopbarSearch {...props} />
+    </form>
+  );
+}
+
+function TopbarSearchMinimized(props) {
+  return (
+    <li className="nav-item dropdown no-arrow d-sm-none">
+      <a
+        className="nav-link dropdown-toggle"
+        href="#"
+        id="searchDropdown"
+        role="button"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <i className="fas fa-search fa-fw"></i>
+      </a>
+      <div
+        className="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+        aria-labelledby="searchDropdown"
+      >
+        <form className="form-inline mr-auto w-100 navbar-search">
+          <TopbarSearch {...props} />
+        </form>
+      </div>
+    </li>
+  );
+}
+
+export default function ResponsiveTopbarSearch({ minified, ...props }) {
+  return minified ? (
+    <TopbarSearchMinimized {...props} />
+  ) : (
+    <TopbarSearchExpanded {...props} />
+  );
+}
+
+ResponsiveTopbarSearch.propTypes = {
+  minified: PropTypes.bool,
+};
