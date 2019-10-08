@@ -40,6 +40,6 @@ export default function SBAdmin2({
 SBAdmin2.propTypes = {
   children: PropTypes.any,
   copyright: PropTypes.string,
-  sidebar: PropTypes.elementType.isRequired,
+  sidebarProps: PropTypes.shape(Sidebar.propTypes).isRequired,
   topbar: PropTypes.elementType.isRequired,
 };

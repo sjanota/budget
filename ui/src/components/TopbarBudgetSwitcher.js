@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TopbarContextSwitcher from './template/Topbar/TopbarContextSwitcher';
-
-const budgets = ['G.I Joe - Personal', 'US Army'];
+import { useBudget } from './contexts/BudgetContext';
+import Spinner from './template/Utilities/Spinner';
 
 export default function TopbarBudgetSwitcher() {
-  const [budget, setBudget] = useState(null);
+  const {
+    selectedBudget,
+    setSelectedBudget,
+    budgets,
+    loading,
+    error,
+  } = useBudget();
+  const value = loading ? (
+    <Spinner size="sm" variant="secondary" />
+  ) : error ? (
+    <i className="fas fa-fw fa-exclamation-triangle text-secondary" />
+  ) : (
+    selectedBudget
+  );
   return (
     <TopbarContextSwitcher
       label="Budget"
-      value={budget}
-      onChange={setBudget}
-      allowedValues={budgets}
+      value={value}
+      onChange={setSelectedBudget}
+      allowedValues={budgets.map(b => b.name)}
+      loadingValues={loading || !!error}
     />
   );
 }

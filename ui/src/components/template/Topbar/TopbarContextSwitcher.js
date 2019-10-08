@@ -5,6 +5,7 @@ export default function TopbarContextSwitcher({
   value,
   onChange,
   allowedValues,
+  loadingValues,
 }) {
   return (
     <div
@@ -23,8 +24,9 @@ export default function TopbarContextSwitcher({
         <span
           className="input-group-text bg-light border-0 navbar-context-display text-dark"
           aria-label={label}
+          style={{ flexGrow: 1 }}
         >
-          {value || <span className="text-muted small">Choose {label}...</span>}
+          {value}
         </span>
         <button
           className="btn btn-primary dropdown-toggle dropdown-toggle-split no-arrow"
@@ -33,14 +35,7 @@ export default function TopbarContextSwitcher({
           aria-expanded="false"
           style={{ maxWidth: '2rem' }}
         />
-
         <div className="dropdown-menu">
-          <span
-            className="dropdown-item text-muted"
-            onClick={() => onChange(null)}
-          >
-            Choose {label}...
-          </span>
           {allowedValues.map(v => (
             <span className="dropdown-item" onClick={() => onChange(v)} key={v}>
               {v}
