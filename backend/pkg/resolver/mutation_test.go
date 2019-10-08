@@ -27,9 +27,9 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 		resolver, storageExpect, after := before(t)
 		defer after()
 
-		storageExpect.CreateBudget(Eq(ctx), Eq(testMonth)).Return(testBudget, nil)
+		storageExpect.CreateBudget(Eq(ctx), Eq(testBudget.Name), Eq(testMonth)).Return(testBudget, nil)
 
-		budget, err := resolver.Mutation().CreateBudget(ctx)
+		budget, err := resolver.Mutation().CreateBudget(ctx, testBudget.Name)
 		require.NoError(t, err)
 		assert.Equal(t, budget, budget)
 	})
@@ -38,9 +38,9 @@ func TestMutationResolver_CreateBudget(t *testing.T) {
 		resolver, storageExpect, after := before(t)
 		defer after()
 
-		storageExpect.CreateBudget(Eq(ctx), Eq(testMonth)).Return(nil, testErr)
+		storageExpect.CreateBudget(Eq(ctx), Eq(testBudget.Name), Eq(testMonth)).Return(nil, testErr)
 
-		_, err := resolver.Mutation().CreateBudget(ctx)
+		_, err := resolver.Mutation().CreateBudget(ctx, testBudget.Name)
 		require.Equal(t, testErr, err)
 	})
 }

@@ -120,7 +120,7 @@ func pruneVolumes() error {
 }
 
 func whenSomeBudgetExists(t *testing.T, ctx context.Context) *models.Budget {
-	budget, err := testStorage.CreateBudget(ctx, mock_models.Month())
+	budget, err := testStorage.CreateBudget(ctx, "", mock_models.Month())
 	require.NoError(t, err)
 	return budget
 }

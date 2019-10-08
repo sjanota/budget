@@ -45,6 +45,7 @@ input EnvelopeUpdate {
 
 type Budget {
   id: ID!
+  name: String!
   accounts: [Account!]!
   envelopes: [Envelope!]!
   categories: [Category!]!
@@ -114,7 +115,7 @@ type Query {
 }
 
 type Mutation {
-  createBudget: Budget
+  createBudget(name: String!): Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
   updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope

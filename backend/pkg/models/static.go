@@ -6,6 +6,7 @@ import (
 
 type Budget struct {
 	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name         string             `json:"name"`
 	Accounts     []*Account         `json:"accounts"`
 	Envelopes    []*Envelope        `json:"envelopes"`
 	Categories   []*Category        `json:"categories"`

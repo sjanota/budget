@@ -64,6 +64,7 @@ type ComplexityRoot struct {
 		CurrentMonth func(childComplexity int) int
 		Envelopes    func(childComplexity int) int
 		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
 	}
 
 	Category struct {
@@ -101,7 +102,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateAccount  func(childComplexity int, budgetID primitive.ObjectID, in models.AccountInput) int
-		CreateBudget   func(childComplexity int) int
+		CreateBudget   func(childComplexity int, name string) int
 		CreateCategory func(childComplexity int, budgetID primitive.ObjectID, in models.CategoryInput) int
 		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
 		CreateExpense  func(childComplexity int, budgetID primitive.ObjectID, in models.ExpenseInput) int
@@ -149,7 +150,7 @@ type ExpenseCategoryResolver interface {
 	Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error)
 }
 type MutationResolver interface {
-	CreateBudget(ctx context.Context) (*models.Budget, error)
+	CreateBudget(ctx context.Context, name string) (*models.Budget, error)
 	CreateAccount(ctx context.Context, budgetID primitive.ObjectID, in models.AccountInput) (*models.Account, error)
 	UpdateAccount(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Account, error)
 	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error)
@@ -241,6 +242,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Budget.ID(childComplexity), true
+
+	case "Budget.name":
+		if e.complexity.Budget.Name == nil {
+			break
+		}
+
+		return e.complexity.Budget.Name(childComplexity), true
 
 	case "Category.envelope":
 		if e.complexity.Category.Envelope == nil {
@@ -385,7 +393,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Mutation.CreateBudget(childComplexity), true
+		args, err := ec.field_Mutation_createBudget_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateBudget(childComplexity, args["name"].(string)), true
 
 	case "Mutation.createCategory":
 		if e.complexity.Mutation.CreateCategory == nil {
@@ -643,6 +656,7 @@ input EnvelopeUpdate {
 
 type Budget {
   id: ID!
+  name: String!
   accounts: [Account!]!
   envelopes: [Envelope!]!
   categories: [Category!]!
@@ -712,7 +726,7 @@ type Query {
 }
 
 type Mutation {
-  createBudget: Budget
+  createBudget(name: String!): Budget
   createAccount(budgetID: ID!, in: AccountInput!): Account
   updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
@@ -752,6 +766,20 @@ func (ec *executionContext) field_Mutation_createAccount_args(ctx context.Contex
 		}
 	}
 	args["in"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createBudget_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
 	return args, nil
 }
 
@@ -1121,6 +1149,43 @@ func (ec *executionContext) _Budget_id(ctx context.Context, field graphql.Collec
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Budget_name(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Budget",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Budget_accounts(ctx context.Context, field graphql.CollectedField, obj *models.Budget) (ret graphql.Marshaler) {
@@ -1947,10 +2012,17 @@ func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field gr
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createBudget_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateBudget(rctx)
+		return ec.resolvers.Mutation().CreateBudget(rctx, args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4117,6 +4189,11 @@ func (ec *executionContext) _Budget(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = graphql.MarshalString("Budget")
 		case "id":
 			out.Values[i] = ec._Budget_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Budget_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}

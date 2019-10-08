@@ -16,12 +16,14 @@ import (
 func TestStorage_CreateBudget(t *testing.T) {
 	ctx := before()
 	currentMonth := mock_models.Month()
+	name := *mock_models.Name()
 
-	budget, err := testStorage.CreateBudget(ctx, currentMonth)
+	budget, err := testStorage.CreateBudget(ctx, name, currentMonth)
 	require.NoError(t, err)
 	assert.NotEqual(t, primitive.ObjectID{}, budget.ID)
 	assert.Equal(t, &models.Budget{
 		ID:           budget.ID,
+		Name:         name,
 		Accounts:     []*models.Account{},
 		Envelopes:    []*models.Envelope{},
 		Categories:   []*models.Category{},

@@ -94,6 +94,7 @@ func Month() models.Month {
 func Budget() *models.Budget {
 	return &models.Budget{
 		ID:           primitive.NewObjectID(),
+		Name:         *Name(),
 		Accounts:     []*models.Account{Account()},
 		Envelopes:    []*models.Envelope{Envelope()},
 		Categories:   []*models.Category{Category()},

@@ -62,11 +62,11 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, budgetID primitive
 	return r.Storage.CreateAccount(ctx, budgetID, &in)
 }
 
-func (r *mutationResolver) CreateBudget(ctx context.Context) (*models.Budget, error) {
+func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*models.Budget, error) {
 	now := time.Now()
 	month := models.Month{
 		Year:  now.Year(),
 		Month: now.Month(),
 	}
-	return r.Storage.CreateBudget(ctx, month)
+	return r.Storage.CreateBudget(ctx, name, month)
 }
