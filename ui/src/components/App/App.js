@@ -11,12 +11,8 @@ export default function App() {
     <BudgetProvider>
       <SBAdmin2
         sidebarProps={{
-          renderBrandName: () => (
-            <>
-              SB Admin <sup>2</sup>
-            </>
-          ),
-          renderBrandIcon: () => <i className="fas fa-laugh-wink" />,
+          renderBrandName: () => <>Budget</>,
+          renderBrandIcon: () => <i className="fas fa-bold" />,
           config: sidebarConfig,
         }}
         topbar={Topbar}
