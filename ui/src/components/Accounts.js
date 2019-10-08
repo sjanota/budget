@@ -8,7 +8,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useBudget } from './contexts/BudgetContext';
 import SplitButton from './template/Utilities/SplitButton';
-import { Button, Modal, InputGroup, FormControl } from 'react-bootstrap';
+import { Button, Modal, InputGroup, FormControl, Form } from 'react-bootstrap';
 
 const GET_ACCOUNTS = gql`
   query GetAccounts($budgetID: ID!) {
@@ -30,6 +30,16 @@ const CREATE_ACCOUNT = gql`
   }
 `;
 
+const UPDATE_ACCOUNT = gql`
+  mutation UpdateAccount($budgetID: ID!, $id: ID!, $in: AccountUpdate!) {
+    updateAccount(budgetID: $budgetID, id: $id, in: $in) {
+      id
+      name
+      balance
+    }
+  }
+`;
+
 const columns = [
   { dataField: 'name', text: 'Name' },
   {
@@ -37,13 +47,108 @@ const columns = [
     text: 'Balance',
     formatter: ({ integer, decimal }) => `${integer}.${decimal}`,
   },
+  {
+    dataField: 'actions',
+    text: '',
+    isDummyColumn: true,
+    formatter: (cell, row) => (
+      <span>
+        <UpdateAccountButton account={row} />
+        <span style={{ cursor: 'pointer' }}>
+          <i className="fas fa-archive fa-fw" />
+        </span>
+      </span>
+    ),
+    style: {
+      whiteSpace: 'nowrap',
+      width: '1%',
+    },
+  },
 ];
 
-function CreateAccountModal() {
-  const [show, setShow] = useState(false);
+function EditAccountModal({ init, show, onClose, onSave }) {
+  const initName = (init && init.name) || '';
   const fields = {
     name: useRef(),
   };
+  const handleSave = () => {
+    const input = {};
+    if (fields.name.current.value !== initName) {
+      input.name = fields.name.current.value;
+    }
+    onSave(input);
+    onClose();
+  };
+  return (
+    <Modal show={show} onHide={onClose}>
+      <Form>
+        <Modal.Header closeButton>
+          <Modal.Title>Add new account</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <InputGroup className="mb-3">
+            <InputGroup.Prepend>
+              <InputGroup.Text className="border-0">Name</InputGroup.Text>
+            </InputGroup.Prepend>
+            <FormControl
+              required
+              placeholder="Account name"
+              className="bg-light border-0 text-dark"
+              defaultValue={initName}
+              ref={fields.name}
+            />
+          </InputGroup>
+        </Modal.Body>
+        <Modal.Footer>
+          <SplitButton
+            variant="danger"
+            faIcon="times"
+            size="small"
+            onClick={onClose}
+          >
+            Cancel
+          </SplitButton>
+          <SplitButton faIcon="save" size="small" onClick={handleSave}>
+            Save
+          </SplitButton>
+        </Modal.Footer>
+      </Form>
+    </Modal>
+  );
+}
+
+function UpdateAccountButton({ account }) {
+  const [show, setShow] = useState(false);
+  const { selectedBudget } = useBudget();
+  const [updateAccount] = useMutation(UPDATE_ACCOUNT);
+  const onClose = () => setShow(false);
+  const onSave = input => {
+    updateAccount({
+      variables: { budgetID: selectedBudget.id, id: account.id, in: input },
+    });
+  };
+  return (
+    <>
+      <span
+        style={{ cursor: 'pointer', marginRight: '5px' }}
+        onClick={() => {
+          setShow(true);
+        }}
+      >
+        <i className="fas fa-edit fa-fw text-primary" />
+      </span>
+      <EditAccountModal
+        init={account}
+        show={show}
+        onClose={onClose}
+        onSave={onSave}
+      />
+    </>
+  );
+}
+
+function CreateAccountButton() {
+  const [show, setShow] = useState(false);
   const { selectedBudget } = useBudget();
   const [createAccount] = useMutation(CREATE_ACCOUNT, {
     update: (cache, { data: { createAccount } }) => {
@@ -61,46 +166,15 @@ function CreateAccountModal() {
     },
   });
   const onClose = () => setShow(false);
-  const onSave = () => {
-    const input = { name: fields.name.current.value };
+  const onSave = input => {
     createAccount({ variables: { budgetID: selectedBudget.id, in: input } });
-    onClose();
   };
   return (
     <>
       <SplitButton faIcon="plus" size="small" onClick={() => setShow(true)}>
         Add new account
       </SplitButton>
-      <Modal show={show} onHide={onClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add new account</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-              <InputGroup.Text className="border-0">Name</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-              placeholder="Account name"
-              className="bg-light border-0 text-dark"
-              ref={fields.name}
-            />
-          </InputGroup>
-        </Modal.Body>
-        <Modal.Footer>
-          <SplitButton
-            variant="danger"
-            faIcon="times"
-            size="small"
-            onClick={onClose}
-          >
-            Cancel
-          </SplitButton>
-          <SplitButton faIcon="save" size="small" onClick={onSave}>
-            Save
-          </SplitButton>
-        </Modal.Footer>
-      </Modal>
+      <EditAccountModal show={show} onClose={onClose} onSave={onSave} />
     </>
   );
 }
@@ -126,7 +200,7 @@ export default function Accounts() {
               >
                 <i className="fas fa-fw fa-sync-alt" />
               </Button>
-              <CreateAccountModal />
+              <CreateAccountButton />
             </div>
           </div>
         }
@@ -137,6 +211,7 @@ export default function Accounts() {
             <i className="fas fa-fw fa-exclamation-triangle text-secondary" />
           ) : (
             <BootstrapTable
+              classes="table-layout-auto"
               keyField="id"
               data={data.accounts}
               columns={columns}

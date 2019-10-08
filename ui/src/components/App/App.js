@@ -1,7 +1,4 @@
 import React from 'react';
-import Dashboard from '../Dashboard';
-import Buttons from '../Buttons';
-import Tables from '../Tables';
 import { Route } from 'react-router-dom';
 import Topbar from '../Topbar';
 import SBAdmin2 from '../template/SBAdmin2';
@@ -29,10 +26,7 @@ export default function App() {
           {({ selectedBudget }) =>
             selectedBudget && (
               <>
-                <Route path="/buttons" component={Buttons} />
-                <Route path="/tables" component={Tables} />
                 <Route path="/accounts" component={Accounts} />
-                <Route exact path="/" component={Dashboard} />
               </>
             )
           }

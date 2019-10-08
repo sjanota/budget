@@ -1,3 +1,7 @@
 .nav-link {
   cursor: pointer;
 }
+
+.table-layout-auto {
+  table-layout: auto !important;
+}
