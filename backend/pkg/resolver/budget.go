@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/storage"
 )
@@ -15,7 +16,7 @@ func (r *budgetResolver) CurrentMonth(ctx context.Context, obj *models.Budget) (
 	if err == storage.ErrNoReport {
 		err = nil
 		report = &models.MonthlyReport{
-			ID:        models.MonthlyReportID{
+			ID: models.MonthlyReportID{
 				Month:    obj.CurrentMonth,
 				BudgetID: obj.ID,
 			},

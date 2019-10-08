@@ -112,6 +112,8 @@ type MonthlyReport {
 type Query {
   budget(id: ID!): Budget
   budgets: [Budget!]!
+
+  accounts(budgetID: ID!): [Account!]!
 }
 
 type Mutation {

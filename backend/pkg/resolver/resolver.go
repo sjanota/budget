@@ -80,6 +80,14 @@ type queryResolver struct {
 	*Resolver
 }
 
+func (r *queryResolver) Accounts(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Account, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return budget.Accounts, nil
+}
+
 func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 	return r.Storage.ListBudgets(ctx)
 }
