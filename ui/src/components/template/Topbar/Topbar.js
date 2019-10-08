@@ -1,8 +1,14 @@
 import React from 'react';
 import { useTemplate } from '../Context';
 import './Topbar.css';
+import TopbarContext from './TopbarContext';
 
-export default function Topbar({ renderMenus, renderContext, renderUser }) {
+export default function Topbar({
+  renderMenus,
+  renderContext,
+  renderUser,
+  faIconContextMinified,
+}) {
   const { toggleSidebar } = useTemplate();
 
   return (
@@ -14,10 +20,14 @@ export default function Topbar({ renderMenus, renderContext, renderUser }) {
         <i className="fa fa-bars"></i>
       </button>
 
-      {renderContext({ minified: false })}
+      <TopbarContext minified={false} renderContext={renderContext} />
 
       <ul className="navbar-nav ml-auto">
-        {renderContext({ minified: true })}
+        <TopbarContext
+          minified={true}
+          renderContext={renderContext}
+          faIcon={faIconContextMinified}
+        />
 
         {renderMenus()}
 

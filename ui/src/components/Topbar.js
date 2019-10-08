@@ -2,14 +2,15 @@ import React from 'react';
 import TemplateTopbar from './template/Topbar/Topbar';
 import TopbarAlert from './template/Topbar/TopbarAlert';
 import TopbarMessage from './template/Topbar/TopbarMessage';
-import TopbarSearch from './template/Topbar/TopbarSearch';
 import { TopbarMenu } from './template/Topbar/TopbarMenu';
 import TopbarUser from './template/Topbar/TopbarUser';
+import TopbarBudgetSwitcher from './TopbarBudgetSwitcher';
 
 export default function Topbar() {
   return (
     <TemplateTopbar
-      renderContext={props => <TopbarSearch {...props} />}
+      faIconContextMinified="search"
+      renderContext={() => <TopbarBudgetSwitcher />}
       renderUser={() => <TopbarUser />}
       renderMenus={() => (
         <>
