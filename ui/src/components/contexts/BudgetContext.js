@@ -15,11 +15,27 @@ const GET_BUDGETS = gql`
   }
 `;
 
+const storageKey = 'LAST_CHOSEN-BUDGET-ID';
+
 export function BudgetProvider({ children }) {
   const [selectedBudget, setSelectedBudget] = useState(null);
   const { loading, error, data } = useQuery(GET_BUDGETS, {
     pollInterval: 10000,
   });
+  useEffect(() => {
+    if (selectedBudget) {
+      sessionStorage.setItem(storageKey, selectedBudget.id);
+    }
+  }, [selectedBudget]);
+  useEffect(() => {
+    if (!selectedBudget && data && data.budgets) {
+      const lastChosenID = sessionStorage.getItem(storageKey);
+      const lastChosen = data.budgets.find(b => b.id === lastChosenID);
+      if (lastChosen) {
+        setSelectedBudget(lastChosen);
+      }
+    }
+  }, [data, selectedBudget]);
   const value = {
     selectedBudget,
     setSelectedBudget,
