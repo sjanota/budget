@@ -16,15 +16,18 @@ export default function TopbarBudgetSwitcher() {
   ) : error ? (
     <i className="fas fa-fw fa-exclamation-triangle text-secondary" />
   ) : (
-    selectedBudget
+    selectedBudget && selectedBudget.name
   );
+  const onChange = id => {
+    const budget = budgets.find(b => b.id === id);
+    setSelectedBudget(budget);
+  };
   return (
     <TopbarContextSwitcher
       label="Budget"
       value={value}
-      onChange={setSelectedBudget}
-      allowedValues={budgets.map(b => b.name)}
-      loadingValues={loading || !!error}
+      onChange={onChange}
+      allowedValues={budgets.map(b => ({ id: b.id, label: b.name }))}
     />
   );
 }

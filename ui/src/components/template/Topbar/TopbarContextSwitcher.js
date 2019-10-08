@@ -5,7 +5,6 @@ export default function TopbarContextSwitcher({
   value,
   onChange,
   allowedValues,
-  loadingValues,
 }) {
   return (
     <div
@@ -37,8 +36,12 @@ export default function TopbarContextSwitcher({
         />
         <div className="dropdown-menu">
           {allowedValues.map(v => (
-            <span className="dropdown-item" onClick={() => onChange(v)} key={v}>
-              {v}
+            <span
+              className="dropdown-item"
+              onClick={() => onChange(v.id)}
+              key={v.id}
+            >
+              {v.label}
             </span>
           ))}
         </div>

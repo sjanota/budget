@@ -6,7 +6,8 @@ import { Route } from 'react-router-dom';
 import Topbar from '../Topbar';
 import SBAdmin2 from '../template/SBAdmin2';
 import { sidebarConfig } from './sidebarConfig';
-import { BudgetProvider } from '../contexts/BudgetContext';
+import { BudgetProvider, BudgetContext } from '../contexts/BudgetContext';
+import Accounts from '../Accounts';
 
 export default function App() {
   return (
@@ -24,9 +25,18 @@ export default function App() {
         topbar={Topbar}
         copyright={'Budget 2019'}
       >
-        <Route path="/buttons" component={Buttons} />
-        <Route path="/tables" component={Tables} />
-        <Route exact path="/" component={Dashboard} />
+        <BudgetContext.Consumer>
+          {({ selectedBudget }) =>
+            selectedBudget && (
+              <>
+                <Route path="/buttons" component={Buttons} />
+                <Route path="/tables" component={Tables} />
+                <Route path="/accounts" component={Accounts} />
+                <Route exact path="/" component={Dashboard} />
+              </>
+            )
+          }
+        </BudgetContext.Consumer>
       </SBAdmin2>
     </BudgetProvider>
   );

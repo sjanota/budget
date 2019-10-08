@@ -1,8 +1,7 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import { DataStore } from 'apollo-client/data/store';
 
 export const BudgetContext = createContext();
 export const useBudget = () => useContext(BudgetContext);

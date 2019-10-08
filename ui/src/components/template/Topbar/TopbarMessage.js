@@ -16,7 +16,10 @@ export default function TopbarMessage({
   const indicatorClasses = classnames('status-indicator', bgClass);
   const textClasses = classnames({ 'font-weight-bold': highlighted });
   return (
-    <a className="dropdown-item d-flex align-items-center" href="#">
+    <span
+      className="dropdown-item d-flex align-items-center"
+      style={{ cursor: 'pointer' }}
+    >
       <div className="dropdown-list-image mr-3">
         <img className="rounded-circle" src={imgSrc} alt={imgAlt} />
         <div className={indicatorClasses}></div>
@@ -27,7 +30,7 @@ export default function TopbarMessage({
           {author} · {when}
         </div>
       </div>
-    </a>
+    </span>
   );
 }
 

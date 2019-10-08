@@ -12,17 +12,17 @@ function TopbarContextExpanded({ renderContext }) {
 function TopbarContextMinimized({ faIcon, renderContext }) {
   return (
     <li className="nav-item dropdown no-arrow d-sm-none">
-      <a
+      <span
         className="nav-link dropdown-toggle"
-        href="#"
         id="contextDropdown"
         role="button"
         data-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
+        style={{ cursor: 'pointer' }}
       >
         <i className={`fas fa-${faIcon} fa-fw`}></i>
-      </a>
+      </span>
       <div
         className="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
         aria-labelledby="contextDropdown"

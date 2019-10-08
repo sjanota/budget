@@ -16,27 +16,30 @@ export function TopbarMenu({ name, faIcon, children, counter }) {
   const id = `topbar--${name || faIcon}`;
   return (
     <li className="nav-item dropdown no-arrow mx-1">
-      <a
+      <span
         className="nav-link dropdown-toggle"
-        href="#"
         id={id}
         role="button"
         data-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
+        style={{ cursor: 'pointer' }}
       >
         <i className={iconClasses} />
         <TopbarMenuCounter counter={counter} />
-      </a>
+      </span>
       <div
         className="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
         aria-labelledby={id}
       >
         <h6 className="dropdown-header">{name}</h6>
         {children}
-        <a className="dropdown-item text-center small text-gray-500" href="#">
+        <span
+          className="dropdown-item text-center small text-gray-500"
+          style={{ cursor: 'pointer' }}
+        >
           Show All
-        </a>
+        </span>
       </div>
     </li>
   );
