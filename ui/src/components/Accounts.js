@@ -8,7 +8,7 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useBudget } from './contexts/BudgetContext';
 import SplitButton from './template/Utilities/SplitButton';
-import { Button, Modal, InputGroup, FormControl, Form } from 'react-bootstrap';
+import { Button, Modal, InputGroup, Form } from 'react-bootstrap';
 
 const GET_ACCOUNTS = gql`
   query GetAccounts($budgetID: ID!) {
@@ -67,11 +67,21 @@ const columns = [
 ];
 
 function EditAccountModal({ init, show, onClose, onSave }) {
-  const initName = (init && init.name) || '';
+  const [validated, setValidated] = useState(false);
+
+  const initName = init && init.name;
+  const form = useRef();
   const fields = {
     name: useRef(),
   };
-  const handleSave = () => {
+  const handleSave = event => {
+    if (form.current.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+      setValidated(true);
+      return;
+    }
+    setValidated(true);
     const input = {};
     if (fields.name.current.value !== initName) {
       input.name = fields.name.current.value;
@@ -81,7 +91,7 @@ function EditAccountModal({ init, show, onClose, onSave }) {
   };
   return (
     <Modal show={show} onHide={onClose}>
-      <Form>
+      <Form validated={validated} ref={form}>
         <Modal.Header closeButton>
           <Modal.Title>Add new account</Modal.Title>
         </Modal.Header>
@@ -90,13 +100,16 @@ function EditAccountModal({ init, show, onClose, onSave }) {
             <InputGroup.Prepend>
               <InputGroup.Text className="border-0">Name</InputGroup.Text>
             </InputGroup.Prepend>
-            <FormControl
+            <Form.Control
               required
               placeholder="Account name"
               className="bg-light border-0 text-dark"
               defaultValue={initName}
               ref={fields.name}
             />
+            <Form.Control.Feedback type="invalid">
+              Name is required
+            </Form.Control.Feedback>
           </InputGroup>
         </Modal.Body>
         <Modal.Footer>

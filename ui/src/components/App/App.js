@@ -11,7 +11,7 @@ export default function App() {
     <BudgetProvider>
       <SBAdmin2
         sidebarProps={{
-          renderBrandName: () => <>Budget</>,
+          renderBrandName: () => 'Budget',
           renderBrandIcon: () => <i className="fas fa-bold" />,
           config: sidebarConfig,
         }}
