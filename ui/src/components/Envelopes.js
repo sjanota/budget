@@ -204,6 +204,7 @@ function UpdateEnvelopeButton({ envelope }) {
         <i className="fas fa-edit fa-fw text-primary" />
       </span>
       <EditEnvelopeModal
+        title="Edit envelope"
         init={envelope}
         show={show}
         onClose={onClose}
