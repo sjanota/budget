@@ -66,7 +66,7 @@ const columns = [
   },
 ];
 
-function EditAccountModal({ init, show, onClose, onSave }) {
+function EditAccountModal({ title, init, show, onClose, onSave }) {
   const [validated, setValidated] = useState(false);
 
   const initName = init && init.name;
@@ -92,27 +92,22 @@ function EditAccountModal({ init, show, onClose, onSave }) {
   return (
     <Modal show={show} onHide={onClose}>
       <Form validated={validated} ref={form}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add new account</Modal.Title>
+        <Modal.Header
+          closeButton
+          className="m-0 font-weight-bold text-primary bg-light"
+        >
+          <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <InputGroup className="mb-3">
-            <InputGroup.Prepend>
-              <InputGroup.Text className="border-0">Name</InputGroup.Text>
-            </InputGroup.Prepend>
-            <Form.Control
-              required
-              placeholder="Account name"
-              className="bg-light border-0 text-dark"
-              defaultValue={initName}
-              ref={fields.name}
-            />
+          <Form.Group className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control required defaultValue={initName} ref={fields.name} />
             <Form.Control.Feedback type="invalid">
               Name is required
             </Form.Control.Feedback>
-          </InputGroup>
+          </Form.Group>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className=" bg-light">
           <SplitButton
             variant="danger"
             faIcon="times"
@@ -151,6 +146,7 @@ function UpdateAccountButton({ account }) {
         <i className="fas fa-edit fa-fw text-primary" />
       </span>
       <EditAccountModal
+        title="Edit account"
         init={account}
         show={show}
         onClose={onClose}
@@ -187,7 +183,12 @@ function CreateAccountButton() {
       <SplitButton faIcon="plus" size="small" onClick={() => setShow(true)}>
         Add new account
       </SplitButton>
-      <EditAccountModal show={show} onClose={onClose} onSave={onSave} />
+      <EditAccountModal
+        title="Add new account"
+        show={show}
+        onClose={onClose}
+        onSave={onSave}
+      />
     </>
   );
 }
