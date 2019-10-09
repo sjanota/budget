@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import Panel from './template/Utilities/Panel';
@@ -90,7 +90,11 @@ function EditAccountModal({ title, init, show, onClose, onSave }) {
     onClose();
   };
   return (
-    <Modal show={show} onHide={onClose}>
+    <Modal
+      show={show}
+      onHide={onClose}
+      onEntered={() => fields.name.current.focus()}
+    >
       <Form validated={validated} ref={form}>
         <Modal.Header
           closeButton
