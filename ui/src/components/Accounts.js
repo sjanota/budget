@@ -75,13 +75,14 @@ function EditAccountModal({ title, init, show, onClose, onSave }) {
     name: useRef(),
   };
   const handleSave = event => {
-    if (form.current.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-      setValidated(true);
+    event.preventDefault();
+    event.stopPropagation();
+    const isValid = form.current.checkValidity();
+    setValidated(true);
+
+    if (!isValid === false) {
       return;
     }
-    setValidated(true);
     const input = {};
     if (fields.name.current.value !== initName) {
       input.name = fields.name.current.value;
@@ -95,7 +96,7 @@ function EditAccountModal({ title, init, show, onClose, onSave }) {
       onHide={onClose}
       onEntered={() => fields.name.current.focus()}
     >
-      <Form validated={validated} ref={form}>
+      <Form validated={validated} ref={form} onSubmit={handleSave}>
         <Modal.Header
           closeButton
           className="m-0 font-weight-bold text-primary bg-light"
@@ -120,7 +121,12 @@ function EditAccountModal({ title, init, show, onClose, onSave }) {
           >
             Cancel
           </SplitButton>
-          <SplitButton faIcon="save" size="small" onClick={handleSave}>
+          <SplitButton
+            faIcon="save"
+            size="small"
+            type="submit"
+            onClick={handleSave}
+          >
             Save
           </SplitButton>
         </Modal.Footer>
