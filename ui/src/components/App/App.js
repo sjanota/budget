@@ -5,6 +5,7 @@ import SBAdmin2 from '../template/SBAdmin2';
 import { sidebarConfig } from './sidebarConfig';
 import { BudgetProvider, BudgetContext } from '../contexts/BudgetContext';
 import Accounts from '../Accounts';
+import Envelopes from '../Envelopes';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             selectedBudget && (
               <>
                 <Route path="/accounts" component={Accounts} />
+                <Route path="/envelopes" component={Envelopes} />
               </>
             )
           }

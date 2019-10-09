@@ -88,6 +88,14 @@ func (r *queryResolver) Accounts(ctx context.Context, budgetID primitive.ObjectI
 	return budget.Accounts, nil
 }
 
+func (r *queryResolver) Envelopes(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Envelope, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return budget.Envelopes, nil
+}
+
 func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 	return r.Storage.ListBudgets(ctx)
 }

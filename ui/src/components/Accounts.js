@@ -228,6 +228,8 @@ export default function Accounts() {
               keyField="id"
               data={data.accounts}
               columns={columns}
+              striped
+              hover
             />
           )
         }

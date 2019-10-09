@@ -119,9 +119,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Accounts func(childComplexity int, budgetID primitive.ObjectID) int
-		Budget   func(childComplexity int, id primitive.ObjectID) int
-		Budgets  func(childComplexity int) int
+		Accounts  func(childComplexity int, budgetID primitive.ObjectID) int
+		Budget    func(childComplexity int, id primitive.ObjectID) int
+		Budgets   func(childComplexity int) int
+		Envelopes func(childComplexity int, budgetID primitive.ObjectID) int
 	}
 
 	Transfer struct {
@@ -168,6 +169,7 @@ type QueryResolver interface {
 	Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
 	Budgets(ctx context.Context) ([]*models.Budget, error)
 	Accounts(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Account, error)
+	Envelopes(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Envelope, error)
 }
 type TransferResolver interface {
 	FromAccount(ctx context.Context, obj *models.Transfer) (*models.Account, error)
@@ -533,6 +535,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Budgets(childComplexity), true
 
+	case "Query.envelopes":
+		if e.complexity.Query.Envelopes == nil {
+			break
+		}
+
+		args, err := ec.field_Query_envelopes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Envelopes(childComplexity, args["budgetID"].(primitive.ObjectID)), true
+
 	case "Transfer.amount":
 		if e.complexity.Transfer.Amount == nil {
 			break
@@ -739,6 +753,7 @@ type Query {
   budgets: [Budget!]!
 
   accounts(budgetID: ID!): [Account!]!
+  envelopes(budgetID: ID!): [Envelope!]!
 }
 
 type Mutation {
@@ -994,6 +1009,20 @@ func (ec *executionContext) field_Query_budget_args(ctx context.Context, rawArgs
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_envelopes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
 	return args, nil
 }
 
@@ -2619,6 +2648,50 @@ func (ec *executionContext) _Query_accounts(ctx context.Context, field graphql.C
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAccount2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_envelopes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_envelopes_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Envelopes(rctx, args["budgetID"].(primitive.ObjectID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Envelope)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNEnvelope2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4689,6 +4762,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_accounts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "envelopes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_envelopes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

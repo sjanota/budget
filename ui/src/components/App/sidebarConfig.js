@@ -7,6 +7,11 @@ export const sidebarConfig = [
         faIcon: 'credit-card',
         to: '/accounts',
       },
+      {
+        name: 'Envelopes',
+        faIcon: 'envelope-open-text',
+        to: '/envelopes',
+      },
     ],
   },
 ];
