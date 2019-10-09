@@ -5,14 +5,7 @@ import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import Panel from './template/Utilities/Panel';
 import Spinner from './template/Utilities/Spinner';
-import {
-  Button,
-  Modal,
-  InputGroup,
-  Form,
-  Row,
-  Collapse,
-} from 'react-bootstrap';
+import { Button, Modal, Form } from 'react-bootstrap';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import SplitButton from './template/Utilities/SplitButton';
@@ -40,27 +33,28 @@ const CREATE_ENVELOPE = gql`
   }
 `;
 
-// const UPDATE_ACCOUNT = gql`
-//   mutation UpdateAccount($budgetID: ID!, $id: ID!, $in: AccountUpdate!) {
-//     updateAccount(budgetID: $budgetID, id: $id, in: $in) {
-//       id
-//       name
-//       balance
-//     }
-//   }
-// `;
+const UPDATE_ENVELOPE = gql`
+  mutation UpdateEnvelope($budgetID: ID!, $id: ID!, $in: EnvelopeUpdate!) {
+    updateEnvelope(budgetID: $budgetID, id: $id, in: $in) {
+      id
+      name
+      balance
+      limit
+    }
+  }
+`;
 
 const columns = [
   { dataField: 'name', text: 'Name' },
   {
     dataField: 'limit',
     text: 'Limit',
-    formatter: Amount.Formatter,
+    formatter: Amount.format,
   },
   {
     dataField: 'balance',
     text: 'Balance',
-    formatter: Amount.Formatter,
+    formatter: Amount.format,
   },
   {
     dataField: 'actions',
@@ -137,7 +131,11 @@ function EditEnvelopeModal({ title, init, show, onClose, onSave }) {
 
           <Form.Group className="mb-3">
             <Form.Check custom type="switch">
-              <Form.Check.Input checked={limitEnabled} onChange={() => {}} />
+              <Form.Check.Input
+                noValidate
+                checked={limitEnabled}
+                onChange={() => {}}
+              />
               <Form.Check.Label
                 onClick={() => {
                   setLimitEnabled(v => !v);
@@ -160,7 +158,6 @@ function EditEnvelopeModal({ title, init, show, onClose, onSave }) {
                 </Form.Control.Feedback>
               </>
             )}
-            <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer className=" bg-light">
@@ -189,12 +186,12 @@ function EditEnvelopeModal({ title, init, show, onClose, onSave }) {
 function UpdateEnvelopeButton({ envelope }) {
   const [show, setShow] = useState(false);
   const { selectedBudget } = useBudget();
-  // const [updateAccount] = useMutation(UPDATE_ACCOUNT);
+  const [updateEnvelope] = useMutation(UPDATE_ENVELOPE);
   const onClose = () => setShow(false);
   const onSave = input => {
-    //   updateAccount({
-    //     variables: { budgetID: selectedBudget.id, id: account.id, in: input },
-    //   });
+    updateEnvelope({
+      variables: { budgetID: selectedBudget.id, id: envelope.id, in: input },
+    });
   };
   return (
     <>
@@ -206,12 +203,12 @@ function UpdateEnvelopeButton({ envelope }) {
       >
         <i className="fas fa-edit fa-fw text-primary" />
       </span>
-      {/* <EditAccountModal
-          init={account}
-          show={show}
-          onClose={onClose}
-          onSave={onSave}
-        /> */}
+      <EditEnvelopeModal
+        init={envelope}
+        show={show}
+        onClose={onClose}
+        onSave={onSave}
+      />
     </>
   );
 }

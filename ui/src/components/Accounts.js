@@ -9,6 +9,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import { useBudget } from './contexts/BudgetContext';
 import SplitButton from './template/Utilities/SplitButton';
 import { Button, Modal, InputGroup, Form } from 'react-bootstrap';
+import Amount from '../model/Amount';
 
 const GET_ACCOUNTS = gql`
   query GetAccounts($budgetID: ID!) {
@@ -45,7 +46,7 @@ const columns = [
   {
     dataField: 'balance',
     text: 'Balance',
-    formatter: ({ integer, decimal }) => `${integer}.${decimal}`,
+    formatter: Amount.format,
   },
   {
     dataField: 'actions',

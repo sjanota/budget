@@ -6,13 +6,6 @@ export default class Amount {
     return { integer: Number(integer), decimal: Number(decimal) };
   }
 
-  static format(moneyAmount) {
-    if (!(typeof moneyAmount === 'object')) {
-      return moneyAmount;
-    }
-    return `${moneyAmount.integer}.${moneyAmount.decimal}`;
-  }
-
   static zero() {
     return { integer: 0, decimal: 0 };
   }
@@ -33,7 +26,7 @@ export default class Amount {
     };
   }
 
-  static Formatter(amount) {
+  static format(amount) {
     return amount == null
       ? ''
       : `${amount.integer}.${String(amount.decimal).padStart(2, '0')}`;
