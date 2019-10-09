@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-export const MoneyAmount = PropTypes.shape({
+export const Amount = PropTypes.shape({
   integer: PropTypes.number.isRequired,
   decimal: PropTypes.number.isRequired,
 });
@@ -14,7 +14,7 @@ export const Expense = PropTypes.shape({
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   date: PropTypes.string,
-  totalBalance: MoneyAmount.isRequired,
+  totalBalance: Amount.isRequired,
   location: PropTypes.string,
   account: Account,
 });

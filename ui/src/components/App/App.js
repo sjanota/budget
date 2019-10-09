@@ -3,9 +3,9 @@ import { Route } from 'react-router-dom';
 import Topbar from '../Topbar';
 import SBAdmin2 from '../template/SBAdmin2';
 import { sidebarConfig } from './sidebarConfig';
-import { BudgetProvider, BudgetContext } from '../contexts/BudgetContext';
+import { BudgetProvider, BudgetContext } from '../gql/BudgetContext';
 import Accounts from '../Accounts';
-import Envelopes from '../Envelopes';
+import Envelopes from '../Envelopes/EnvelopesPage';
 
 export default function App() {
   return (

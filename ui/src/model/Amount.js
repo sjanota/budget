@@ -1,5 +1,8 @@
 export default class Amount {
   static parse(string) {
+    if (string === null) {
+      return null;
+    }
     const [integer, decimal] = Number(string)
       .toFixed(2)
       .split('.');

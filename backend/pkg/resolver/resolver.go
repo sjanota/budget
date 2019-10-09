@@ -4,7 +4,6 @@ package resolver
 
 import (
 	"context"
-
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"go.mongodb.org/mongo-driver/bson/primitive"

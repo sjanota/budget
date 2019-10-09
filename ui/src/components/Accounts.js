@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import Panel from './template/Utilities/Panel';
@@ -6,9 +6,9 @@ import Spinner from './template/Utilities/Spinner';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import BootstrapTable from 'react-bootstrap-table-next';
-import { useBudget } from './contexts/BudgetContext';
+import { useBudget } from './gql/BudgetContext';
 import SplitButton from './template/Utilities/SplitButton';
-import { Button, Modal, InputGroup, Form } from 'react-bootstrap';
+import { Button, Modal, Form } from 'react-bootstrap';
 import Amount from '../model/Amount';
 
 const GET_ACCOUNTS = gql`

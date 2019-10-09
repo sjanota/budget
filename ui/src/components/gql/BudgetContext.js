@@ -19,9 +19,7 @@ const storageKey = 'LAST_CHOSEN-BUDGET-ID';
 
 export function BudgetProvider({ children }) {
   const [selectedBudget, setSelectedBudget] = useState(null);
-  const { loading, error, data } = useQuery(GET_BUDGETS, {
-    pollInterval: 10000,
-  });
+  const { loading, error, data } = useQuery(GET_BUDGETS);
   useEffect(() => {
     if (selectedBudget) {
       sessionStorage.setItem(storageKey, selectedBudget.id);

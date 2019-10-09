@@ -1,6 +1,6 @@
 import React from 'react';
 import TopbarContextSwitcher from './template/Topbar/TopbarContextSwitcher';
-import { useBudget } from './contexts/BudgetContext';
+import { useBudget } from './gql/BudgetContext';
 import Spinner from './template/Utilities/Spinner';
 
 export default function TopbarBudgetSwitcher() {

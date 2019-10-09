@@ -39,12 +39,7 @@ export default function createClient() {
     }
   });
 
-  // const link = split(
-  //     isSubscriptionOperation,
-  //     wsLink,
-  //     httpLink
-  // );
-  const link = httpLink;
+  const link = split(isSubscriptionOperation, wsLink, httpLink);
 
   return new ApolloClient({
     uri: graphqlApiUrl,
