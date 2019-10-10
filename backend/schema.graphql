@@ -115,6 +115,7 @@ type Query {
 
   accounts(budgetID: ID!): [Account!]!
   envelopes(budgetID: ID!): [Envelope!]!
+  categories(budgetID: ID!): [Category!]!
 }
 
 type Mutation {

@@ -14,7 +14,7 @@ export default function WithQuery({ query, children, ...props }) {
 }
 
 WithQuery.propTypes = {
-  children: PropTypes.node,
+  children: PropTypes.func.isRequired,
   query: PropTypes.shape({
     loading: PropTypes.bool.isRequired,
     error: PropTypes.any,

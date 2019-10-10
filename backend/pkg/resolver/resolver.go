@@ -4,6 +4,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -93,6 +94,14 @@ func (r *queryResolver) Envelopes(ctx context.Context, budgetID primitive.Object
 		return nil, err
 	}
 	return budget.Envelopes, nil
+}
+
+func (r *queryResolver) Categories(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Category, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return budget.Categories, nil
 }
 
 func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
