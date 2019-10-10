@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 const sizeClasses = {
   small: 'btn-sm',
@@ -10,15 +11,21 @@ export default function SplitButton({
   children,
   faIcon,
   variant,
-  onClick,
   size,
+  style,
+  className,
+  ...props
 }) {
+  const classNames = classnames(
+    'btn',
+    `btn-${variant}`,
+    'btn-icon-split',
+    sizeClasses[size],
+    className
+  );
+  const styles = { cursor: 'pointer', ...style };
   return (
-    <span
-      className={`btn btn-${variant} btn-icon-split ${sizeClasses[size]}`}
-      style={{ cursor: 'pointer' }}
-      onClick={onClick}
-    >
+    <span className={classNames} style={styles} {...props}>
       <span className="icon text-white-50">
         <i className={`fas fa-${faIcon}`}></i>
       </span>

@@ -1,9 +1,8 @@
 import React from 'react';
 import FormModal from '../template/Utilities/FormModal';
 import useFormData from '../template/Utilities/useFormData';
-import LabeledInput from '../template/Utilities/LabeledInput';
+import { FormControl } from '../template/Utilities/FormControl';
 import PropTypes from 'prop-types';
-import { Form } from 'react-bootstrap';
 import { useGetEnvelopes } from '../gql/envelopes';
 import WithQuery from '../gql/WithQuery';
 
@@ -27,25 +26,25 @@ export function CategoryModal({ init, onSave, ...props }) {
       <WithQuery query={query}>
         {({ data }) => (
           <>
-            <LabeledInput
+            <FormControl
               label="Name"
+              inline={9}
               formData={formData.name}
-              feedback="Provide name for the category"
+              feedback="Provide name"
             />
-            <Form.Group>
-              <Form.Label>Envelope</Form.Label>
-              <Form.Control
-                as="select"
-                ref={formData.envelopeID}
-                defaultValue={formData.envelopeID.init}
-              >
-                {data.envelopes.map(({ id, name }) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
+            <FormControl
+              label="Envelope"
+              inline={9}
+              formData={formData.envelopeID}
+              feedback="Provide envelope"
+              as="select"
+            >
+              {data.envelopes.map(({ id, name }) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </FormControl>
           </>
         )}
       </WithQuery>
