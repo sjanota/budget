@@ -107,7 +107,7 @@ type ComplexityRoot struct {
 		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
 		CreateExpense  func(childComplexity int, budgetID primitive.ObjectID, in models.ExpenseInput) int
 		UpdateAccount  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
-		UpdateCategory func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
+		UpdateCategory func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) int
 		UpdateEnvelope func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 	}
 
@@ -159,7 +159,7 @@ type MutationResolver interface {
 	CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, in models.EnvelopeInput) (*models.Envelope, error)
 	UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Envelope, error)
 	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error)
-	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Category, error)
+	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error)
 	CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error)
 }
 type PlanResolver interface {
@@ -464,7 +464,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateCategory(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{})), true
+		return e.complexity.Mutation.UpdateCategory(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.CategoryUpdate)), true
 
 	case "Mutation.updateEnvelope":
 		if e.complexity.Mutation.UpdateEnvelope == nil {
@@ -944,9 +944,9 @@ func (ec *executionContext) field_Mutation_updateCategory_args(ctx context.Conte
 		}
 	}
 	args["id"] = arg1
-	var arg2 map[string]interface{}
+	var arg2 models.CategoryUpdate
 	if tmp, ok := rawArgs["in"]; ok {
-		arg2, err = ec.unmarshalNCategoryUpdate2map(ctx, tmp)
+		arg2, err = ec.unmarshalNCategoryUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐCategoryUpdate(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2356,7 +2356,7 @@ func (ec *executionContext) _Mutation_updateCategory(ctx context.Context, field 
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateCategory(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{}))
+		return ec.resolvers.Mutation().UpdateCategory(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.CategoryUpdate))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4180,6 +4180,30 @@ func (ec *executionContext) unmarshalInputCategoryInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCategoryUpdate(ctx context.Context, obj interface{}) (models.CategoryUpdate, error) {
+	var it models.CategoryUpdate
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "envelopeID":
+			var err error
+			it.EnvelopeID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputEnvelopeInput(ctx context.Context, obj interface{}) (models.EnvelopeInput, error) {
 	var it models.EnvelopeInput
 	var asMap = obj.(map[string]interface{})
@@ -5394,11 +5418,8 @@ func (ec *executionContext) unmarshalNCategoryInput2githubᚗcomᚋsjanotaᚋbud
 	return ec.unmarshalInputCategoryInput(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNCategoryUpdate2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
-	if v == nil {
-		return nil, nil
-	}
-	return v.(map[string]interface{}), nil
+func (ec *executionContext) unmarshalNCategoryUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐCategoryUpdate(ctx context.Context, v interface{}) (models.CategoryUpdate, error) {
+	return ec.unmarshalInputCategoryUpdate(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {

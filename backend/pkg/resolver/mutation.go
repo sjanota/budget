@@ -38,7 +38,7 @@ func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive
 	return expense, err
 }
 
-func (r *mutationResolver) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Category, error) {
+func (r *mutationResolver) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error) {
 	return r.Storage.UpdateCategory(ctx, budgetID, id, in)
 }
 

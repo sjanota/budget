@@ -193,3 +193,14 @@ func (i ExpenseCategoryInput) WithCategory(categoryID primitive.ObjectID) *Expen
 	i.CategoryID = categoryID
 	return &i
 }
+
+func (u CategoryUpdate) Changes() Changes {
+	result := make(map[string]interface{})
+	if u.Name != nil {
+		result["name"] = *u.Name
+	}
+	if u.EnvelopeID != nil {
+		result["envelopeid"] = *u.EnvelopeID
+	}
+	return result
+}

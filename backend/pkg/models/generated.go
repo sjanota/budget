@@ -10,6 +10,11 @@ type AccountInput struct {
 	Name string `json:"name"`
 }
 
+type CategoryUpdate struct {
+	Name       *string             `json:"name"`
+	EnvelopeID *primitive.ObjectID `json:"envelopeID"`
+}
+
 type EnvelopeInput struct {
 	Name  string  `json:"name"`
 	Limit *Amount `json:"limit"`

@@ -20,6 +20,10 @@ type Storage struct {
 	monthlyReports *monthlyReports
 }
 
+type ChangeSet interface {
+	Changes() models.Changes
+}
+
 func New(uri string) (*Storage, error) {
 	opts := options.Client().ApplyURI(uri).SetRetryWrites(false)
 	client, err := mongo.Connect(context.Background(), opts)

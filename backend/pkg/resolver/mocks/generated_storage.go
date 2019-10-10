@@ -232,7 +232,7 @@ func (mr *MockStorageMockRecorder) UpdateAccount(arg0, arg1, arg2, arg3 interfac
 }
 
 // UpdateCategory mocks base method
-func (m *MockStorage) UpdateCategory(arg0 context.Context, arg1, arg2 primitive.ObjectID, arg3 models.Changes) (*models.Category, error) {
+func (m *MockStorage) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateCategory", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*models.Category)

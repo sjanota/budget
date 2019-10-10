@@ -3,24 +3,25 @@ import { useGetCategories } from '../gql/categories';
 import ArchiveTableButton from '../template/Utilities/ArchiveTableButton';
 import { QueryTablePanel } from '../gql/QueryTablePanel';
 import { CreateCategoryButton } from './CreateCategoryButton';
+import { UpdateCategoryButton } from './UpdateCategoryButton';
 
 const columns = [
   { dataField: 'name', text: 'Name' },
   {
-    dataField: 'account',
-    text: 'Account',
-    formatter: a => a.id,
+    dataField: 'envelope',
+    text: 'Envelope',
+    formatter: a => a.name,
   },
   {
     dataField: 'actions',
     text: '',
     isDummyColumn: true,
-    // formatter: (cell, row) => (
-    //   <span>
-    //     <UpdateEnvelopeButton envelope={row} />
-    //     <ArchiveTableButton />
-    //   </span>
-    // ),
+    formatter: (cell, row) => (
+      <span>
+        <UpdateCategoryButton category={row} />
+        <ArchiveTableButton />
+      </span>
+    ),
     style: {
       whiteSpace: 'nowrap',
       width: '1%',
@@ -33,7 +34,7 @@ export function CategoriesListPanel() {
   return (
     <QueryTablePanel
       buttons={<CreateCategoryButton />}
-      title="Envelope list"
+      title="Category list"
       query={query}
       getData={data => data.categories}
       columns={columns}

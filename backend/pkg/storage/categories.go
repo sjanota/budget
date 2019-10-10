@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"log"
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -34,12 +35,13 @@ func (s *Storage) GetCategory(ctx context.Context, budgetID, id primitive.Object
 	return category, nil
 }
 
-func (s *Storage) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Category, error) {
+func (s *Storage) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error) {
+	log.Printf("%#v", in)
 	if err := s.verifyCategoryChanges(ctx, budgetID, in); err != nil {
 		return nil, err
 	}
 
-	budget, err := s.updateEntityInBudget(ctx, budgetID, id, "categories", in)
+	budget, err := s.updateEntityInBudget2(ctx, budgetID, id, "categories", in)
 	if err != nil {
 		return nil, err
 	}
@@ -89,22 +91,22 @@ func (s *Storage) verifyCategoryInput(ctx context.Context, budgetID primitive.Ob
 	return nil
 }
 
-func (s *Storage) verifyCategoryChanges(ctx context.Context, budgetID primitive.ObjectID, input map[string]interface{}) error {
+func (s *Storage) verifyCategoryChanges(ctx context.Context, budgetID primitive.ObjectID, input models.CategoryUpdate) error {
 	find := doc{
 		"_id": budgetID,
 	}
 	project := doc{}
-	if name, ok := input["name"]; ok {
+	if input.Name != nil {
 		project["categories"] = doc{
 			"$elemMatch": doc{
-				"name": name,
+				"name": *input.Name,
 			},
 		}
 	}
-	if envelopeID, ok := input["envelopeID"]; ok {
+	if input.EnvelopeID != nil {
 		project["envelopes"] = doc{
 			"$elemMatch": doc{
-				"_id": envelopeID,
+				"_id": *input.EnvelopeID,
 			},
 		}
 	}
@@ -121,10 +123,10 @@ func (s *Storage) verifyCategoryChanges(ctx context.Context, budgetID primitive.
 		return err
 	}
 
-	if _, ok := input["envelopeID"]; ok && len(result.Envelopes) == 0 {
+	if input.EnvelopeID != nil && len(result.Envelopes) == 0 {
 		return ErrInvalidReference
 	}
-	if _, ok := input["name"]; ok && len(result.Categories) == 1 {
+	if input.EnvelopeID != nil && len(result.Categories) == 1 {
 		return ErrAlreadyExists
 	}
 	return nil
