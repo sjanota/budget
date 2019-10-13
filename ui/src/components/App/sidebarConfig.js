@@ -12,6 +12,11 @@ export const sidebarConfig = [
         faIcon: 'envelope-open-text',
         to: '/envelopes',
       },
+      {
+        name: 'Expenses',
+        faIcon: 'receipt',
+        to: '/expenses',
+      },
     ],
   },
 ];

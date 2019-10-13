@@ -2,7 +2,7 @@ import React from 'react';
 import Panel from '../template/Utilities/Panel';
 import BootstrapTable from 'react-bootstrap-table-next';
 import RefreshButton from '../template/Utilities/RefreshButton';
-import WithQuery from '../gql/WithQuery';
+import { WithQuery } from '../gql/WithQuery';
 import PropTypes from 'prop-types';
 
 export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
@@ -12,7 +12,7 @@ export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
         <div className="d-flex justify-content-between align-items-center">
           <Panel.Title>{title}</Panel.Title>
           <div>
-            <WithQuery query={query} size="sm">
+            <WithQuery query={query} size="sm" showError={false}>
               {({ refetch }) => (
                 <>
                   <RefreshButton onClick={() => refetch()} className="mr-1" />

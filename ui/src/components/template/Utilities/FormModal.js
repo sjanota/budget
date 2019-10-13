@@ -10,6 +10,7 @@ export default function FormModal({
   onHide,
   onSave,
   autoFocusRef,
+  formData,
   children,
 }) {
   const [validated, setValidated] = useState(false);
@@ -22,7 +23,10 @@ export default function FormModal({
     if (!isValid) {
       return;
     }
-    onSave();
+    if (formData.changed()) {
+      const input = formData.value();
+      onSave(input);
+    }
     onHide();
     setValidated(false);
   }

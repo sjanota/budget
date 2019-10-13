@@ -28,9 +28,8 @@ func ExpenseInput() *models.ExpenseInput {
 			ExpenseCategoryInput(),
 			ExpenseCategoryInput(),
 		},
-		AccountID:   primitive.NewObjectID(),
-		TotalAmount: *Amount(),
-		Date:        Date(),
+		AccountID: primitive.NewObjectID(),
+		Date:      Date(),
 	}
 }
 

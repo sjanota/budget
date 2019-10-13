@@ -81,6 +81,7 @@ func (id MonthlyReportID) WithMonth(month Month) *MonthlyReportID {
 }
 
 type Expense struct {
+	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Title      *string            `json:"title"`
 	Categories []*ExpenseCategory `json:"categories"`
 	Date       Date               `json:"date"`

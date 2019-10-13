@@ -5,3 +5,8 @@
 .table-layout-auto {
   table-layout: auto !important;
 }
+
+.background-color-white,
+.background-color-white:hover {
+  background-color: white !important;
+}

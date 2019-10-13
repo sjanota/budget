@@ -4,9 +4,9 @@ import useFormData from '../template/Utilities/useFormData';
 import { FormControl } from '../template/Utilities/FormControl';
 import PropTypes from 'prop-types';
 import { useGetEnvelopes } from '../gql/envelopes';
-import WithQuery from '../gql/WithQuery';
+import { WithQuery } from '../gql/WithQuery';
 
-export function CategoryModal({ init, onSave, ...props }) {
+export function CategoryModal({ init, ...props }) {
   const query = useGetEnvelopes();
   const formData = useFormData({
     name: { $init: init.name },
@@ -14,15 +14,8 @@ export function CategoryModal({ init, onSave, ...props }) {
       $init: init.envelope.id,
     },
   });
-  function handleSave() {
-    if (!formData.changed()) {
-      return;
-    }
-    const input = formData.value();
-    onSave(input);
-  }
   return (
-    <FormModal autoFocusRef={formData.name} onSave={handleSave} {...props}>
+    <FormModal autoFocusRef={formData.name} formData={formData} {...props}>
       <WithQuery query={query}>
         {({ data }) => (
           <>

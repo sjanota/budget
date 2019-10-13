@@ -6,6 +6,7 @@ import { sidebarConfig } from './sidebarConfig';
 import { BudgetProvider, BudgetContext } from '../gql/BudgetContext';
 import Accounts from '../Accounts';
 import Envelopes from '../Envelopes/EnvelopesPage';
+import Expenses from '../Expenses';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
               <>
                 <Route path="/accounts" component={Accounts} />
                 <Route path="/envelopes" component={Envelopes} />
+                <Route path="/expenses" component={Expenses} />
               </>
             )
           }

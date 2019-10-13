@@ -79,6 +79,7 @@ input TransferInput {
 }
 
 type Expense {
+  id: ID!
   title: String
   categories: [ExpenseCategory!]!
   account: Account!
@@ -89,7 +90,6 @@ input ExpenseInput {
   title: String
   categories: [ExpenseCategoryInput!]!
   accountID: ID!
-  totalAmount: Amount!
   date: Date!
 }
 

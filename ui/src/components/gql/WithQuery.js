@@ -2,12 +2,38 @@ import Spinner from '../template/Utilities/Spinner';
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default function WithQuery({ query, children, ...props }) {
+function ErrorMessageList({ errorMessage, subErrors }) {
+  return (
+    <>
+      {errorMessage}
+      <ul>
+        {subErrors.map((e, idx) => (
+          <li key={idx}>{e}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function ErrorMessage({ error }) {
+  const subErrors =
+    error.networkError !== ''
+      ? error.networkError.result.errors
+      : error.graphQLErrors;
+  return (
+    <p className="text-danger">
+      <i className="fas fa-fw fa-exclamation-triangle" />
+      <ErrorMessageList errorMessage={error.message} subErrors={subErrors} />
+    </p>
+  );
+}
+
+export function WithQuery({ query, showError, children, ...props }) {
   const { loading, error } = query;
   return loading ? (
     <Spinner {...props} />
   ) : error ? (
-    <i className="fas fa-fw fa-exclamation-triangle text-danger" />
+    showError && <ErrorMessage error={error} />
   ) : (
     children(query)
   );
@@ -19,4 +45,9 @@ WithQuery.propTypes = {
     loading: PropTypes.bool.isRequired,
     error: PropTypes.any,
   }),
+  showError: PropTypes.bool,
+};
+
+WithQuery.defaultProps = {
+  showError: true,
 };

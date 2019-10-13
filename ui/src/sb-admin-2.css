@@ -1514,11 +1514,12 @@ pre code {
   border: 0;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
+.table-striped tbody > tr:nth-of-type(odd),
+tr.table-striped {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.table-hover tbody tr:hover {
+.table-hover tbody > tr:hover {
   color: #858796;
   background-color: rgba(0, 0, 0, 0.075);
 }
@@ -1741,7 +1742,7 @@ pre code {
   border: 0;
 }
 
-.table-dark.table-striped tbody tr:nth-of-type(odd) {
+.table-dark.table-striped tbody > tr:nth-of-type(odd) {
   background-color: rgba(255, 255, 255, 0.05);
 }
 

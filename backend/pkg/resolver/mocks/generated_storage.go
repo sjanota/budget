@@ -126,6 +126,21 @@ func (mr *MockStorageMockRecorder) CreateMonthlyReport(arg0, arg1, arg2 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonthlyReport", reflect.TypeOf((*MockStorage)(nil).CreateMonthlyReport), arg0, arg1, arg2)
 }
 
+// GetAccount mocks base method
+func (m *MockStorage) GetAccount(arg0 context.Context, arg1, arg2 primitive.ObjectID) (*models.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccount", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccount indicates an expected call of GetAccount
+func (mr *MockStorageMockRecorder) GetAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockStorage)(nil).GetAccount), arg0, arg1, arg2)
+}
+
 // GetBudget mocks base method
 func (m *MockStorage) GetBudget(arg0 context.Context, arg1 primitive.ObjectID) (*models.Budget, error) {
 	m.ctrl.T.Helper()
@@ -139,6 +154,21 @@ func (m *MockStorage) GetBudget(arg0 context.Context, arg1 primitive.ObjectID) (
 func (mr *MockStorageMockRecorder) GetBudget(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudget", reflect.TypeOf((*MockStorage)(nil).GetBudget), arg0, arg1)
+}
+
+// GetCategory mocks base method
+func (m *MockStorage) GetCategory(arg0 context.Context, arg1, arg2 primitive.ObjectID) (*models.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCategory", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCategory indicates an expected call of GetCategory
+func (mr *MockStorageMockRecorder) GetCategory(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategory", reflect.TypeOf((*MockStorage)(nil).GetCategory), arg0, arg1, arg2)
 }
 
 // GetEnvelope mocks base method
@@ -232,7 +262,7 @@ func (mr *MockStorageMockRecorder) UpdateAccount(arg0, arg1, arg2, arg3 interfac
 }
 
 // UpdateCategory mocks base method
-func (m *MockStorage) UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error) {
+func (m *MockStorage) UpdateCategory(arg0 context.Context, arg1, arg2 primitive.ObjectID, arg3 models.CategoryUpdate) (*models.Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateCategory", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*models.Category)

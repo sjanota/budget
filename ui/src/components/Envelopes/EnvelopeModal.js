@@ -7,20 +7,13 @@ import useFormData from '../template/Utilities/useFormData';
 import PropTypes from 'prop-types';
 import * as model from '../../model/propTypes';
 
-export function EnvelopeModal({ init, onSave, ...props }) {
+export function EnvelopeModal({ init, ...props }) {
   const formData = useFormData({
     name: { $init: init.name },
     limit: { $init: Amount.format(init.limit), $process: Amount.parse },
   });
-  function handleSave() {
-    if (!formData.changed()) {
-      return;
-    }
-    const input = formData.value();
-    onSave(input);
-  }
   return (
-    <FormModal onSave={handleSave} autoFocusRef={formData.name} {...props}>
+    <FormModal formData={formData} autoFocusRef={formData.name} {...props}>
       <FormControl
         label="Name"
         inline={9}

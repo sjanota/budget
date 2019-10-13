@@ -32,16 +32,15 @@ func TestDate_UnmarshalGQL(t *testing.T) {
 		date     string
 		expected *models.Date
 	}{
-		{"\"2020-01-09\"", &models.Date{2020, time.January, 9}},
-		{"\"2020-12-20\"", &models.Date{2020, time.December, 20}},
-		{"\"2020-12-20", nil},
-		{"\"2020-1220\"", nil},
-		{"\"aaaa\"", nil},
-		{"\"202o-12-20\"", nil},
-		{"\"2020-12-32\"", nil},
-		{"\"2020-13-20\"", nil},
-		{"\"202012-20\"", nil},
-		{"\"2006-01-02T15:04:05Z07:00\"", nil},
+		{"2020-01-09", &models.Date{2020, time.January, 9}},
+		{"2020-12-20", &models.Date{2020, time.December, 20}},
+		{"2020-1220", nil},
+		{"aaaa", nil},
+		{"202o-12-20", nil},
+		{"2020-12-32", nil},
+		{"2020-13-20", nil},
+		{"202012-20", nil},
+		{"2006-01-02T15:04:05Z07:00", nil},
 	}
 
 	for _, test := range cases {

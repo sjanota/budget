@@ -86,7 +86,7 @@ func (d *Date) UnmarshalGQL(v interface{}) error {
 	if !ok {
 		return ErrMalformedDate
 	}
-	parsed, err := time.Parse("\"2006-01-02\"", s)
+	parsed, err := time.Parse("2006-01-02", s)
 	if err != nil {
 		return ErrMalformedDate
 	}

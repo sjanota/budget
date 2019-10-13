@@ -24,6 +24,7 @@ func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyRepo
 	}
 
 	toInsert := &models.Expense{
+		ID:         primitive.NewObjectID(),
 		Title:      in.Title,
 		Categories: toInsertCategories,
 		AccountID:  in.AccountID,
