@@ -6,7 +6,7 @@ import CreateButton from './template/Utilities/CreateButton';
 import EditTableButton from './template/Utilities/EditTableButton';
 import { FormControl } from './template/Utilities/FormControl';
 import FormModal from './template/Utilities/FormModal';
-import useFormData from './template/Utilities/useFormData';
+import { createFormData } from './template/Utilities/createFormData';
 import Amount from '../model/Amount';
 import {
   useCreateAccount,
@@ -42,7 +42,7 @@ const columns = [
 ];
 
 function AccountModal({ init, ...props }) {
-  const formData = useFormData({
+  const formData = createFormData({
     name: { $init: init.name },
   });
   return (

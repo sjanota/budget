@@ -3,12 +3,12 @@ import Amount from '../../model/Amount';
 import { FormControl } from '../template/Utilities/FormControl';
 import OptionalFormControl from '../template/Utilities/OptionalFormControl';
 import FormModal from '../template/Utilities/FormModal';
-import useFormData from '../template/Utilities/useFormData';
+import { createFormData } from '../template/Utilities/createFormData';
 import PropTypes from 'prop-types';
 import * as model from '../../model/propTypes';
 
 export function EnvelopeModal({ init, ...props }) {
-  const formData = useFormData({
+  const formData = createFormData({
     name: { $init: init.name },
     limit: { $init: Amount.format(init.limit), $process: Amount.parse },
   });

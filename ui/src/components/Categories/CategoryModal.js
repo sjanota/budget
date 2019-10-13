@@ -1,6 +1,6 @@
 import React from 'react';
 import FormModal from '../template/Utilities/FormModal';
-import useFormData from '../template/Utilities/useFormData';
+import { createFormData } from '../template/Utilities/createFormData';
 import { FormControl } from '../template/Utilities/FormControl';
 import PropTypes from 'prop-types';
 import { useGetEnvelopes } from '../gql/envelopes';
@@ -8,7 +8,7 @@ import { WithQuery } from '../gql/WithQuery';
 
 export function CategoryModal({ init, ...props }) {
   const query = useGetEnvelopes();
-  const formData = useFormData({
+  const formData = createFormData({
     name: { $init: init.name },
     envelopeID: {
       $init: init.envelope.id,
