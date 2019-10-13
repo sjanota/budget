@@ -10,7 +10,6 @@ import useFormData from './template/Utilities/useFormData';
 import Amount from '../model/Amount';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { useCreateExpense, useGetCurrentExpenses } from './gql/expenses';
-import BootstrapTable from 'react-bootstrap-table-next';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -55,12 +54,6 @@ const expandRow = {
   className: 'background-color-white',
   renderer: row => (
     <table className="table table-sm">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
       <tbody>
         {row.categories.map((category, idx) => (
           <tr key={idx}>
