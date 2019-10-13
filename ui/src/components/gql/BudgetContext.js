@@ -11,6 +11,9 @@ const GET_BUDGETS = gql`
     budgets {
       id
       name
+      currentMonth {
+        month
+      }
     }
   }
 `;

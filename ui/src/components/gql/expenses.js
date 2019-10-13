@@ -32,9 +32,20 @@ const CREATE_EXPENSE = gql`
   mutation createExpense($budgetID: ID!, $input: ExpenseInput!) {
     createExpense(budgetID: $budgetID, in: $input) {
       id
-      name
-      balance
-      limit
+      title
+      account {
+        id
+        name
+      }
+      categories {
+        category {
+          id
+          name
+        }
+        amount
+      }
+      totalAmount
+      date
     }
   }
 `;
@@ -43,9 +54,20 @@ const UPDATE_EXPENSE = gql`
   mutation updateExpense($budgetID: ID!, $id: ID!, $input: ExpenseUpdate!) {
     updateExpense(budgetID: $budgetID, id: $id, in: $input) {
       id
-      name
-      balance
-      limit
+      title
+      account {
+        id
+        name
+      }
+      categories {
+        category {
+          id
+          name
+        }
+        amount
+      }
+      totalAmount
+      date
     }
   }
 `;
@@ -64,9 +86,9 @@ export function useCreateExpense() {
         data: {
           budget: {
             ...budget,
-            currnetMonth: {
-              ...budget.currnetMonth,
-              expenses: budget.currnetMonth.expenses.concat([createExpense]),
+            currentMonth: {
+              ...budget.currentMonth,
+              expenses: budget.currentMonth.expenses.concat([createExpense]),
             },
           },
         },

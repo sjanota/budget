@@ -6,8 +6,13 @@ function createFormRef({ $init, $process }) {
     );
   };
   ref.value = function() {
-    const val = ref.current === null ? ref.current : ref.current.value;
-    return $process ? $process(val) : val;
+    if (ref.current === null) {
+      return null;
+    }
+    if (Array.isArray(ref.current.value)) {
+      return ref.current.value.map(v => v.value());
+    }
+    return $process ? $process(ref.current.value) : ref.current.value;
   };
   ref.init = $init;
   return ref;
@@ -27,8 +32,7 @@ export default function useFormData(model) {
         return acc;
       }
       const raw = refs[key].value();
-      const value = process[key] ? process[key](raw) : raw;
-      return { ...acc, [key]: value };
+      return { ...acc, [key]: raw };
     }, {});
   };
   return refs;
