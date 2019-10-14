@@ -16,10 +16,9 @@ function ErrorMessageList({ errorMessage, subErrors }) {
 }
 
 function ErrorMessage({ error }) {
-  const subErrors =
-    error.networkError !== ''
-      ? error.networkError.result.errors
-      : error.graphQLErrors;
+  const subErrors = error.networkError
+    ? error.networkError.result.errors
+    : error.graphQLErrors.map(e => `${e.path.join('.')}: ${e.message}`);
   return (
     <p className="text-danger">
       <i className="fas fa-fw fa-exclamation-triangle" />
