@@ -17,6 +17,22 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.UpdateTransfer(ctx, budget.CurrentMonthID(), id, in)
+}
+
+func (r *mutationResolver) CreateTransfer(ctx context.Context, budgetID primitive.ObjectID, in models.TransferInput) (*models.Transfer, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.CreateTransfer(ctx, budget.CurrentMonthID(), &in)
+}
+
 func (r *mutationResolver) UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) (*models.Expense, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetID)
 	if err != nil {

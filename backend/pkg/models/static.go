@@ -65,6 +65,15 @@ func (r MonthlyReport) Expense(id primitive.ObjectID) *Expense {
 	return nil
 }
 
+func (r MonthlyReport) Transfer(id primitive.ObjectID) *Transfer {
+	for _, transfer := range r.Transfers {
+		if transfer.ID == id {
+			return transfer
+		}
+	}
+	return nil
+}
+
 func (r MonthlyReport) Month() Month {
 	return r.ID.Month
 }
@@ -127,8 +136,10 @@ type Account struct {
 }
 
 type Transfer struct {
-	Amount        Amount `json:"balance"`
-	Title         string `json:"title"`
+	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Amount        Amount             `json:"balance"`
+	Title         string             `json:"title"`
+	Date          Date               `json:"date"`
 	FromAccountID primitive.ObjectID
 	ToAccountID   primitive.ObjectID
 }
@@ -213,6 +224,26 @@ func (u ExpenseUpdate) Changes() Changes {
 	}
 	if u.Categories != nil {
 		result["categories"] = u.Categories
+	}
+	return result
+}
+
+func (u TransferUpdate) Changes() Changes {
+	result := make(map[string]interface{})
+	if u.Title != nil {
+		result["title"] = *u.Title
+	}
+	if u.FromAccountID != nil {
+		result["fromaccountid"] = *u.FromAccountID
+	}
+	if u.Date != nil {
+		result["date"] = *u.Date
+	}
+	if u.ToAccountID != nil {
+		result["toaccountid"] = *u.ToAccountID
+	}
+	if u.Amount != nil {
+		result["amount"] = *u.Amount
 	}
 	return result
 }

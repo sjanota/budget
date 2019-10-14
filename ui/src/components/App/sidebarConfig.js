@@ -17,6 +17,11 @@ export const sidebarConfig = [
         faIcon: 'receipt',
         to: '/expenses',
       },
+      {
+        name: 'Transfers',
+        faIcon: 'exchange-alt',
+        to: '/transfers',
+      },
     ],
   },
 ];

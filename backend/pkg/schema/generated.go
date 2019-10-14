@@ -107,10 +107,12 @@ type ComplexityRoot struct {
 		CreateCategory func(childComplexity int, budgetID primitive.ObjectID, in models.CategoryInput) int
 		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
 		CreateExpense  func(childComplexity int, budgetID primitive.ObjectID, in models.ExpenseInput) int
+		CreateTransfer func(childComplexity int, budgetID primitive.ObjectID, in models.TransferInput) int
 		UpdateAccount  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 		UpdateCategory func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) int
 		UpdateEnvelope func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 		UpdateExpense  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
+		UpdateTransfer func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) int
 	}
 
 	Plan struct {
@@ -130,7 +132,9 @@ type ComplexityRoot struct {
 
 	Transfer struct {
 		Amount      func(childComplexity int) int
+		Date        func(childComplexity int) int
 		FromAccount func(childComplexity int) int
+		ID          func(childComplexity int) int
 		Title       func(childComplexity int) int
 		ToAccount   func(childComplexity int) int
 	}
@@ -164,6 +168,8 @@ type MutationResolver interface {
 	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error)
 	CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error)
 	UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) (*models.Expense, error)
+	CreateTransfer(ctx context.Context, budgetID primitive.ObjectID, in models.TransferInput) (*models.Transfer, error)
+	UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error)
 }
 type PlanResolver interface {
 	FromEnvelope(ctx context.Context, obj *models.Plan) (*models.Envelope, error)
@@ -452,6 +458,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateExpense(childComplexity, args["budgetID"].(primitive.ObjectID), args["in"].(models.ExpenseInput)), true
 
+	case "Mutation.createTransfer":
+		if e.complexity.Mutation.CreateTransfer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTransfer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTransfer(childComplexity, args["budgetID"].(primitive.ObjectID), args["in"].(models.TransferInput)), true
+
 	case "Mutation.updateAccount":
 		if e.complexity.Mutation.UpdateAccount == nil {
 			break
@@ -499,6 +517,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateExpense(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.ExpenseUpdate)), true
+
+	case "Mutation.updateTransfer":
+		if e.complexity.Mutation.UpdateTransfer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTransfer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTransfer(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.TransferUpdate)), true
 
 	case "Plan.amount":
 		if e.complexity.Plan.Amount == nil {
@@ -590,12 +620,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Transfer.Amount(childComplexity), true
 
+	case "Transfer.date":
+		if e.complexity.Transfer.Date == nil {
+			break
+		}
+
+		return e.complexity.Transfer.Date(childComplexity), true
+
 	case "Transfer.fromAccount":
 		if e.complexity.Transfer.FromAccount == nil {
 			break
 		}
 
 		return e.complexity.Transfer.FromAccount(childComplexity), true
+
+	case "Transfer.id":
+		if e.complexity.Transfer.ID == nil {
+			break
+		}
+
+		return e.complexity.Transfer.ID(childComplexity), true
 
 	case "Transfer.title":
 		if e.complexity.Transfer.Title == nil {
@@ -741,16 +785,26 @@ input PlanInput {
 }
 
 type Transfer {
-  title: String
+  id: ID!
+  title: String!
   fromAccount: Account!
   toAccount: Account!
   amount: Amount!
+  date: Date!
 }
 input TransferInput {
-  title: String
+  title: String!
   fromAccountID: ID!
   toAccountID: ID!
   amount: Amount!
+  date: Date!
+}
+input TransferUpdate {
+  title: String
+  fromAccountID: ID
+  toAccountID: ID
+  amount: Amount
+  date: Date
 }
 
 type Expense {
@@ -801,14 +855,21 @@ type Query {
 
 type Mutation {
   createBudget(name: String!): Budget
+
   createAccount(budgetID: ID!, in: AccountInput!): Account
   updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
+
   createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
   updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
+
   createCategory(budgetID: ID!, in: CategoryInput!): Category
   updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
+
   createExpense(budgetID: ID!, in: ExpenseInput!): Expense
   updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
+
+  createTransfer(budgetID: ID!, in: TransferInput!): Transfer
+  updateTransfer(budgetID: ID!, id: ID!, in: TransferUpdate!): Transfer
 }
 
 schema {
@@ -916,6 +977,28 @@ func (ec *executionContext) field_Mutation_createExpense_args(ctx context.Contex
 	var arg1 models.ExpenseInput
 	if tmp, ok := rawArgs["in"]; ok {
 		arg1, err = ec.unmarshalNExpenseInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["in"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createTransfer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	var arg1 models.TransferInput
+	if tmp, ok := rawArgs["in"]; ok {
+		arg1, err = ec.unmarshalNTransferInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1036,6 +1119,36 @@ func (ec *executionContext) field_Mutation_updateExpense_args(ctx context.Contex
 	var arg2 models.ExpenseUpdate
 	if tmp, ok := rawArgs["in"]; ok {
 		arg2, err = ec.unmarshalNExpenseUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseUpdate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["in"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTransfer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	var arg1 primitive.ObjectID
+	if tmp, ok := rawArgs["id"]; ok {
+		arg1, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	var arg2 models.TransferUpdate
+	if tmp, ok := rawArgs["in"]; ok {
+		arg2, err = ec.unmarshalNTransferUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferUpdate(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2552,6 +2665,88 @@ func (ec *executionContext) _Mutation_updateExpense(ctx context.Context, field g
 	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createTransfer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createTransfer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTransfer(rctx, args["budgetID"].(primitive.ObjectID), args["in"].(models.TransferInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Transfer)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateTransfer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTransfer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTransfer(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.TransferUpdate))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Transfer)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Plan_title(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -2982,6 +3177,43 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Transfer_id(ctx context.Context, field graphql.CollectedField, obj *models.Transfer) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Transfer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Transfer_title(ctx context.Context, field graphql.CollectedField, obj *models.Transfer) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -3008,12 +3240,15 @@ func (ec *executionContext) _Transfer_title(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Transfer_fromAccount(ctx context.Context, field graphql.CollectedField, obj *models.Transfer) (ret graphql.Marshaler) {
@@ -3125,6 +3360,43 @@ func (ec *executionContext) _Transfer_amount(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Transfer_date(ctx context.Context, field graphql.CollectedField, obj *models.Transfer) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Transfer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Date)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -4508,7 +4780,7 @@ func (ec *executionContext) unmarshalInputTransferInput(ctx context.Context, obj
 		switch k {
 		case "title":
 			var err error
-			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4527,6 +4799,54 @@ func (ec *executionContext) unmarshalInputTransferInput(ctx context.Context, obj
 		case "amount":
 			var err error
 			it.Amount, err = ec.unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTransferUpdate(ctx context.Context, obj interface{}) (models.TransferUpdate, error) {
+	var it models.TransferUpdate
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fromAccountID":
+			var err error
+			it.FromAccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "toAccountID":
+			var err error
+			it.ToAccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "amount":
+			var err error
+			it.Amount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalODate2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4922,6 +5242,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createExpense(ctx, field)
 		case "updateExpense":
 			out.Values[i] = ec._Mutation_updateExpense(ctx, field)
+		case "createTransfer":
+			out.Values[i] = ec._Mutation_createTransfer(ctx, field)
+		case "updateTransfer":
+			out.Values[i] = ec._Mutation_updateTransfer(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5098,8 +5422,16 @@ func (ec *executionContext) _Transfer(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Transfer")
+		case "id":
+			out.Values[i] = ec._Transfer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "title":
 			out.Values[i] = ec._Transfer_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "fromAccount":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5130,6 +5462,11 @@ func (ec *executionContext) _Transfer(ctx context.Context, sel ast.SelectionSet,
 			})
 		case "amount":
 			out.Values[i] = ec._Transfer_amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "date":
+			out.Values[i] = ec._Transfer_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -5968,6 +6305,14 @@ func (ec *executionContext) marshalNTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 	return ec._Transfer(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNTransferInput2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferInput(ctx context.Context, v interface{}) (models.TransferInput, error) {
+	return ec.unmarshalInputTransferInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNTransferUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferUpdate(ctx context.Context, v interface{}) (models.TransferUpdate, error) {
+	return ec.unmarshalInputTransferUpdate(ctx, v)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -6384,6 +6729,17 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOTransfer2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v models.Transfer) graphql.Marshaler {
+	return ec._Transfer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTransfer2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx context.Context, sel ast.SelectionSet, v *models.Transfer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Transfer(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

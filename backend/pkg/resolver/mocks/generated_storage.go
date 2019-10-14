@@ -6,12 +6,11 @@ package mock_resolver
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
 	storage "github.com/sjanota/budget/backend/pkg/storage"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
+	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface
@@ -125,6 +124,21 @@ func (m *MockStorage) CreateMonthlyReport(arg0 context.Context, arg1 primitive.O
 func (mr *MockStorageMockRecorder) CreateMonthlyReport(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonthlyReport", reflect.TypeOf((*MockStorage)(nil).CreateMonthlyReport), arg0, arg1, arg2)
+}
+
+// CreateTransfer mocks base method
+func (m *MockStorage) CreateTransfer(arg0 context.Context, arg1 models.MonthlyReportID, arg2 *models.TransferInput) (*models.Transfer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTransfer", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.Transfer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTransfer indicates an expected call of CreateTransfer
+func (mr *MockStorageMockRecorder) CreateTransfer(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransfer", reflect.TypeOf((*MockStorage)(nil).CreateTransfer), arg0, arg1, arg2)
 }
 
 // GetAccount mocks base method
