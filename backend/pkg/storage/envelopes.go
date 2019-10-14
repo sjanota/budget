@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Storage) CreateEnvelope(ctx context.Context, budgetID primitive.ObjectID, input *models.EnvelopeInput) (*models.Envelope, error) {
-	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID(), BudgetID: budgetID}
+	toInsert := &models.Envelope{Name: input.Name, Limit: input.Limit, ID: primitive.NewObjectID()}
 	if err := s.pushEntityToBudgetByName(ctx, budgetID, "envelopes", input.Name, toInsert); err != nil {
 		return nil, err
 	}

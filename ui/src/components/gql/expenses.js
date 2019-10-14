@@ -4,7 +4,7 @@ import { useBudget } from './BudgetContext';
 
 const GET_CURRENT_EXPENSES = gql`
   query getCurrentExpenses($budgetID: ID!) {
-    budget(id: $budgetID) {
+    budget(budgetID: $budgetID) {
       currentMonth {
         expenses {
           id

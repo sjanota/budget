@@ -11,5 +11,5 @@ type expenseResolver struct {
 }
 
 func (r *expenseResolver) Account(ctx context.Context, obj *models.Expense) (*models.Account, error) {
-	return r.Storage.GetAccount(ctx, obj.BudgetID, obj.AccountID)
+	return r.Storage.GetAccount(ctx, budgetFromContext(ctx), obj.AccountID)
 }

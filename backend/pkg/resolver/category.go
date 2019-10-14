@@ -11,5 +11,5 @@ type categoryResolver struct {
 }
 
 func (r *categoryResolver) Envelope(ctx context.Context, obj *models.Category) (*models.Envelope, error) {
-	return r.Storage.GetEnvelope(ctx, obj.BudgetID, obj.EnvelopeID)
+	return r.Storage.GetEnvelope(ctx, budgetFromContext(ctx), obj.EnvelopeID)
 }

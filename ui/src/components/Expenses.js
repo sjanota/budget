@@ -6,7 +6,7 @@ import CreateButton from './template/Utilities/CreateButton';
 import EditTableButton from './template/Utilities/EditTableButton';
 import { FormControl } from './template/Utilities/FormControl';
 import FormModal from './template/Utilities/FormModal';
-import { useFormData } from './template/Utilities/createFormData';
+import { useFormData } from './template/Utilities/useFormData';
 import Amount from '../model/Amount';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import {

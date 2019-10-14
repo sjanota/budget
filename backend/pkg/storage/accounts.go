@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Storage) CreateAccount(ctx context.Context, budgetID primitive.ObjectID, input *models.AccountInput) (*models.Account, error) {
-	toInsert := &models.Account{Name: input.Name, ID: primitive.NewObjectID(), BudgetID: budgetID}
+	toInsert := &models.Account{Name: input.Name, ID: primitive.NewObjectID()}
 	if err := s.pushEntityToBudgetByName(ctx, budgetID, "accounts", input.Name, toInsert); err != nil {
 		return nil, err
 	}

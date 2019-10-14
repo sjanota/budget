@@ -95,7 +95,6 @@ type Expense struct {
 	Categories []*ExpenseCategory `json:"categories"`
 	Date       Date               `json:"date"`
 	AccountID  primitive.ObjectID
-	BudgetID   primitive.ObjectID
 }
 
 func (e Expense) TotalAmount() Amount {
@@ -114,7 +113,6 @@ func (e Expense) WithCategories(categories ...*ExpenseCategory) *Expense {
 type ExpenseCategory struct {
 	Amount     Amount `json:"balance"`
 	CategoryID primitive.ObjectID
-	BudgetID   primitive.ObjectID
 }
 
 func (c ExpenseCategory) WithAmount(amount Amount) *ExpenseCategory {
@@ -123,15 +121,9 @@ func (c ExpenseCategory) WithAmount(amount Amount) *ExpenseCategory {
 }
 
 type Account struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name     string             `json:"name"`
-	Balance  Amount
-	BudgetID primitive.ObjectID
-}
-
-func (a Account) WithBudget(budgetID primitive.ObjectID) *Account {
-	a.BudgetID = budgetID
-	return &a
+	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name    string             `json:"name"`
+	Balance Amount
 }
 
 type Transfer struct {
@@ -142,16 +134,10 @@ type Transfer struct {
 }
 
 type Envelope struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name     string             `json:"name"`
-	Limit    *Amount            `json:"Limit"`
-	Balance  Amount
-	BudgetID primitive.ObjectID
-}
-
-func (e Envelope) WithBudget(budgetID primitive.ObjectID) *Envelope {
-	e.BudgetID = budgetID
-	return &e
+	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name    string             `json:"name"`
+	Limit   *Amount            `json:"Limit"`
+	Balance Amount
 }
 
 type Plan struct {
@@ -166,12 +152,6 @@ type Category struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name       string             `json:"name"`
 	EnvelopeID primitive.ObjectID
-	BudgetID   primitive.ObjectID
-}
-
-func (c Category) WithBudget(budgetID primitive.ObjectID) Category {
-	c.BudgetID = budgetID
-	return c
 }
 
 func (c Category) WithEnvelope(envelopeID primitive.ObjectID) Category {
@@ -213,6 +193,11 @@ func (u CategoryUpdate) Changes() Changes {
 		result["envelopeid"] = *u.EnvelopeID
 	}
 	return result
+}
+
+func (u CategoryUpdate) WithEnvelope(envelopeID primitive.ObjectID) *CategoryUpdate {
+	u.EnvelopeID = &envelopeID
+	return &u
 }
 
 func (u ExpenseUpdate) Changes() Changes {

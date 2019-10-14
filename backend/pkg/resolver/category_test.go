@@ -1,8 +1,9 @@
 package resolver
 
 import (
-	"context"
 	"testing"
+
+	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
 
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
@@ -13,10 +14,10 @@ import (
 )
 
 func TestCategoryResolver_Envelope(t *testing.T) {
-	ctx := context.TODO()
 	testBudget := mock_models.Budget()
+	ctx := mock_resolver.MockContext(testBudget.ID)
 	testEnvelope := mock_models.Envelope()
-	testCategory := mock_models.Category().WithBudget(testBudget.ID).WithEnvelope(testEnvelope.ID)
+	testCategory := mock_models.Category().WithEnvelope(testEnvelope.ID)
 	testErr := errors.New("test error")
 
 	t.Run("Success", func(t *testing.T) {

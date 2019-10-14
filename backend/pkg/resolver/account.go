@@ -14,7 +14,7 @@ type accountResolver struct {
 }
 
 func (r *accountResolver) Balance(ctx context.Context, obj *models.Account) (*models.Amount, error) {
-	budget, err := r.Storage.GetBudget(ctx, obj.BudgetID)
+	budget, err := r.Storage.GetBudget(ctx, budgetFromContext(ctx))
 	if err != nil {
 		return nil, err
 	}

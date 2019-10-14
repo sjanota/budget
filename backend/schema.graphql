@@ -116,7 +116,7 @@ type MonthlyReport {
 }
 
 type Query {
-  budget(id: ID!): Budget
+  budget(budgetID: ID!): Budget
   budgets: [Budget!]!
 
   accounts(budgetID: ID!): [Account!]!

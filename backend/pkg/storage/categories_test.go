@@ -28,7 +28,6 @@ func TestStorage_CreateCategory(t *testing.T) {
 			ID:         created.ID,
 			Name:       input.Name,
 			EnvelopeID: input.EnvelopeID,
-			BudgetID:   budget.ID,
 		}, created)
 	})
 
@@ -91,23 +90,22 @@ func TestStorage_UpdateCategory(t *testing.T) {
 	category := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
 
 	t.Run("Success", func(t *testing.T) {
-		changes := models.Changes{"name": *mock_models.Name(), "envelopeID": otherEnvelope.ID}
+		changes := *mock_models.CategoryUpdate().WithEnvelope(otherEnvelope.ID)
 		updated, err := testStorage.UpdateCategory(ctx, budget.ID, category.ID, changes)
 		require.NoError(t, err)
-		assert.Equal(t, changes["name"], updated.Name)
-		assert.Equal(t, changes["envelopeID"], updated.EnvelopeID)
-		assert.Equal(t, budget.ID, updated.BudgetID)
+		assert.Equal(t, *changes.Name, updated.Name)
+		assert.Equal(t, *changes.EnvelopeID, updated.EnvelopeID)
 		assert.Equal(t, category.ID, updated.ID)
 	})
 
 	t.Run("EnvelopeDoesNotExist", func(t *testing.T) {
-		changes := models.Changes{"name": *mock_models.Name(), "envelopeID": primitive.NewObjectID()}
+		changes := *mock_models.CategoryUpdate()
 		_, err := testStorage.UpdateCategory(ctx, budget.ID, category.ID, changes)
 		require.EqualError(t, err, storage.ErrInvalidReference.Error())
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		changes := models.Changes{"name": *mock_models.Name(), "envelopeID": otherEnvelope.ID}
+		changes := *mock_models.CategoryUpdate().WithEnvelope(otherEnvelope.ID)
 		_, err := testStorage.UpdateCategory(ctx, budget.ID, primitive.NewObjectID(), changes)
 		assert.EqualError(t, err, storage.ErrDoesNotExists.Error())
 	})

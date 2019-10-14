@@ -11,5 +11,5 @@ type expenseCategoryResolver struct {
 }
 
 func (r *expenseCategoryResolver) Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error) {
-	return r.Storage.GetCategory(ctx, obj.BudgetID, obj.CategoryID)
+	return r.Storage.GetCategory(ctx, budgetFromContext(ctx), obj.CategoryID)
 }

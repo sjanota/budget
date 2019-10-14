@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	mock_models "github.com/sjanota/budget/backend/pkg/models/mocks"
 
 	"github.com/sjanota/budget/backend/pkg/storage"
@@ -34,14 +36,15 @@ func TestStorage_CreateExpense(t *testing.T) {
 
 		created, err := testStorage.CreateExpense(ctx, report.ID, input)
 		require.NoError(t, err)
+		require.NotEqual(t, primitive.ObjectID{}, created.ID)
 		assert.Equal(t, &models.Expense{
+			ID:    created.ID,
 			Title: input.Title,
 			Categories: []*models.ExpenseCategory{
-				{input.Categories[0].Amount, input.Categories[0].CategoryID, budget.ID},
-				{input.Categories[1].Amount, input.Categories[1].CategoryID, budget.ID},
+				{input.Categories[0].Amount, input.Categories[0].CategoryID},
+				{input.Categories[1].Amount, input.Categories[1].CategoryID},
 			},
 			AccountID: input.AccountID,
-			BudgetID:  budget.ID,
 			Date:      input.Date,
 		}, created)
 	})

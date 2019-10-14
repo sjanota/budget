@@ -15,7 +15,7 @@ func (s *Storage) CreateCategory(ctx context.Context, budgetID primitive.ObjectI
 		return nil, err
 	}
 
-	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID, ID: primitive.NewObjectID(), BudgetID: budgetID}
+	toInsert := &models.Category{Name: input.Name, EnvelopeID: input.EnvelopeID, ID: primitive.NewObjectID()}
 	if err := s.pushEntityToBudget(ctx, budgetID, "categories", toInsert); err != nil {
 		return nil, err
 	}

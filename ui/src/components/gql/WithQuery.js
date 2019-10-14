@@ -20,10 +20,10 @@ function ErrorMessage({ error }) {
     ? error.networkError.result.errors
     : error.graphQLErrors.map(e => `${e.path.join('.')}: ${e.message}`);
   return (
-    <p className="text-danger">
+    <div className="text-danger">
       <i className="fas fa-fw fa-exclamation-triangle" />
       <ErrorMessageList errorMessage={error.message} subErrors={subErrors} />
-    </p>
+    </div>
   );
 }
 

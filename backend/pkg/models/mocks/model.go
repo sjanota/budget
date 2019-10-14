@@ -23,7 +23,7 @@ func Amount() *models.Amount {
 
 func ExpenseInput() *models.ExpenseInput {
 	return &models.ExpenseInput{
-		Title: Name(),
+		Title: *Name(),
 		Categories: []*models.ExpenseCategoryInput{
 			ExpenseCategoryInput(),
 			ExpenseCategoryInput(),
@@ -44,7 +44,6 @@ func ExpenseCategory() *models.ExpenseCategory {
 	return &models.ExpenseCategory{
 		Amount:     *Amount(),
 		CategoryID: primitive.NewObjectID(),
-		BudgetID:   primitive.NewObjectID(),
 	}
 }
 
@@ -106,26 +105,23 @@ func Category() *models.Category {
 		ID:         primitive.NewObjectID(),
 		Name:       *Name(),
 		EnvelopeID: primitive.NewObjectID(),
-		BudgetID:   primitive.NewObjectID(),
 	}
 }
 
 func Account() *models.Account {
 	return &models.Account{
-		ID:       primitive.NewObjectID(),
-		Name:     *Name(),
-		Balance:  *Amount(),
-		BudgetID: primitive.NewObjectID(),
+		ID:      primitive.NewObjectID(),
+		Name:    *Name(),
+		Balance: *Amount(),
 	}
 }
 
 func Envelope() *models.Envelope {
 	return &models.Envelope{
-		ID:       primitive.NewObjectID(),
-		Name:     *Name(),
-		Limit:    Amount(),
-		Balance:  *Amount(),
-		BudgetID: primitive.NewObjectID(),
+		ID:      primitive.NewObjectID(),
+		Name:    *Name(),
+		Limit:   Amount(),
+		Balance: *Amount(),
 	}
 }
 
@@ -140,10 +136,17 @@ func MonthlyReport() *models.MonthlyReport {
 
 func Expense() *models.Expense {
 	return &models.Expense{
-		Title:      Name(),
+		Title:      *Name(),
 		Categories: []*models.ExpenseCategory{},
 		Date:       Date(),
 		AccountID:  primitive.NewObjectID(),
-		BudgetID:   primitive.NewObjectID(),
+	}
+}
+
+func CategoryUpdate() *models.CategoryUpdate {
+	eid := primitive.NewObjectID()
+	return &models.CategoryUpdate{
+		Name:       Name(),
+		EnvelopeID: &eid,
 	}
 }

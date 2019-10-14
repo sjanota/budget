@@ -23,10 +23,9 @@ func TestStorage_CreateAccount(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEqual(t, primitive.ObjectID{}, account.ID)
 		assert.Equal(t, &models.Account{
-			ID:       account.ID,
-			Name:     input.Name,
-			Balance:  models.Amount{},
-			BudgetID: budget.ID,
+			ID:      account.ID,
+			Name:    input.Name,
+			Balance: models.Amount{},
 		}, account)
 	})
 
@@ -81,10 +80,9 @@ func TestStorage_UpdateAccount(t *testing.T) {
 		updated, err := testStorage.UpdateAccount(ctx, budget.ID, account.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, &models.Account{
-			ID:       account.ID,
-			Name:     changes["name"].(string),
-			Balance:  account.Balance,
-			BudgetID: budget.ID,
+			ID:      account.ID,
+			Name:    changes["name"].(string),
+			Balance: account.Balance,
 		}, updated)
 	})
 

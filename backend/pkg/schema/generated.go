@@ -122,7 +122,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Accounts   func(childComplexity int, budgetID primitive.ObjectID) int
-		Budget     func(childComplexity int, id primitive.ObjectID) int
+		Budget     func(childComplexity int, budgetID primitive.ObjectID) int
 		Budgets    func(childComplexity int) int
 		Categories func(childComplexity int, budgetID primitive.ObjectID) int
 		Envelopes  func(childComplexity int, budgetID primitive.ObjectID) int
@@ -170,7 +170,7 @@ type PlanResolver interface {
 	ToEnvelope(ctx context.Context, obj *models.Plan) (*models.Envelope, error)
 }
 type QueryResolver interface {
-	Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error)
+	Budget(ctx context.Context, budgetID primitive.ObjectID) (*models.Budget, error)
 	Budgets(ctx context.Context) ([]*models.Budget, error)
 	Accounts(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Account, error)
 	Envelopes(ctx context.Context, budgetID primitive.ObjectID) ([]*models.Envelope, error)
@@ -550,7 +550,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Budget(childComplexity, args["id"].(primitive.ObjectID)), true
+		return e.complexity.Query.Budget(childComplexity, args["budgetID"].(primitive.ObjectID)), true
 
 	case "Query.budgets":
 		if e.complexity.Query.Budgets == nil {
@@ -678,142 +678,142 @@ scalar Amount
 scalar Date
 
 type Category {
-    id: ID!
-    name: String!
-    envelope: Envelope!
+  id: ID!
+  name: String!
+  envelope: Envelope!
 }
 input CategoryInput {
-    name: String!
-    envelopeID: ID!
+  name: String!
+  envelopeID: ID!
 }
 input CategoryUpdate {
-    name: String
-    envelopeID: ID
+  name: String
+  envelopeID: ID
 }
 
 type Account {
-    id: ID!
-    name: String!
-    balance: Amount!
+  id: ID!
+  name: String!
+  balance: Amount!
 }
 input AccountInput {
-    name: String!
+  name: String!
 }
 input AccountUpdate {
-    name: String
+  name: String
 }
 
 type Envelope {
-    id: ID!
-    name: String!
-    balance: Amount!
-    limit: Amount
+  id: ID!
+  name: String!
+  balance: Amount!
+  limit: Amount
 }
 input EnvelopeInput {
-    name: String!
-    limit: Amount
+  name: String!
+  limit: Amount
 }
 input EnvelopeUpdate {
-    name: String
-    limit: Amount
+  name: String
+  limit: Amount
 }
 
 type Budget {
-    id: ID!
-    name: String!
-    accounts: [Account!]!
-    envelopes: [Envelope!]!
-    categories: [Category!]!
-    currentMonth: MonthlyReport!
+  id: ID!
+  name: String!
+  accounts: [Account!]!
+  envelopes: [Envelope!]!
+  categories: [Category!]!
+  currentMonth: MonthlyReport!
 }
 
 type Plan {
-    title: String
-    fromEnvelope: Envelope!
-    toEnvelope: Envelope!
-    amount: Amount!
+  title: String
+  fromEnvelope: Envelope!
+  toEnvelope: Envelope!
+  amount: Amount!
 }
 input PlanInput {
-    title: String
-    fromEnvelopeID: ID!
-    toEnvelopeID: ID!
-    amount: Amount!
+  title: String
+  fromEnvelopeID: ID!
+  toEnvelopeID: ID!
+  amount: Amount!
 }
 
 type Transfer {
-    title: String
-    fromAccount: Account!
-    toAccount: Account!
-    amount: Amount!
+  title: String
+  fromAccount: Account!
+  toAccount: Account!
+  amount: Amount!
 }
 input TransferInput {
-    title: String
-    fromAccountID: ID!
-    toAccountID: ID!
-    amount: Amount!
+  title: String
+  fromAccountID: ID!
+  toAccountID: ID!
+  amount: Amount!
 }
 
 type Expense {
-    id: ID!
-    title: String!
-    categories: [ExpenseCategory!]!
-    account: Account!
-    totalAmount: Amount!
-    date: Date!
+  id: ID!
+  title: String!
+  categories: [ExpenseCategory!]!
+  account: Account!
+  totalAmount: Amount!
+  date: Date!
 }
 input ExpenseInput {
-    title: String!
-    categories: [ExpenseCategoryInput!]!
-    accountID: ID!
-    date: Date!
+  title: String!
+  categories: [ExpenseCategoryInput!]!
+  accountID: ID!
+  date: Date!
 }
 input ExpenseUpdate {
-    title: String
-    categories: [ExpenseCategoryInput!]
-    accountID: ID
-    date: Date
+  title: String
+  categories: [ExpenseCategoryInput!]
+  accountID: ID
+  date: Date
 }
 
 type ExpenseCategory {
-    category: Category!
-    amount: Amount!
+  category: Category!
+  amount: Amount!
 }
 input ExpenseCategoryInput {
-    categoryID: ID!
-    amount: Amount!
+  categoryID: ID!
+  amount: Amount!
 }
 
 type MonthlyReport {
-    month: Month!
-    plans: [Plan!]!
-    expenses: [Expense!]!
-    transfers: [Transfer!]!
+  month: Month!
+  plans: [Plan!]!
+  expenses: [Expense!]!
+  transfers: [Transfer!]!
 }
 
 type Query {
-    budget(id: ID!): Budget
-    budgets: [Budget!]!
+  budget(budgetID: ID!): Budget
+  budgets: [Budget!]!
 
-    accounts(budgetID: ID!): [Account!]!
-    envelopes(budgetID: ID!): [Envelope!]!
-    categories(budgetID: ID!): [Category!]!
+  accounts(budgetID: ID!): [Account!]!
+  envelopes(budgetID: ID!): [Envelope!]!
+  categories(budgetID: ID!): [Category!]!
 }
 
 type Mutation {
-    createBudget(name: String!): Budget
-    createAccount(budgetID: ID!, in: AccountInput!): Account
-    updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
-    createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
-    updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
-    createCategory(budgetID: ID!, in: CategoryInput!): Category
-    updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
-    createExpense(budgetID: ID!, in: ExpenseInput!): Expense
-    updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
+  createBudget(name: String!): Budget
+  createAccount(budgetID: ID!, in: AccountInput!): Account
+  updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
+  createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
+  updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
+  createCategory(budgetID: ID!, in: CategoryInput!): Category
+  updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
+  createExpense(budgetID: ID!, in: ExpenseInput!): Expense
+  updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
 }
 
 schema {
-    query: Query
-    mutation: Mutation
+  query: Query
+  mutation: Mutation
 }
 `},
 )
@@ -1076,13 +1076,13 @@ func (ec *executionContext) field_Query_budget_args(ctx context.Context, rawArgs
 	var err error
 	args := map[string]interface{}{}
 	var arg0 primitive.ObjectID
-	if tmp, ok := rawArgs["id"]; ok {
+	if tmp, ok := rawArgs["budgetID"]; ok {
 		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["budgetID"] = arg0
 	return args, nil
 }
 
@@ -2723,7 +2723,7 @@ func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.Col
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Budget(rctx, args["id"].(primitive.ObjectID))
+		return ec.resolvers.Query().Budget(rctx, args["budgetID"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -1,8 +1,9 @@
 package resolver
 
 import (
-	"context"
 	"testing"
+
+	mock_resolver "github.com/sjanota/budget/backend/pkg/resolver/mocks"
 
 	. "github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -15,9 +16,9 @@ import (
 )
 
 func TestAccountResolver_Balance(t *testing.T) {
-	ctx := context.TODO()
 	testBudget := mock_models.Budget()
-	testAccount := mock_models.Account().WithBudget(testBudget.ID)
+	ctx := mock_resolver.MockContext(testBudget.ID)
+	testAccount := mock_models.Account()
 	testAmount := mock_models.Amount()
 	testErr := errors.New("test error")
 	expectedReportID := models.MonthlyReportID{

@@ -33,7 +33,7 @@ function arrayFormData({ $model, $init }, rerender) {
   };
 
   formData.changed = () => {
-    return formData.some(v => v.changed());
+    return formData.length !== $init.length || formData.some(v => v.changed());
   };
 
   formData.push = v => {

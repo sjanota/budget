@@ -23,11 +23,10 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEqual(t, primitive.ObjectID{}, created.ID)
 		assert.Equal(t, &models.Envelope{
-			ID:       created.ID,
-			Name:     input.Name,
-			Limit:    input.Limit,
-			Balance:  models.Amount{},
-			BudgetID: budget.ID,
+			ID:      created.ID,
+			Name:    input.Name,
+			Limit:   input.Limit,
+			Balance: models.Amount{},
 		}, created)
 	})
 
@@ -85,11 +84,10 @@ func TestStorage_UpdateEnvelope(t *testing.T) {
 		updated, err := testStorage.UpdateEnvelope(ctx, budget.ID, envelope.ID, changes)
 		require.NoError(t, err)
 		assert.Equal(t, &models.Envelope{
-			ID:       envelope.ID,
-			Name:     changes["name"].(string),
-			Limit:    changes["limit"].(*models.Amount),
-			Balance:  envelope.Balance,
-			BudgetID: budget.ID,
+			ID:      envelope.ID,
+			Name:    changes["name"].(string),
+			Limit:   changes["limit"].(*models.Amount),
+			Balance: envelope.Balance,
 		}, updated)
 	})
 

@@ -21,7 +21,6 @@ func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyRepo
 		toInsertCategories[i] = &models.ExpenseCategory{
 			Amount:     categoryIn.Amount,
 			CategoryID: categoryIn.CategoryID,
-			BudgetID:   reportID.BudgetID,
 		}
 	}
 
@@ -30,7 +29,6 @@ func (s *Storage) CreateExpense(ctx context.Context, reportID models.MonthlyRepo
 		Title:      in.Title,
 		Categories: toInsertCategories,
 		AccountID:  in.AccountID,
-		BudgetID:   reportID.BudgetID,
 		Date:       in.Date,
 	}
 

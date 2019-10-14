@@ -3,7 +3,7 @@ import Amount from '../../model/Amount';
 import { FormControl } from '../template/Utilities/FormControl';
 import OptionalFormControl from '../template/Utilities/OptionalFormControl';
 import FormModal from '../template/Utilities/FormModal';
-import { useFormData } from '../template/Utilities/createFormData';
+import { useFormData } from '../template/Utilities/useFormData';
 import PropTypes from 'prop-types';
 import * as model from '../../model/propTypes';
 
