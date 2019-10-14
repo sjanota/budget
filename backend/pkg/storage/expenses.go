@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/sjanota/budget/backend/pkg/models"
@@ -59,6 +61,34 @@ func (s *Storage) GetExpenses(ctx context.Context, reportID models.MonthlyReport
 		return nil, err
 	}
 	return result.Expenses, nil
+}
+
+func (s *Storage) UpdateExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet ChangeSet) (*models.Expense, error) {
+	find := doc{"_id": reportID, "expenses._id": id}
+	project := doc{
+		"expenses": doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	updateFields := doc{}
+	for field, value := range changeSet.Changes() {
+		updateFields["expenses.$."+field] = value
+	}
+	update := doc{
+		"$set": updateFields,
+	}
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.MonthlyReport{}
+	err := res.Decode(result)
+	return result.Expense(id), err
 }
 
 func (s *Storage) GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error) {

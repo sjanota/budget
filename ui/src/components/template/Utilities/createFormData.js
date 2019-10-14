@@ -1,51 +1,93 @@
-class SimpleFormData {
-  constructor($init, $process) {
-    this.init = $init;
-    this.process = $process || (v => v);
-    this.current = null;
-  }
+import { useState, useRef } from 'react';
 
-  value() {
-    if (this.current === null) {
+function simpleFormData({ $init, $process }) {
+  const process = $process || (v => v);
+  const formData = { current: null };
+
+  formData.value = () => {
+    if (formData.current === null) {
       return null;
     }
-    if (Array.isArray(this.current.value)) {
-      return this.current.value.map(v => v.value());
-    }
-    return this.process(this.current.value);
-  }
+    return process(formData.current.value);
+  };
 
-  changed() {
+  formData.changed = () => {
     return (
-      (this.current === null && this.init !== null) ||
-      this.current.value !== this.init
+      (formData.current === null && $init !== null) ||
+      formData.current.value !== $init
     );
-  }
+  };
+
+  formData.init = $init;
+
+  return formData;
 }
 
-class CompositeFormData {
-  constructor(model) {
-    this._model = model;
-    Object.keys(model).forEach(key => (this[key] = createFormData(model[key])));
-  }
+function arrayFormData({ $model, $init }, rerender) {
+  const formData = $init.map(v => createFormData($model(v), rerender));
+  formData._originalPush = formData.push;
+  formData._originalSplice = formData.splice;
 
-  changed() {
-    return Object.keys(this._model).some(k => this[k].changed());
-  }
+  formData.value = () => {
+    return formData.map(v => v.value());
+  };
 
-  value() {
-    return Object.keys(this._model).reduce((acc, key) => {
-      if (!this[key].changed()) {
+  formData.changed = () => {
+    return formData.some(v => v.changed());
+  };
+
+  formData.push = v => {
+    formData._originalPush(createFormData($model(v), rerender));
+    rerender();
+  };
+
+  formData.splice = (idx, n) => {
+    formData._originalSplice(idx, n);
+    rerender();
+  };
+
+  return formData;
+}
+
+function compositeFormData({ $includeAllValues, ...model }, rerender) {
+  const formData = Object.keys(model).reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: createFormData(model[key], rerender),
+    }),
+    {}
+  );
+
+  formData.changed = () => {
+    return Object.keys(model).some(k => formData[k].changed());
+  };
+
+  formData.value = () => {
+    return Object.keys(model).reduce((acc, key) => {
+      if (!formData[key].changed() && !$includeAllValues) {
         return acc;
       }
-      return { ...acc, [key]: this[key].value() };
+      return { ...acc, [key]: formData[key].value() };
     }, {});
-  }
+  };
+
+  return formData;
 }
 
-export function createFormData(model) {
+function createFormData(model, rerender) {
   if (Object.prototype.hasOwnProperty.call(model, '$init')) {
-    return new SimpleFormData(model.$init, model.$process);
+    if (Object.prototype.hasOwnProperty.call(model, '$model')) {
+      return arrayFormData(model, rerender);
+    }
+    return simpleFormData(model);
   }
-  return new CompositeFormData(model);
+  return compositeFormData(model, rerender);
+}
+
+export function useFormData(model) {
+  const [, setValue] = useState(false);
+  const rerender = () => setValue(v => !v);
+  const formData = createFormData(model, rerender);
+  const ref = useRef(formData);
+  return ref.current;
 }

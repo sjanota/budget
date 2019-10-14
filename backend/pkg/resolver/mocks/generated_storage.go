@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
+	storage "github.com/sjanota/budget/backend/pkg/storage"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -289,4 +290,19 @@ func (m *MockStorage) UpdateEnvelope(arg0 context.Context, arg1, arg2 primitive.
 func (mr *MockStorageMockRecorder) UpdateEnvelope(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEnvelope", reflect.TypeOf((*MockStorage)(nil).UpdateEnvelope), arg0, arg1, arg2, arg3)
+}
+
+// UpdateExpense mocks base method
+func (m *MockStorage) UpdateExpense(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID, arg3 storage.ChangeSet) (*models.Expense, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExpense", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*models.Expense)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateExpense indicates an expected call of UpdateExpense
+func (mr *MockStorageMockRecorder) UpdateExpense(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExpense", reflect.TypeOf((*MockStorage)(nil).UpdateExpense), arg0, arg1, arg2, arg3)
 }

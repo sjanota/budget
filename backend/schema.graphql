@@ -80,17 +80,23 @@ input TransferInput {
 
 type Expense {
   id: ID!
-  title: String
+  title: String!
   categories: [ExpenseCategory!]!
   account: Account!
   totalAmount: Amount!
   date: Date!
 }
 input ExpenseInput {
-  title: String
+  title: String!
   categories: [ExpenseCategoryInput!]!
   accountID: ID!
   date: Date!
+}
+input ExpenseUpdate {
+  title: String
+  categories: [ExpenseCategoryInput!]
+  accountID: ID
+  date: Date
 }
 
 type ExpenseCategory {
@@ -127,6 +133,7 @@ type Mutation {
   createCategory(budgetID: ID!, in: CategoryInput!): Category
   updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
   createExpense(budgetID: ID!, in: ExpenseInput!): Expense
+  updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
 }
 
 schema {

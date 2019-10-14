@@ -5,6 +5,8 @@ package resolver
 import (
 	"context"
 
+	"github.com/sjanota/budget/backend/pkg/storage"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"github.com/sjanota/budget/backend/pkg/schema"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -34,6 +36,7 @@ type Storage interface {
 	GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (*models.Amount, error)
 	GetCategory(ctx context.Context, budgetID primitive.ObjectID, categoryID primitive.ObjectID) (*models.Category, error)
 	GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
+	UpdateExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update storage.ChangeSet) (*models.Expense, error)
 }
 
 var _ schema.ResolverRoot = &Resolver{}

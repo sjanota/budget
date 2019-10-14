@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -6,16 +6,21 @@ import CreateButton from './template/Utilities/CreateButton';
 import EditTableButton from './template/Utilities/EditTableButton';
 import { FormControl } from './template/Utilities/FormControl';
 import FormModal from './template/Utilities/FormModal';
-import { createFormData } from './template/Utilities/createFormData';
+import { useFormData } from './template/Utilities/createFormData';
 import Amount from '../model/Amount';
 import { QueryTablePanel } from './gql/QueryTablePanel';
-import { useCreateExpense, useGetCurrentExpenses } from './gql/expenses';
+import {
+  useCreateExpense,
+  useGetCurrentExpenses,
+  useUpdateExpense,
+} from './gql/expenses';
 import { useGetAccounts } from './gql/accounts';
 import { useGetCategories } from './gql/categories';
 import { WithQuery } from './gql/WithQuery';
 import { useBudget } from './gql/BudgetContext';
 import Month from '../model/Month';
 import { Form, Row, Col } from 'react-bootstrap';
+import TableButton from './template/Utilities/TableButton';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -39,7 +44,7 @@ const columns = [
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
-        {/* <UpdateExpenseButton account={row} /> */}
+        <UpdateExpenseButton expense={row} />
         <span style={{ cursor: 'pointer' }}>
           <i className="fas fa-archive fa-fw" />
         </span>
@@ -74,38 +79,30 @@ const expandRow = {
 
 function CategoriesInput({ formData }) {
   const query = useGetCategories();
-  const [categories, setCategories] = useState(
-    formData.init.map(c =>
-      createFormData({
-        categoryID: { $init: c.category.id },
-        amount: { $init: Amount.format(c.amount), $process: Amount.parse },
-      })
-    )
-  );
-  useEffect(() => {
-    formData.current = { value: categories };
-  }, [categories]);
   return (
     <WithQuery query={query}>
       {({ data }) => (
         <>
-          <small>
+          <small className="d-flex align-items-center">
             Categories
-            <i
-              className="fas fa-fw fa-plus text-primary"
+            <TableButton
+              faIcon="plus"
+              variant="primary"
+              size="sm"
               onClick={() =>
-                setCategories(c => [
-                  ...c,
-                  createFormData({
-                    categoryID: { $init: null },
-                    amount: { $init: null, $process: Amount.parse },
-                  }),
-                ])
+                formData.push({
+                  category: { id: null },
+                  amount: null,
+                })
               }
             />
           </small>
-          {categories.map((categoryFormData, idx) => (
-            <Form.Group as={Row} key={idx}>
+          {formData.map((categoryFormData, idx) => (
+            <Form.Group
+              as={Row}
+              key={idx}
+              className="d-flex align-items-center"
+            >
               <Col>
                 <Form.Control
                   placeholder="Category"
@@ -132,6 +129,14 @@ function CategoriesInput({ formData }) {
                   step="0.01"
                 />
               </Col>
+              <Col sm={1}>
+                <TableButton
+                  faIcon="minus"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => formData.splice(idx, 1)}
+                />
+              </Col>
             </Form.Group>
           ))}
         </>
@@ -143,11 +148,18 @@ function CategoriesInput({ formData }) {
 function ExpenseModal({ init, ...props }) {
   const { selectedBudget } = useBudget();
   const accountsQuery = useGetAccounts();
-  const formData = createFormData({
+  const formData = useFormData({
     title: { $init: init.title },
     date: { $init: init.date },
     accountID: { $init: init.account.id },
-    categories: { $init: init.categories },
+    categories: {
+      $init: init.categories,
+      $model: c => ({
+        categoryID: { $init: c.category.id },
+        amount: { $init: Amount.format(c.amount), $process: Amount.parse },
+        $includeAllValues: true,
+      }),
+    },
   });
   const month = Month.parse(selectedBudget.currentMonth.month);
   const first = month.firstDay();
@@ -197,22 +209,22 @@ function ExpenseModal({ init, ...props }) {
   );
 }
 
-// function UpdateExpenseButton({ expense }) {
-//   const [updateExpense] = useUpdateExpense();
-//   return (
-//     <ModalButton
-//       button={EditTableButton}
-//       modal={props => (
-//         <ExpenseModal
-//           init={expense}
-//           title="Edit expense"
-//           onSave={input => updateExpense(expense.id, input)}
-//           {...props}
-//         />
-//       )}
-//     />
-//   );
-// }
+function UpdateExpenseButton({ expense }) {
+  const [updateExpense] = useUpdateExpense();
+  return (
+    <ModalButton
+      button={EditTableButton}
+      modal={props => (
+        <ExpenseModal
+          init={expense}
+          title="Edit expense"
+          onSave={input => updateExpense(expense.id, input)}
+          {...props}
+        />
+      )}
+    />
+  );
+}
 
 function CreateExpenseButton() {
   const [createExpense] = useCreateExpense();

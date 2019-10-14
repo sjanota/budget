@@ -17,6 +17,14 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) (*models.Expense, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.UpdateExpense(ctx, budget.CurrentMonthID(), id, in)
+}
+
 func (r *mutationResolver) CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error) {
 	budget, err := r.Query().Budget(ctx, budgetID)
 	if err != nil {

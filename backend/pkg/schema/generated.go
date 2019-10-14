@@ -110,6 +110,7 @@ type ComplexityRoot struct {
 		UpdateAccount  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 		UpdateCategory func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) int
 		UpdateEnvelope func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
+		UpdateExpense  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
 	}
 
 	Plan struct {
@@ -162,6 +163,7 @@ type MutationResolver interface {
 	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in models.CategoryInput) (*models.Category, error)
 	UpdateCategory(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) (*models.Category, error)
 	CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error)
+	UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) (*models.Expense, error)
 }
 type PlanResolver interface {
 	FromEnvelope(ctx context.Context, obj *models.Plan) (*models.Envelope, error)
@@ -486,6 +488,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateEnvelope(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{})), true
 
+	case "Mutation.updateExpense":
+		if e.complexity.Mutation.UpdateExpense == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateExpense_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateExpense(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.ExpenseUpdate)), true
+
 	case "Plan.amount":
 		if e.complexity.Plan.Amount == nil {
 			break
@@ -664,135 +678,142 @@ scalar Amount
 scalar Date
 
 type Category {
-  id: ID!
-  name: String!
-  envelope: Envelope!
+    id: ID!
+    name: String!
+    envelope: Envelope!
 }
 input CategoryInput {
-  name: String!
-  envelopeID: ID!
+    name: String!
+    envelopeID: ID!
 }
 input CategoryUpdate {
-  name: String
-  envelopeID: ID
+    name: String
+    envelopeID: ID
 }
 
 type Account {
-  id: ID!
-  name: String!
-  balance: Amount!
+    id: ID!
+    name: String!
+    balance: Amount!
 }
 input AccountInput {
-  name: String!
+    name: String!
 }
 input AccountUpdate {
-  name: String
+    name: String
 }
 
 type Envelope {
-  id: ID!
-  name: String!
-  balance: Amount!
-  limit: Amount
+    id: ID!
+    name: String!
+    balance: Amount!
+    limit: Amount
 }
 input EnvelopeInput {
-  name: String!
-  limit: Amount
+    name: String!
+    limit: Amount
 }
 input EnvelopeUpdate {
-  name: String
-  limit: Amount
+    name: String
+    limit: Amount
 }
 
 type Budget {
-  id: ID!
-  name: String!
-  accounts: [Account!]!
-  envelopes: [Envelope!]!
-  categories: [Category!]!
-  currentMonth: MonthlyReport!
+    id: ID!
+    name: String!
+    accounts: [Account!]!
+    envelopes: [Envelope!]!
+    categories: [Category!]!
+    currentMonth: MonthlyReport!
 }
 
 type Plan {
-  title: String
-  fromEnvelope: Envelope!
-  toEnvelope: Envelope!
-  amount: Amount!
+    title: String
+    fromEnvelope: Envelope!
+    toEnvelope: Envelope!
+    amount: Amount!
 }
 input PlanInput {
-  title: String
-  fromEnvelopeID: ID!
-  toEnvelopeID: ID!
-  amount: Amount!
+    title: String
+    fromEnvelopeID: ID!
+    toEnvelopeID: ID!
+    amount: Amount!
 }
 
 type Transfer {
-  title: String
-  fromAccount: Account!
-  toAccount: Account!
-  amount: Amount!
+    title: String
+    fromAccount: Account!
+    toAccount: Account!
+    amount: Amount!
 }
 input TransferInput {
-  title: String
-  fromAccountID: ID!
-  toAccountID: ID!
-  amount: Amount!
+    title: String
+    fromAccountID: ID!
+    toAccountID: ID!
+    amount: Amount!
 }
 
 type Expense {
-  id: ID!
-  title: String
-  categories: [ExpenseCategory!]!
-  account: Account!
-  totalAmount: Amount!
-  date: Date!
+    id: ID!
+    title: String!
+    categories: [ExpenseCategory!]!
+    account: Account!
+    totalAmount: Amount!
+    date: Date!
 }
 input ExpenseInput {
-  title: String
-  categories: [ExpenseCategoryInput!]!
-  accountID: ID!
-  date: Date!
+    title: String!
+    categories: [ExpenseCategoryInput!]!
+    accountID: ID!
+    date: Date!
+}
+input ExpenseUpdate {
+    title: String
+    categories: [ExpenseCategoryInput!]
+    accountID: ID
+    date: Date
 }
 
 type ExpenseCategory {
-  category: Category!
-  amount: Amount!
+    category: Category!
+    amount: Amount!
 }
 input ExpenseCategoryInput {
-  categoryID: ID!
-  amount: Amount!
+    categoryID: ID!
+    amount: Amount!
 }
 
 type MonthlyReport {
-  month: Month!
-  plans: [Plan!]!
-  expenses: [Expense!]!
-  transfers: [Transfer!]!
+    month: Month!
+    plans: [Plan!]!
+    expenses: [Expense!]!
+    transfers: [Transfer!]!
 }
 
 type Query {
-  budget(id: ID!): Budget
-  budgets: [Budget!]!
+    budget(id: ID!): Budget
+    budgets: [Budget!]!
 
-  accounts(budgetID: ID!): [Account!]!
-  envelopes(budgetID: ID!): [Envelope!]!
-  categories(budgetID: ID!): [Category!]!
+    accounts(budgetID: ID!): [Account!]!
+    envelopes(budgetID: ID!): [Envelope!]!
+    categories(budgetID: ID!): [Category!]!
 }
 
 type Mutation {
-  createBudget(name: String!): Budget
-  createAccount(budgetID: ID!, in: AccountInput!): Account
-  updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
-  createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
-  updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
-  createCategory(budgetID: ID!, in: CategoryInput!): Category
-  updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
-  createExpense(budgetID: ID!, in: ExpenseInput!): Expense
+    createBudget(name: String!): Budget
+    createAccount(budgetID: ID!, in: AccountInput!): Account
+    updateAccount(budgetID: ID!, id: ID!, in: AccountUpdate!): Account
+    createEnvelope(budgetID: ID!, in: EnvelopeInput!): Envelope
+    updateEnvelope(budgetID: ID!, id: ID!, in: EnvelopeUpdate!): Envelope
+    createCategory(budgetID: ID!, in: CategoryInput!): Category
+    updateCategory(budgetID: ID!, id: ID!, in: CategoryUpdate!): Category
+    createExpense(budgetID: ID!, in: ExpenseInput!): Expense
+    updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
 }
 
 schema {
-  query: Query
-  mutation: Mutation
+    query: Query
+    mutation: Mutation
 }
 `},
 )
@@ -985,6 +1006,36 @@ func (ec *executionContext) field_Mutation_updateEnvelope_args(ctx context.Conte
 	var arg2 map[string]interface{}
 	if tmp, ok := rawArgs["in"]; ok {
 		arg2, err = ec.unmarshalNEnvelopeUpdate2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["in"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateExpense_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	var arg1 primitive.ObjectID
+	if tmp, ok := rawArgs["id"]; ok {
+		arg1, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	var arg2 models.ExpenseUpdate
+	if tmp, ok := rawArgs["in"]; ok {
+		arg2, err = ec.unmarshalNExpenseUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseUpdate(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1751,12 +1802,15 @@ func (ec *executionContext) _Expense_title(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Expense_categories(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
@@ -2443,6 +2497,47 @@ func (ec *executionContext) _Mutation_createExpense(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateExpense(rctx, args["budgetID"].(primitive.ObjectID), args["in"].(models.ExpenseInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Expense)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateExpense(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateExpense_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateExpense(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.ExpenseUpdate))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4305,7 +4400,7 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 		switch k {
 		case "title":
 			var err error
-			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4324,6 +4419,42 @@ func (ec *executionContext) unmarshalInputExpenseInput(ctx context.Context, obj 
 		case "date":
 			var err error
 			it.Date, err = ec.unmarshalNDate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputExpenseUpdate(ctx context.Context, obj interface{}) (models.ExpenseUpdate, error) {
+	var it models.ExpenseUpdate
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "categories":
+			var err error
+			it.Categories, err = ec.unmarshalOExpenseCategoryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "accountID":
+			var err error
+			it.AccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalODate2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4632,6 +4763,9 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "title":
 			out.Values[i] = ec._Expense_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "categories":
 			out.Values[i] = ec._Expense_categories(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4786,6 +4920,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_updateCategory(ctx, field)
 		case "createExpense":
 			out.Values[i] = ec._Mutation_createExpense(ctx, field)
+		case "updateExpense":
+			out.Values[i] = ec._Mutation_updateExpense(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5675,6 +5811,10 @@ func (ec *executionContext) unmarshalNExpenseInput2githubᚗcomᚋsjanotaᚋbudg
 	return ec.unmarshalInputExpenseInput(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNExpenseUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseUpdate(ctx context.Context, v interface{}) (models.ExpenseUpdate, error) {
+	return ec.unmarshalInputExpenseUpdate(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v interface{}) (primitive.ObjectID, error) {
 	return models.UnmarshalID(v)
 }
@@ -6134,6 +6274,30 @@ func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 	return ec._Category(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalODate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, v interface{}) (models.Date, error) {
+	var res models.Date
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalODate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v models.Date) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalODate2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, v interface{}) (*models.Date, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalODate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalODate2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx context.Context, sel ast.SelectionSet, v *models.Date) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalOEnvelope2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx context.Context, sel ast.SelectionSet, v models.Envelope) graphql.Marshaler {
 	return ec._Envelope(ctx, sel, &v)
 }
@@ -6154,6 +6318,26 @@ func (ec *executionContext) marshalOExpense2ᚖgithubᚗcomᚋsjanotaᚋbudget�
 		return graphql.Null
 	}
 	return ec._Expense(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOExpenseCategoryInput2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx context.Context, v interface{}) ([]*models.ExpenseCategoryInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*models.ExpenseCategoryInput, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNExpenseCategoryInput2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐExpenseCategoryInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalOID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v interface{}) (primitive.ObjectID, error) {

@@ -56,6 +56,15 @@ type MonthlyReport struct {
 	Plans     []*Plan         `json:"plans"`
 }
 
+func (r MonthlyReport) Expense(id primitive.ObjectID) *Expense {
+	for _, expense := range r.Expenses {
+		if expense.ID == id {
+			return expense
+		}
+	}
+	return nil
+}
+
 func (r MonthlyReport) Month() Month {
 	return r.ID.Month
 }
@@ -82,7 +91,7 @@ func (id MonthlyReportID) WithMonth(month Month) *MonthlyReportID {
 
 type Expense struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Title      *string            `json:"title"`
+	Title      string             `json:"title"`
 	Categories []*ExpenseCategory `json:"categories"`
 	Date       Date               `json:"date"`
 	AccountID  primitive.ObjectID
@@ -202,6 +211,23 @@ func (u CategoryUpdate) Changes() Changes {
 	}
 	if u.EnvelopeID != nil {
 		result["envelopeid"] = *u.EnvelopeID
+	}
+	return result
+}
+
+func (u ExpenseUpdate) Changes() Changes {
+	result := make(map[string]interface{})
+	if u.Title != nil {
+		result["title"] = *u.Title
+	}
+	if u.AccountID != nil {
+		result["accountid"] = *u.AccountID
+	}
+	if u.Date != nil {
+		result["date"] = *u.Date
+	}
+	if u.Categories != nil {
+		result["categories"] = u.Categories
 	}
 	return result
 }

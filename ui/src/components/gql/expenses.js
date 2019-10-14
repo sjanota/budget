@@ -101,7 +101,7 @@ export function useCreateExpense() {
   return [wrapper, ...rest];
 }
 
-function useUpdateExpense() {
+export function useUpdateExpense() {
   const { selectedBudget } = useBudget();
   const [mutation, ...rest] = useMutation(UPDATE_EXPENSE);
   const wrapper = (id, input) => {

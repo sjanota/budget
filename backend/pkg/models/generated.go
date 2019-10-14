@@ -26,10 +26,17 @@ type ExpenseCategoryInput struct {
 }
 
 type ExpenseInput struct {
-	Title      *string                 `json:"title"`
+	Title      string                  `json:"title"`
 	Categories []*ExpenseCategoryInput `json:"categories"`
 	AccountID  primitive.ObjectID      `json:"accountID"`
 	Date       Date                    `json:"date"`
+}
+
+type ExpenseUpdate struct {
+	Title      *string                 `json:"title"`
+	Categories []*ExpenseCategoryInput `json:"categories"`
+	AccountID  *primitive.ObjectID     `json:"accountID"`
+	Date       *Date                   `json:"date"`
 }
 
 type PlanInput struct {
