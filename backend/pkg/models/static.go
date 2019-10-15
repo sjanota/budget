@@ -74,6 +74,15 @@ func (r MonthlyReport) Transfer(id primitive.ObjectID) *Transfer {
 	return nil
 }
 
+func (r MonthlyReport) Plan(id primitive.ObjectID) *Plan {
+	for _, plan := range r.Plans {
+		if plan.ID == id {
+			return plan
+		}
+	}
+	return nil
+}
+
 func (r MonthlyReport) Month() Month {
 	return r.ID.Month
 }
@@ -152,10 +161,11 @@ type Envelope struct {
 }
 
 type Plan struct {
+	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Title          string `json:"title"`
 	Amount         Amount `json:"balance"`
-	Executed       Amount `json:"executed"`
-	FromEnvelopeID primitive.ObjectID
+	//Executed       Amount `json:"executed"`
+	FromEnvelopeID *primitive.ObjectID
 	ToEnvelopeID   primitive.ObjectID
 }
 
@@ -241,6 +251,23 @@ func (u TransferUpdate) Changes() Changes {
 	}
 	if u.ToAccountID != nil {
 		result["toaccountid"] = *u.ToAccountID
+	}
+	if u.Amount != nil {
+		result["amount"] = *u.Amount
+	}
+	return result
+}
+
+func (u PlanUpdate) Changes() Changes {
+	result := make(map[string]interface{})
+	if u.Title != nil {
+		result["title"] = *u.Title
+	}
+	if u.FromEnvelopeID != nil {
+		result["fromenvelopeid"] = *u.FromEnvelopeID
+	}
+	if u.ToEnvelopeID != nil {
+		result["toenvelopeid"] = *u.ToEnvelopeID
 	}
 	if u.Amount != nil {
 		result["amount"] = *u.Amount

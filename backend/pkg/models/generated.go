@@ -40,10 +40,17 @@ type ExpenseUpdate struct {
 }
 
 type PlanInput struct {
-	Title          *string            `json:"title"`
-	FromEnvelopeID primitive.ObjectID `json:"fromEnvelopeID"`
-	ToEnvelopeID   primitive.ObjectID `json:"toEnvelopeID"`
-	Amount         Amount             `json:"amount"`
+	Title          string              `json:"title"`
+	FromEnvelopeID *primitive.ObjectID `json:"fromEnvelopeID"`
+	ToEnvelopeID   primitive.ObjectID  `json:"toEnvelopeID"`
+	Amount         Amount              `json:"amount"`
+}
+
+type PlanUpdate struct {
+	Title          *string             `json:"title"`
+	FromEnvelopeID *primitive.ObjectID `json:"fromEnvelopeID"`
+	ToEnvelopeID   *primitive.ObjectID `json:"toEnvelopeID"`
+	Amount         *Amount             `json:"amount"`
 }
 
 type TransferInput struct {

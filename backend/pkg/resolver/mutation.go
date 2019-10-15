@@ -17,6 +17,24 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) CreatePlan(ctx context.Context, budgetID primitive.ObjectID, in models.PlanInput) (*models.Plan, error) {
+	var plan *models.Plan
+	err := r.withMonthlyReport(ctx, budgetID, func(reportID models.MonthlyReportID) error {
+		var err error
+		plan, err = r.Storage.CreatePlan(ctx, reportID, &in)
+		return err
+	})
+	return plan, err
+}
+
+func (r *mutationResolver) UpdatePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) (*models.Plan, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.UpdatePlan(ctx, budget.CurrentMonthID(), id, in)
+}
+
 func (r *mutationResolver) UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetID)
 	if err != nil {

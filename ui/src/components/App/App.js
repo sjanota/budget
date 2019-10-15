@@ -8,6 +8,7 @@ import Accounts from '../Accounts';
 import Envelopes from '../Envelopes/EnvelopesPage';
 import Expenses from '../Expenses';
 import Transfers from '../Transfers';
+import Plans from '../Plans';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
                 <Route path="/envelopes" component={Envelopes} />
                 <Route path="/expenses" component={Expenses} />
                 <Route path="/transfers" component={Transfers} />
+                <Route path="/plans" component={Plans} />
               </>
             )
           }

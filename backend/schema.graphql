@@ -53,16 +53,23 @@ type Budget {
 }
 
 type Plan {
-  title: String
-  fromEnvelope: Envelope!
+  id: ID!
+  title: String!
+  fromEnvelope: Envelope
   toEnvelope: Envelope!
   amount: Amount!
 }
 input PlanInput {
-  title: String
-  fromEnvelopeID: ID!
+  title: String!
+  fromEnvelopeID: ID
   toEnvelopeID: ID!
   amount: Amount!
+}
+input PlanUpdate {
+  title: String
+  fromEnvelopeID: ID
+  toEnvelopeID: ID
+  amount: Amount
 }
 
 type Transfer {
@@ -151,6 +158,9 @@ type Mutation {
 
   createTransfer(budgetID: ID!, in: TransferInput!): Transfer
   updateTransfer(budgetID: ID!, id: ID!, in: TransferUpdate!): Transfer
+
+  createPlan(budgetID: ID!, in: PlanInput!): Plan
+  updatePlan(budgetID: ID!, id: ID!, in: PlanUpdate!): Plan
 }
 
 schema {

@@ -12,6 +12,11 @@ export const sidebarConfig = [
         faIcon: 'exchange-alt',
         to: '/transfers',
       },
+      {
+        name: 'Plans',
+        faIcon: 'map-marked-alt',
+        to: '/plans',
+      },
     ],
   },
   {

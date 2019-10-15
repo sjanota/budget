@@ -40,6 +40,9 @@ type Storage interface {
 	CreateTransfer(ctx context.Context, reportID models.MonthlyReportID, in *models.TransferInput) (*models.Transfer, error)
 	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in storage.ChangeSet) (*models.Transfer, error)
 	GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
+	CreatePlan(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanInput) (*models.Plan, error)
+	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet storage.ChangeSet) (*models.Plan, error)
+	GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (models.Amount, error)
 }
 
 var _ schema.ResolverRoot = &Resolver{}
@@ -69,7 +72,7 @@ func (r *Resolver) ExpenseCategory() schema.ExpenseCategoryResolver {
 }
 
 func (r *Resolver) Plan() schema.PlanResolver {
-	panic("implement me")
+	return &planResolver{r}
 }
 
 func (r *Resolver) Transfer() schema.TransferResolver {

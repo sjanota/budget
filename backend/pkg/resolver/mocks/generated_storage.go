@@ -126,6 +126,21 @@ func (mr *MockStorageMockRecorder) CreateMonthlyReport(arg0, arg1, arg2 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonthlyReport", reflect.TypeOf((*MockStorage)(nil).CreateMonthlyReport), arg0, arg1, arg2)
 }
 
+// CreatePlan mocks base method
+func (m *MockStorage) CreatePlan(arg0 context.Context, arg1 models.MonthlyReportID, arg2 *models.PlanInput) (*models.Plan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePlan", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*models.Plan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreatePlan indicates an expected call of CreatePlan
+func (mr *MockStorageMockRecorder) CreatePlan(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePlan", reflect.TypeOf((*MockStorage)(nil).CreatePlan), arg0, arg1, arg2)
+}
+
 // CreateTransfer mocks base method
 func (m *MockStorage) CreateTransfer(arg0 context.Context, arg1 models.MonthlyReportID, arg2 *models.TransferInput) (*models.Transfer, error) {
 	m.ctrl.T.Helper()
@@ -334,6 +349,21 @@ func (m *MockStorage) UpdateExpense(arg0 context.Context, arg1 models.MonthlyRep
 func (mr *MockStorageMockRecorder) UpdateExpense(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExpense", reflect.TypeOf((*MockStorage)(nil).UpdateExpense), arg0, arg1, arg2, arg3)
+}
+
+// UpdatePlan mocks base method
+func (m *MockStorage) UpdatePlan(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID, arg3 storage.ChangeSet) (*models.Plan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePlan", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*models.Plan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePlan indicates an expected call of UpdatePlan
+func (mr *MockStorageMockRecorder) UpdatePlan(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlan", reflect.TypeOf((*MockStorage)(nil).UpdatePlan), arg0, arg1, arg2, arg3)
 }
 
 // UpdateTransfer mocks base method
