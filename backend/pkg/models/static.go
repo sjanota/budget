@@ -107,7 +107,7 @@ type Expense struct {
 }
 
 func (e Expense) TotalAmount() Amount {
-	var sum = Amount{0, 0}
+	var sum Amount
 	for _, c := range e.Categories {
 		sum = sum.Add(c.Amount)
 	}

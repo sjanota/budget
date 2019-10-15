@@ -25,7 +25,7 @@ func TestStorage_CreateAccount(t *testing.T) {
 		assert.Equal(t, &models.Account{
 			ID:      account.ID,
 			Name:    input.Name,
-			Balance: models.Amount{},
+			Balance: models.NewAmount(),
 		}, account)
 	})
 

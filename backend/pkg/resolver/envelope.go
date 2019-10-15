@@ -13,10 +13,10 @@ type envelopeResolver struct {
 	*Resolver
 }
 
-func (r *envelopeResolver) Balance(ctx context.Context, obj *models.Envelope) (*models.Amount, error) {
+func (r *envelopeResolver) Balance(ctx context.Context, obj *models.Envelope) (models.Amount, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetFromContext(ctx))
 	if err != nil {
-		return nil, err
+		return models.NewAmount(), err
 	}
 
 	return r.Storage.GetExpensesTotalForEnvelope(ctx, budget.CurrentMonthID(), obj.ID)

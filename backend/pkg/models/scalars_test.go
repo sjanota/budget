@@ -140,8 +140,19 @@ func TestMonth_Next(t *testing.T) {
 }
 
 func TestAmount_Add(t *testing.T) {
-	term1 := models.Amount{12, 62}
-	term2 := models.Amount{23, 83}
-	expected := models.Amount{36, 45}
-	assert.Equal(t, expected, term1.Add(term2))
+	cases := []struct {
+		title    string
+		term1    models.Amount
+		term2    models.Amount
+		expected models.Amount
+	}{
+		{"Add positive and positive", 1262, 2383, 3645},
+		{"Add positive to negative", 1262, -2383, -1121},
+	}
+	for _, tc := range cases {
+		t.Run(tc.title, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.term1.Add(tc.term2))
+			assert.Equal(t, tc.expected, tc.term2.Add(tc.term1))
+		})
+	}
 }

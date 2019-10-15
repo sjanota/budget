@@ -19,7 +19,8 @@ func TestAccountResolver_Balance(t *testing.T) {
 	testBudget := mock_models.Budget()
 	ctx := mock_resolver.MockContext(testBudget.ID)
 	testAccount := mock_models.Account()
-	testAmount := mock_models.Amount()
+	testAmount1 := mock_models.Amount()
+	testAmount2 := mock_models.Amount()
 	testErr := errors.New("test error")
 	expectedReportID := models.MonthlyReportID{
 		Month:    testBudget.CurrentMonth,
@@ -31,11 +32,12 @@ func TestAccountResolver_Balance(t *testing.T) {
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(testAmount, nil)
+		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(*testAmount1, nil)
+		expectStorage.GetTransfersTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(*testAmount2, nil)
 
 		balance, err := resolver.Account().Balance(ctx, testAccount)
 		require.NoError(t, err)
-		assert.Equal(t, testAmount, balance)
+		assert.Equal(t, testAmount2.Sub(*testAmount1), balance)
 	})
 
 	t.Run("GetBudget error", func(t *testing.T) {
@@ -53,7 +55,7 @@ func TestAccountResolver_Balance(t *testing.T) {
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(nil, testErr)
+		expectStorage.GetExpensesTotalForAccount(Eq(ctx), Eq(expectedReportID), Eq(testAccount.ID)).Return(models.NewAmount(), testErr)
 
 		_, err := resolver.Account().Balance(ctx, testAccount)
 		require.Equal(t, testErr, err)

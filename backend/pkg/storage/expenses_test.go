@@ -140,13 +140,13 @@ func TestStorage_GetExpensesTotalForAccount(t *testing.T) {
 		expectedTotal := expense1.TotalAmount().Add(expense2.TotalAmount())
 		total, err := testStorage.GetExpensesTotalForAccount(ctx, report.ID, account1.ID)
 		require.NoError(t, err)
-		assert.Equal(t, &expectedTotal, total)
+		assert.Equal(t, expectedTotal, total)
 	})
 
 	t.Run("Report does not exist", func(t *testing.T) {
 		total, err := testStorage.GetExpensesTotalForAccount(ctx, mock_models.MonthlyReportID(), account1.ID)
 		require.NoError(t, err)
-		assert.Equal(t, &models.Amount{}, total)
+		assert.Equal(t, models.NewAmount(), total)
 	})
 }
 
@@ -167,12 +167,12 @@ func TestStorage_GetExpensesTotalForEnvelope(t *testing.T) {
 		expectedTotal := expense1.TotalAmount().Add(expense2.Categories[0].Amount)
 		total, err := testStorage.GetExpensesTotalForEnvelope(ctx, report.ID, envelope1.ID)
 		require.NoError(t, err)
-		assert.Equal(t, &expectedTotal, total)
+		assert.Equal(t, expectedTotal, total)
 	})
 
 	t.Run("Report does not exist", func(t *testing.T) {
 		total, err := testStorage.GetExpensesTotalForAccount(ctx, mock_models.MonthlyReportID(), envelope1.ID)
 		require.NoError(t, err)
-		assert.Equal(t, &models.Amount{}, total)
+		assert.Equal(t, models.NewAmount(), total)
 	})
 }

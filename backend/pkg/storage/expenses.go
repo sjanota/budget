@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -89,7 +88,7 @@ func (s *Storage) UpdateExpense(ctx context.Context, reportID models.MonthlyRepo
 	return result.Expense(id), err
 }
 
-func (s *Storage) GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error) {
+func (s *Storage) GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error) {
 	result, err := s.monthlyReports.Aggregate(ctx, list{
 		doc{"$match": doc{"_id": reportID}},
 		doc{"$unwind": "$expenses"},
@@ -97,41 +96,25 @@ func (s *Storage) GetExpensesTotalForAccount(ctx context.Context, reportID model
 		doc{"$match": doc{"expenses.accountid": accountID}},
 		doc{"$group": doc{
 			"_id": nil,
-			"integer": doc{
-				"$sum": "$expenses.categories.amount.integer",
-			},
-			"decimal": doc{
-				"$sum": "$expenses.categories.amount.decimal",
-			},
-		}},
-		doc{"$project": doc{
-			"_id": 0,
-			"integer": doc{
-				"$sum": list{"$integer", doc{
-					"$floor": doc{
-						"$divide": list{"$decimal", 100},
-					},
-				},
-				},
-			},
-			"decimal": doc{
-				"$mod": list{"$decimal", 100},
+			"val": doc{
+				"$sum": "$expenses.categories.amount",
 			},
 		}},
 	})
 	if err != nil {
-		return nil, err
+		return models.NewAmount(), err
 	}
 	if !result.Next(ctx) {
-		return &models.Amount{}, nil
+		return models.NewAmount(), nil
 	}
-
-	amount := &models.Amount{}
-	err = result.Decode(&amount)
-	return amount, err
+	out := struct {
+		Val models.Amount
+	}{}
+	err = result.Decode(&out)
+	return out.Val, err
 }
 
-func (s *Storage) GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (*models.Amount, error) {
+func (s *Storage) GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (models.Amount, error) {
 	result, err := s.monthlyReports.Aggregate(ctx, list{
 		doc{"$match": doc{"_id": reportID}},
 		doc{"$unwind": "$expenses"},
@@ -150,38 +133,23 @@ func (s *Storage) GetExpensesTotalForEnvelope(ctx context.Context, reportID mode
 		doc{"$match": doc{"category.envelopeid": envelopeID}},
 		doc{"$group": doc{
 			"_id": nil,
-			"integer": doc{
-				"$sum": "$expenses.categories.amount.integer",
-			},
-			"decimal": doc{
-				"$sum": "$expenses.categories.amount.decimal",
-			},
-		}},
-		doc{"$project": doc{
-			"_id": 0,
-			"integer": doc{
-				"$sum": list{"$integer", doc{
-					"$floor": doc{
-						"$divide": list{"$decimal", 100},
-					},
-				},
-				},
-			},
-			"decimal": doc{
-				"$mod": list{"$decimal", 100},
+			"val": doc{
+				"$sum": "$expenses.categories.amount",
 			},
 		}},
 	})
 	if err != nil {
-		return nil, err
+		return models.NewAmount(), err
 	}
 	if !result.Next(ctx) {
-		return &models.Amount{}, nil
+		return models.NewAmount(), nil
 	}
 
-	amount := &models.Amount{}
-	err = result.Decode(&amount)
-	return amount, err
+	out := struct {
+		Val models.Amount
+	}{}
+	err = result.Decode(&out)
+	return out.Val, err
 }
 
 func (s *Storage) validateExpenseInput(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) error {

@@ -31,11 +31,11 @@ func TestEnvelopeResolver_Balance(t *testing.T) {
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(testAmount, nil)
+		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(*testAmount, nil)
 
 		balance, err := resolver.Envelope().Balance(ctx, testEnvelope)
 		require.NoError(t, err)
-		assert.Equal(t, testAmount, balance)
+		assert.Equal(t, *testAmount, balance)
 	})
 
 	t.Run("GetBudget error", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestEnvelopeResolver_Balance(t *testing.T) {
 		defer after()
 
 		expectStorage.GetBudget(Eq(ctx), Eq(testBudget.ID)).Return(testBudget, nil)
-		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(nil, testErr)
+		expectStorage.GetExpensesTotalForEnvelope(Eq(ctx), Eq(expectedReportID), Eq(testEnvelope.ID)).Return(models.NewAmount(), testErr)
 
 		_, err := resolver.Envelope().Balance(ctx, testEnvelope)
 		require.Equal(t, testErr, err)

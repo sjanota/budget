@@ -26,7 +26,7 @@ func TestStorage_CreateEnvelope(t *testing.T) {
 			ID:      created.ID,
 			Name:    input.Name,
 			Limit:   input.Limit,
-			Balance: models.Amount{},
+			Balance: models.NewAmount(),
 		}, created)
 	})
 

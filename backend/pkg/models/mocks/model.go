@@ -15,10 +15,8 @@ func Name() *string {
 }
 
 func Amount() *models.Amount {
-	return &models.Amount{
-		Integer: rand.Int() % 10000000,
-		Decimal: rand.Int() % 100,
-	}
+	a := models.Amount(rand.Int() % 10000000)
+	return &a
 }
 
 func ExpenseInput() *models.ExpenseInput {

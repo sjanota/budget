@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,7 +20,7 @@ func (s *Storage) CreateTransfer(ctx context.Context, reportID models.MonthlyRep
 		Title:         in.Title,
 		FromAccountID: in.FromAccountID,
 		ToAccountID:   in.ToAccountID,
-		Date: in.Date,
+		Date:          in.Date,
 	}
 
 	find := doc{
@@ -65,6 +66,57 @@ func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyRep
 	result := &models.MonthlyReport{}
 	err := res.Decode(result)
 	return result.Transfer(id), err
+}
+
+func (s *Storage) GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error) {
+	result, err := s.monthlyReports.Aggregate(ctx, list{
+		doc{"$match": doc{"_id": reportID}},
+		doc{"$unwind": "$transfers"},
+		doc{"$facet": doc{
+			"to": list{
+				doc{"$match": doc{"transfers.toaccountid": accountID}},
+				doc{"$group": doc{
+					"_id": nil,
+					"val": doc{
+						"$sum": "$transfers.amount",
+					},
+				}},
+			},
+			"from": list{
+				doc{"$match": doc{"transfers.fromaccountid": accountID}},
+				doc{"$group": doc{
+					"_id": nil,
+					"val": doc{
+						"$sum": "$transfers.amount",
+					},
+				}},
+			},
+		}},
+	})
+	if err != nil {
+		return models.NewAmount(), err
+	}
+	if !result.Next(ctx) {
+		return models.NewAmount(), nil
+	}
+	type a struct {
+		Val models.Amount
+	}
+	sums := struct {
+		From []a
+		To   []a
+	}{}
+	err = result.Decode(&sums)
+	to := models.NewAmount()
+	if len(sums.To) > 0 {
+		to = sums.To[0].Val
+	}
+	from := models.NewAmount()
+	if len(sums.From) > 0 {
+		from = sums.From[0].Val
+	}
+	sub := to.Sub(from)
+	return sub, err
 }
 
 func (s *Storage) validateTransferInput(ctx context.Context, reportID models.MonthlyReportID, in *models.TransferInput) error {

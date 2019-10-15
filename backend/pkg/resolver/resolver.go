@@ -32,13 +32,14 @@ type Storage interface {
 	ListBudgets(ctx context.Context) ([]*models.Budget, error)
 
 	CreateExpense(ctx context.Context, reportID models.MonthlyReportID, in *models.ExpenseInput) (*models.Expense, error)
-	GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (*models.Amount, error)
-	GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (*models.Amount, error)
+	GetExpensesTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
+	GetExpensesTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, envelopeID primitive.ObjectID) (models.Amount, error)
 	GetCategory(ctx context.Context, budgetID primitive.ObjectID, categoryID primitive.ObjectID) (*models.Category, error)
 	GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
 	UpdateExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update storage.ChangeSet) (*models.Expense, error)
 	CreateTransfer(ctx context.Context, reportID models.MonthlyReportID, in *models.TransferInput) (*models.Transfer, error)
 	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in storage.ChangeSet) (*models.Transfer, error)
+	GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
 }
 
 var _ schema.ResolverRoot = &Resolver{}

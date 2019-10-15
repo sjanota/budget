@@ -6,11 +6,12 @@ package mock_resolver
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
 	storage "github.com/sjanota/budget/backend/pkg/storage"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
-	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface
@@ -202,10 +203,10 @@ func (mr *MockStorageMockRecorder) GetEnvelope(arg0, arg1, arg2 interface{}) *go
 }
 
 // GetExpensesTotalForAccount mocks base method
-func (m *MockStorage) GetExpensesTotalForAccount(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (*models.Amount, error) {
+func (m *MockStorage) GetExpensesTotalForAccount(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (models.Amount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetExpensesTotalForAccount", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*models.Amount)
+	ret0, _ := ret[0].(models.Amount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -217,10 +218,10 @@ func (mr *MockStorageMockRecorder) GetExpensesTotalForAccount(arg0, arg1, arg2 i
 }
 
 // GetExpensesTotalForEnvelope mocks base method
-func (m *MockStorage) GetExpensesTotalForEnvelope(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (*models.Amount, error) {
+func (m *MockStorage) GetExpensesTotalForEnvelope(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (models.Amount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetExpensesTotalForEnvelope", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*models.Amount)
+	ret0, _ := ret[0].(models.Amount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -244,6 +245,21 @@ func (m *MockStorage) GetMonthlyReport(arg0 context.Context, arg1 models.Monthly
 func (mr *MockStorageMockRecorder) GetMonthlyReport(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonthlyReport", reflect.TypeOf((*MockStorage)(nil).GetMonthlyReport), arg0, arg1)
+}
+
+// GetTransfersTotalForAccount mocks base method
+func (m *MockStorage) GetTransfersTotalForAccount(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (models.Amount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTransfersTotalForAccount", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.Amount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTransfersTotalForAccount indicates an expected call of GetTransfersTotalForAccount
+func (mr *MockStorageMockRecorder) GetTransfersTotalForAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransfersTotalForAccount", reflect.TypeOf((*MockStorage)(nil).GetTransfersTotalForAccount), arg0, arg1, arg2)
 }
 
 // ListBudgets mocks base method
@@ -319,4 +335,19 @@ func (m *MockStorage) UpdateExpense(arg0 context.Context, arg1 models.MonthlyRep
 func (mr *MockStorageMockRecorder) UpdateExpense(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExpense", reflect.TypeOf((*MockStorage)(nil).UpdateExpense), arg0, arg1, arg2, arg3)
+}
+
+// UpdateTransfer mocks base method
+func (m *MockStorage) UpdateTransfer(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID, arg3 storage.ChangeSet) (*models.Transfer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTransfer", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*models.Transfer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTransfer indicates an expected call of UpdateTransfer
+func (mr *MockStorageMockRecorder) UpdateTransfer(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransfer", reflect.TypeOf((*MockStorage)(nil).UpdateTransfer), arg0, arg1, arg2, arg3)
 }

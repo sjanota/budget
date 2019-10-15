@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"strconv"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -34,13 +32,20 @@ func MarshalID(id primitive.ObjectID) graphql.Marshaler {
 	})
 }
 
-type Amount struct {
-	Integer int `json:"integer"`
-	Decimal int `json:"decimal"`
-}
+type Amount int64
 
 func (a *Amount) UnmarshalGQL(v interface{}) error {
-	return mapstructure.Decode(v, a)
+	s, ok := v.(json.Number)
+	if !ok {
+		return errors.New("Amount must be a number")
+	}
+
+	i, err := s.Int64()
+	if err != nil {
+		return err
+	}
+	*a = Amount(i)
+	return nil
 }
 
 func (a Amount) MarshalGQL(w io.Writer) {
@@ -48,24 +53,19 @@ func (a Amount) MarshalGQL(w io.Writer) {
 }
 
 func (a Amount) Add(other Amount) Amount {
-	decimal := a.Decimal + other.Decimal
-	return Amount{
-		Integer: a.Integer + other.Integer + decimal/100,
-		Decimal: decimal % 100,
-	}
+	return a + other
 }
 
 func (a Amount) Sub(other Amount) Amount {
-	decimal := a.Decimal - other.Decimal
-	timesOverflown := int(math.Floor(float64(a.Decimal) / float64(100)))
-	return Amount{
-		Integer: decimal + timesOverflown*100,
-		Decimal: a.Integer - other.Integer - timesOverflown,
-	}
+	return a - other
 }
 
 func (a Amount) IsBiggerThan(other Amount) bool {
-	return a.Integer >= other.Integer && a.Decimal > other.Decimal
+	return a > other
+}
+
+func NewAmount() Amount {
+	return 0
 }
 
 type Date struct {
