@@ -11,8 +11,6 @@ export default class Amount {
   }
 
   static format(amount) {
-    return amount == null
-      ? ''
-      : `${amount / 100}.${String(amount % 100).padStart(2, '0')}`;
+    return amount == null ? '' : `${(amount / 100).toFixed(2)}`;
   }
 }
