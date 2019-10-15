@@ -1,9 +1,6 @@
 import PropTypes from 'prop-types';
 
-export const Amount = PropTypes.shape({
-  integer: PropTypes.number.isRequired,
-  decimal: PropTypes.number.isRequired,
-});
+export const Amount = PropTypes.number;
 
 export const Account = PropTypes.shape({
   id: PropTypes.string.isRequired,
