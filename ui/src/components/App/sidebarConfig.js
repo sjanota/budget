@@ -1,5 +1,20 @@
 export const sidebarConfig = [
   {
+    name: 'Current month',
+    entries: [
+      {
+        name: 'Expenses',
+        faIcon: 'receipt',
+        to: '/expenses',
+      },
+      {
+        name: 'Transfers',
+        faIcon: 'exchange-alt',
+        to: '/transfers',
+      },
+    ],
+  },
+  {
     name: 'Budget',
     entries: [
       {
@@ -11,16 +26,6 @@ export const sidebarConfig = [
         name: 'Envelopes',
         faIcon: 'envelope-open-text',
         to: '/envelopes',
-      },
-      {
-        name: 'Expenses',
-        faIcon: 'receipt',
-        to: '/expenses',
-      },
-      {
-        name: 'Transfers',
-        faIcon: 'exchange-alt',
-        to: '/transfers',
       },
     ],
   },

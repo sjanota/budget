@@ -28,14 +28,8 @@ export default function Sidebar({ renderBrandName, renderBrandIcon, config }) {
         <div className="sidebar-brand-text mx-3">{renderBrandName()}</div>
       </Link>
 
-      <hr className="sidebar-divider my-0" />
-
       {config.map((group, idx) => (
-        <SidebarGroup
-          key={group.name || idx}
-          group={group}
-          isLast={idx !== config.length - 1}
-        />
+        <SidebarGroup key={group.name || idx} group={group} />
       ))}
 
       <hr className="sidebar-divider d-none d-md-block" />

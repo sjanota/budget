@@ -3,9 +3,10 @@ import SidebarCollapsibleLink from './SidebarCollapsibleLink';
 import SidebarSimpleLink from './SidebarSimpleLink';
 import PropTypes from 'prop-types';
 
-export function SidebarGroup({ group, isLast }) {
+export function SidebarGroup({ group }) {
   return (
     <>
+      <hr className="sidebar-divider my-1" />
       {group.name && <div className="sidebar-heading">{group.name}</div>}
       {group.entries.map(entry =>
         entry.to !== undefined ? (
@@ -18,7 +19,6 @@ export function SidebarGroup({ group, isLast }) {
           />
         )
       )}
-      {isLast && <hr className="sidebar-divider" />}
     </>
   );
 }
@@ -33,5 +33,4 @@ SidebarGroup.propTypes = {
       ])
     ).isRequired,
   }),
-  isLast: PropTypes.bool,
 };
