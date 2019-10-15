@@ -161,10 +161,9 @@ type Envelope struct {
 }
 
 type Plan struct {
-	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Title          string `json:"title"`
-	Amount         Amount `json:"balance"`
-	//Executed       Amount `json:"executed"`
+	ID             primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Title          string             `json:"title"`
+	Amount         Amount             `json:"balance"`
 	FromEnvelopeID *primitive.ObjectID
 	ToEnvelopeID   primitive.ObjectID
 }

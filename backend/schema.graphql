@@ -161,6 +161,8 @@ type Mutation {
 
   createPlan(budgetID: ID!, in: PlanInput!): Plan
   updatePlan(budgetID: ID!, id: ID!, in: PlanUpdate!): Plan
+
+  closeCurrentMonth(budgetID: ID!): Budget
 }
 
 schema {

@@ -2,6 +2,7 @@ package playground
 
 import (
 	"context"
+	"github.com/sjanota/budget/backend/pkg/storage"
 	"time"
 
 	"github.com/sjanota/budget/backend/pkg/models"
@@ -20,7 +21,7 @@ type Storage interface {
 	UpdateBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
-func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID, monthlyBudgetID primitive.ObjectID, storage Storage) error {
+func CloseMonthlyBudget(ctx context.Context, budgetID primitive.ObjectID) error {
 	budget, err := storage.GetBudget(ctx, budgetID)
 	if err != nil {
 		return err

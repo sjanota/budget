@@ -28,6 +28,6 @@ func (r *accountResolver) Balance(ctx context.Context, obj *models.Account) (mod
 	if err != nil {
 		return models.NewAmount(), err
 	}
-	sub := forTransfers.Sub(forExpenses)
+	sub := forTransfers.Sub(forExpenses).Add(obj.Balance)
 	return sub, nil
 }

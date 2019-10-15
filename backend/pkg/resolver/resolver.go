@@ -43,6 +43,7 @@ type Storage interface {
 	CreatePlan(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanInput) (*models.Plan, error)
 	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet storage.ChangeSet) (*models.Plan, error)
 	GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (models.Amount, error)
+	ReplaceBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
 
 var _ schema.ResolverRoot = &Resolver{}

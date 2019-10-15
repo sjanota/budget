@@ -102,19 +102,20 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateAccount  func(childComplexity int, budgetID primitive.ObjectID, in models.AccountInput) int
-		CreateBudget   func(childComplexity int, name string) int
-		CreateCategory func(childComplexity int, budgetID primitive.ObjectID, in models.CategoryInput) int
-		CreateEnvelope func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
-		CreateExpense  func(childComplexity int, budgetID primitive.ObjectID, in models.ExpenseInput) int
-		CreatePlan     func(childComplexity int, budgetID primitive.ObjectID, in models.PlanInput) int
-		CreateTransfer func(childComplexity int, budgetID primitive.ObjectID, in models.TransferInput) int
-		UpdateAccount  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
-		UpdateCategory func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) int
-		UpdateEnvelope func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
-		UpdateExpense  func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
-		UpdatePlan     func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) int
-		UpdateTransfer func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) int
+		CloseCurrentMonth func(childComplexity int, budgetID primitive.ObjectID) int
+		CreateAccount     func(childComplexity int, budgetID primitive.ObjectID, in models.AccountInput) int
+		CreateBudget      func(childComplexity int, name string) int
+		CreateCategory    func(childComplexity int, budgetID primitive.ObjectID, in models.CategoryInput) int
+		CreateEnvelope    func(childComplexity int, budgetID primitive.ObjectID, in models.EnvelopeInput) int
+		CreateExpense     func(childComplexity int, budgetID primitive.ObjectID, in models.ExpenseInput) int
+		CreatePlan        func(childComplexity int, budgetID primitive.ObjectID, in models.PlanInput) int
+		CreateTransfer    func(childComplexity int, budgetID primitive.ObjectID, in models.TransferInput) int
+		UpdateAccount     func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
+		UpdateCategory    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.CategoryUpdate) int
+		UpdateEnvelope    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
+		UpdateExpense     func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
+		UpdatePlan        func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) int
+		UpdateTransfer    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) int
 	}
 
 	Plan struct {
@@ -175,6 +176,7 @@ type MutationResolver interface {
 	UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error)
 	CreatePlan(ctx context.Context, budgetID primitive.ObjectID, in models.PlanInput) (*models.Plan, error)
 	UpdatePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) (*models.Plan, error)
+	CloseCurrentMonth(ctx context.Context, budgetID primitive.ObjectID) (*models.Budget, error)
 }
 type PlanResolver interface {
 	FromEnvelope(ctx context.Context, obj *models.Plan) (*models.Envelope, error)
@@ -402,6 +404,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyReport.Transfers(childComplexity), true
+
+	case "Mutation.closeCurrentMonth":
+		if e.complexity.Mutation.CloseCurrentMonth == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_closeCurrentMonth_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CloseCurrentMonth(childComplexity, args["budgetID"].(primitive.ObjectID)), true
 
 	case "Mutation.createAccount":
 		if e.complexity.Mutation.CreateAccount == nil {
@@ -916,6 +930,8 @@ type Mutation {
 
   createPlan(budgetID: ID!, in: PlanInput!): Plan
   updatePlan(budgetID: ID!, id: ID!, in: PlanUpdate!): Plan
+
+  closeCurrentMonth(budgetID: ID!): Budget
 }
 
 schema {
@@ -928,6 +944,20 @@ schema {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_closeCurrentMonth_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 primitive.ObjectID
+	if tmp, ok := rawArgs["budgetID"]; ok {
+		arg0, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["budgetID"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -2925,6 +2955,47 @@ func (ec *executionContext) _Mutation_updatePlan(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOPlan2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlan(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_closeCurrentMonth(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_closeCurrentMonth_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CloseCurrentMonth(rctx, args["budgetID"].(primitive.ObjectID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.Budget)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOBudget2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐBudget(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Plan_id(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
@@ -5500,6 +5571,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_createPlan(ctx, field)
 		case "updatePlan":
 			out.Values[i] = ec._Mutation_updatePlan(ctx, field)
+		case "closeCurrentMonth":
+			out.Values[i] = ec._Mutation_closeCurrentMonth(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

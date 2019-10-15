@@ -10,6 +10,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func (s *Storage) ReplaceBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error) {
+	find := doc{
+		"_id": budget.ID,
+	}
+
+	res := s.budgets.FindOneAndReplace(ctx, find, budget, options.FindOneAndReplace().SetReturnDocument(options.After))
+	if err := res.Err(); err != nil {
+		return nil, err
+	}
+	replaced := &models.Budget{}
+	err := res.Decode(replaced)
+	return budget, err
+}
+
 func (s *Storage) CreateBudget(ctx context.Context, name string, currentMonth models.Month) (*models.Budget, error) {
 	budget := &models.Budget{
 		Name:         name,

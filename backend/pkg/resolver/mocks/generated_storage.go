@@ -261,6 +261,21 @@ func (mr *MockStorageMockRecorder) GetMonthlyReport(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonthlyReport", reflect.TypeOf((*MockStorage)(nil).GetMonthlyReport), arg0, arg1)
 }
 
+// GetPlansTotalForEnvelope mocks base method
+func (m *MockStorage) GetPlansTotalForEnvelope(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (models.Amount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPlansTotalForEnvelope", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.Amount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPlansTotalForEnvelope indicates an expected call of GetPlansTotalForEnvelope
+func (mr *MockStorageMockRecorder) GetPlansTotalForEnvelope(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPlansTotalForEnvelope", reflect.TypeOf((*MockStorage)(nil).GetPlansTotalForEnvelope), arg0, arg1, arg2)
+}
+
 // GetTransfersTotalForAccount mocks base method
 func (m *MockStorage) GetTransfersTotalForAccount(arg0 context.Context, arg1 models.MonthlyReportID, arg2 primitive.ObjectID) (models.Amount, error) {
 	m.ctrl.T.Helper()
@@ -289,6 +304,21 @@ func (m *MockStorage) ListBudgets(arg0 context.Context) ([]*models.Budget, error
 func (mr *MockStorageMockRecorder) ListBudgets(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBudgets", reflect.TypeOf((*MockStorage)(nil).ListBudgets), arg0)
+}
+
+// ReplaceBudget mocks base method
+func (m *MockStorage) ReplaceBudget(arg0 context.Context, arg1 *models.Budget) (*models.Budget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReplaceBudget", arg0, arg1)
+	ret0, _ := ret[0].(*models.Budget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReplaceBudget indicates an expected call of ReplaceBudget
+func (mr *MockStorageMockRecorder) ReplaceBudget(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceBudget", reflect.TypeOf((*MockStorage)(nil).ReplaceBudget), arg0, arg1)
 }
 
 // UpdateAccount mocks base method

@@ -27,7 +27,7 @@ export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
         <WithQuery query={query}>
           {({ data }) => (
             <BootstrapTable
-              classes="table-layout-auto"
+              classes="table-layout-auto table-sm"
               data={getData(data)}
               striped
               hover
