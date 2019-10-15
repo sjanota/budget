@@ -29,7 +29,7 @@ const columns = [
   {
     dataField: 'fromAccount',
     text: 'From',
-    formatter: a => a.name,
+    formatter: a => a && a.name,
   },
   {
     dataField: 'toAccount',
@@ -66,7 +66,10 @@ function TransferModal({ init, ...props }) {
     title: { $init: init.title },
     date: { $init: init.date },
     amount: { $init: Amount.format(init.amount), $process: Amount.parse },
-    fromAccountID: { $init: init.fromAccount.id },
+    fromAccountID: {
+      $init: init.fromAccount && init.fromAccount.id,
+      $process: v => (v == '' ? null : v),
+    },
     toAccountID: { $init: init.toAccount.id },
   });
   const month = Month.parse(selectedBudget.currentMonth.month);
@@ -123,6 +126,7 @@ function TransferModal({ init, ...props }) {
               formData={formData.toAccountID}
               feedback="Provide to"
               as="select"
+              requiured
             >
               <option />
               {data.accounts.map(({ id, name }) => (

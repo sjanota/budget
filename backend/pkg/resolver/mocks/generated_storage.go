@@ -6,12 +6,11 @@ package mock_resolver
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
 	storage "github.com/sjanota/budget/backend/pkg/storage"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
+	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface

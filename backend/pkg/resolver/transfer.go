@@ -11,7 +11,10 @@ type transferResolver struct {
 }
 
 func (r *transferResolver) FromAccount(ctx context.Context, obj *models.Transfer) (*models.Account, error) {
-	return r.Storage.GetAccount(ctx, budgetFromContext(ctx), obj.FromAccountID)
+	if obj.FromAccountID == nil {
+		return nil, nil
+	}
+	return r.Storage.GetAccount(ctx, budgetFromContext(ctx), *obj.FromAccountID)
 }
 
 func (r *transferResolver) ToAccount(ctx context.Context, obj *models.Transfer) (*models.Account, error) {

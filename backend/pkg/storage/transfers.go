@@ -124,7 +124,7 @@ func (s *Storage) validateTransferInput(ctx context.Context, reportID models.Mon
 	if err != nil {
 		return err
 	}
-	if budget.Account(in.FromAccountID) == nil {
+	if in.FromAccountID != nil && budget.Account(*in.FromAccountID) == nil {
 		return ErrInvalidReference
 	}
 	if budget.Account(in.ToAccountID) == nil {

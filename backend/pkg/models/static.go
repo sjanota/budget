@@ -140,7 +140,7 @@ type Transfer struct {
 	Amount        Amount             `json:"balance"`
 	Title         string             `json:"title"`
 	Date          Date               `json:"date"`
-	FromAccountID primitive.ObjectID
+	FromAccountID *primitive.ObjectID
 	ToAccountID   primitive.ObjectID
 }
 

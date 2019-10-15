@@ -787,14 +787,14 @@ input PlanInput {
 type Transfer {
   id: ID!
   title: String!
-  fromAccount: Account!
+  fromAccount: Account
   toAccount: Account!
   amount: Amount!
   date: Date!
 }
 input TransferInput {
   title: String!
-  fromAccountID: ID!
+  fromAccountID: ID
   toAccountID: ID!
   amount: Amount!
   date: Date!
@@ -3277,15 +3277,12 @@ func (ec *executionContext) _Transfer_fromAccount(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*models.Account)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
+	return ec.marshalOAccount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAccount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Transfer_toAccount(ctx context.Context, field graphql.CollectedField, obj *models.Transfer) (ret graphql.Marshaler) {
@@ -4786,7 +4783,7 @@ func (ec *executionContext) unmarshalInputTransferInput(ctx context.Context, obj
 			}
 		case "fromAccountID":
 			var err error
-			it.FromAccountID, err = ec.unmarshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			it.FromAccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5441,9 +5438,6 @@ func (ec *executionContext) _Transfer(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Transfer_fromAccount(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			})
 		case "toAccount":

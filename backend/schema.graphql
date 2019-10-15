@@ -68,14 +68,14 @@ input PlanInput {
 type Transfer {
   id: ID!
   title: String!
-  fromAccount: Account!
+  fromAccount: Account
   toAccount: Account!
   amount: Amount!
   date: Date!
 }
 input TransferInput {
   title: String!
-  fromAccountID: ID!
+  fromAccountID: ID
   toAccountID: ID!
   amount: Amount!
   date: Date!
