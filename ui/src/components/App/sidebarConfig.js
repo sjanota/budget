@@ -1,5 +1,14 @@
 export const sidebarConfig = [
   {
+    entries: [
+      {
+        name: 'Dashboard',
+        faIcon: 'receipt',
+        to: '/',
+      },
+    ],
+  },
+  {
     name: 'Current month',
     entries: [
       {

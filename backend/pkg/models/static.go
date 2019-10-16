@@ -273,3 +273,23 @@ func (u PlanUpdate) Changes() Changes {
 	}
 	return result
 }
+
+func (r MonthlyReport) TotalPlannedAmount() Amount {
+	var sum Amount
+	for _, p := range r.Plans {
+		if p.FromEnvelopeID == nil {
+			sum = sum.Add(p.Amount)
+		}
+	}
+	return sum
+}
+
+func (r MonthlyReport) TotalIncomeAmount() Amount {
+	var sum Amount
+	for _, t := range r.Transfers {
+		if t.FromAccountID == nil {
+			sum = sum.Add(t.Amount)
+		}
+	}
+	return sum
+}

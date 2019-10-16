@@ -130,6 +130,8 @@ type MonthlyReport {
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
+  totalPlannedAmount: Amount!
+  totalIncomeAmount: Amount!
 }
 
 type Query {

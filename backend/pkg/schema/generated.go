@@ -95,10 +95,12 @@ type ComplexityRoot struct {
 	}
 
 	MonthlyReport struct {
-		Expenses  func(childComplexity int) int
-		Month     func(childComplexity int) int
-		Plans     func(childComplexity int) int
-		Transfers func(childComplexity int) int
+		Expenses           func(childComplexity int) int
+		Month              func(childComplexity int) int
+		Plans              func(childComplexity int) int
+		TotalIncomeAmount  func(childComplexity int) int
+		TotalPlannedAmount func(childComplexity int) int
+		Transfers          func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -397,6 +399,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyReport.Plans(childComplexity), true
+
+	case "MonthlyReport.totalIncomeAmount":
+		if e.complexity.MonthlyReport.TotalIncomeAmount == nil {
+			break
+		}
+
+		return e.complexity.MonthlyReport.TotalIncomeAmount(childComplexity), true
+
+	case "MonthlyReport.totalPlannedAmount":
+		if e.complexity.MonthlyReport.TotalPlannedAmount == nil {
+			break
+		}
+
+		return e.complexity.MonthlyReport.TotalPlannedAmount(childComplexity), true
 
 	case "MonthlyReport.transfers":
 		if e.complexity.MonthlyReport.Transfers == nil {
@@ -899,6 +915,8 @@ type MonthlyReport {
   plans: [Plan!]!
   expenses: [Expense!]!
   transfers: [Transfer!]!
+  totalPlannedAmount: Amount!
+  totalIncomeAmount: Amount!
 }
 
 type Query {
@@ -2422,6 +2440,80 @@ func (ec *executionContext) _MonthlyReport_transfers(ctx context.Context, field 
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTransfer2ᚕᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransfer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MonthlyReport_totalPlannedAmount(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MonthlyReport",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPlannedAmount(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Amount)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MonthlyReport_totalIncomeAmount(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MonthlyReport",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalIncomeAmount(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Amount)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5516,6 +5608,16 @@ func (ec *executionContext) _MonthlyReport(ctx context.Context, sel ast.Selectio
 			}
 		case "transfers":
 			out.Values[i] = ec._MonthlyReport_transfers(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalPlannedAmount":
+			out.Values[i] = ec._MonthlyReport_totalPlannedAmount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalIncomeAmount":
+			out.Values[i] = ec._MonthlyReport_totalIncomeAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
