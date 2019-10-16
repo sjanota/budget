@@ -293,3 +293,11 @@ func (r MonthlyReport) TotalIncomeAmount() Amount {
 	}
 	return sum
 }
+
+func (r MonthlyReport) TotalExpenseAmount() Amount {
+	var sum Amount
+	for _, e := range r.Expenses {
+		sum = sum.Add(e.TotalAmount())
+	}
+	return sum
+}

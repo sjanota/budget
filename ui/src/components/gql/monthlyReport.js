@@ -7,6 +7,7 @@ const MONTHLY_REPORT_FRAGMENT = gql`
     month
     totalPlannedAmount
     totalIncomeAmount
+    totalExpenseAmount
   }
 `;
 

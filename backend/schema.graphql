@@ -132,6 +132,7 @@ type MonthlyReport {
   transfers: [Transfer!]!
   totalPlannedAmount: Amount!
   totalIncomeAmount: Amount!
+  totalExpenseAmount: Amount!
 }
 
 type Query {

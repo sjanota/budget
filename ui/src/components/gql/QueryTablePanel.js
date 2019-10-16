@@ -1,5 +1,5 @@
 import React from 'react';
-import Panel from '../template/Utilities/Panel';
+import { Panel } from '../template/Utilities/Panel';
 import BootstrapTable from 'react-bootstrap-table-next';
 import RefreshButton from '../template/Utilities/RefreshButton';
 import { WithQuery } from '../gql/WithQuery';

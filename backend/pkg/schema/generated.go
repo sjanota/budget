@@ -98,6 +98,7 @@ type ComplexityRoot struct {
 		Expenses           func(childComplexity int) int
 		Month              func(childComplexity int) int
 		Plans              func(childComplexity int) int
+		TotalExpenseAmount func(childComplexity int) int
 		TotalIncomeAmount  func(childComplexity int) int
 		TotalPlannedAmount func(childComplexity int) int
 		Transfers          func(childComplexity int) int
@@ -399,6 +400,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyReport.Plans(childComplexity), true
+
+	case "MonthlyReport.totalExpenseAmount":
+		if e.complexity.MonthlyReport.TotalExpenseAmount == nil {
+			break
+		}
+
+		return e.complexity.MonthlyReport.TotalExpenseAmount(childComplexity), true
 
 	case "MonthlyReport.totalIncomeAmount":
 		if e.complexity.MonthlyReport.TotalIncomeAmount == nil {
@@ -917,6 +925,7 @@ type MonthlyReport {
   transfers: [Transfer!]!
   totalPlannedAmount: Amount!
   totalIncomeAmount: Amount!
+  totalExpenseAmount: Amount!
 }
 
 type Query {
@@ -2499,6 +2508,43 @@ func (ec *executionContext) _MonthlyReport_totalIncomeAmount(ctx context.Context
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TotalIncomeAmount(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Amount)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MonthlyReport_totalExpenseAmount(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MonthlyReport",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalExpenseAmount(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5618,6 +5664,11 @@ func (ec *executionContext) _MonthlyReport(ctx context.Context, sel ast.Selectio
 			}
 		case "totalIncomeAmount":
 			out.Values[i] = ec._MonthlyReport_totalIncomeAmount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalExpenseAmount":
+			out.Values[i] = ec._MonthlyReport_totalExpenseAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
