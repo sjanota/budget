@@ -28,42 +28,7 @@ func (r *mutationResolver) CloseCurrentMonth(ctx context.Context, budgetID primi
 		return nil, err
 	}
 
-	// processExpenses
-	for _, expense := range monthlyBudget.Expenses {
-		account := budget.Account(expense.AccountID)
-		for _, expenseCategory := range expense.Categories {
-			category := budget.Category(expenseCategory.CategoryID)
-			envelope := budget.Envelope(category.EnvelopeID)
-
-			account.Balance = account.Balance.Sub(expenseCategory.Amount)
-			envelope.Balance = envelope.Balance.Sub(expenseCategory.Amount)
-		}
-	}
-
-	// processTransfers
-	for _, transfer := range monthlyBudget.Transfers {
-		if transfer.FromAccountID != nil {
-			fromAccount := budget.Account(*transfer.FromAccountID)
-			fromAccount.Balance = fromAccount.Balance.Sub(transfer.Amount)
-		}
-
-		toAccount := budget.Account(transfer.ToAccountID)
-		toAccount.Balance = toAccount.Balance.Add(transfer.Amount)
-	}
-
-	// processPlans
-	for _, plan := range monthlyBudget.Plans {
-		if plan.FromEnvelopeID != nil {
-			fromEnvelope := budget.Envelope(*plan.FromEnvelopeID)
-			fromEnvelope.Balance = fromEnvelope.Balance.Sub(plan.Amount)
-		}
-
-		toEnvelope := budget.Envelope(plan.ToEnvelopeID)
-		toEnvelope.Balance = toEnvelope.Balance.Add(plan.Amount)
-		if toEnvelope.Limit != nil && toEnvelope.Balance.IsBiggerThan(*toEnvelope.Limit) {
-			toEnvelope.Balance = *toEnvelope.Limit
-		}
-	}
+	monthlyBudget.ApplyTo(budget)
 
 	// getNextMonth
 	month := monthlyBudget.Month().Next()

@@ -1,6 +1,9 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './BudgetContext';
+import { GET_ENVELOPES } from './envelopes';
+import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
+import { GET_ACCOUNTS } from './accounts';
 
 const TRANSFER_FRAGMENT = gql`
   fragment Transfer on Transfer {
@@ -70,6 +73,13 @@ export function useCreateTransfer() {
         },
       });
     },
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
   });
   const wrapper = input => {
     mutation({ variables: { budgetID: selectedBudget.id, input } });
@@ -88,7 +98,15 @@ const UPDATE_TRANSFER = gql`
 
 export function useUpdateTransfer() {
   const { selectedBudget } = useBudget();
-  const [mutation, ...rest] = useMutation(UPDATE_TRANSFER);
+  const [mutation, ...rest] = useMutation(UPDATE_TRANSFER, {
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
+  });
   const wrapper = (id, input) => {
     mutation({ variables: { budgetID: selectedBudget.id, id, input } });
   };

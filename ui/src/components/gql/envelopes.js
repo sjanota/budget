@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './BudgetContext';
 
-const GET_ENVELOPES = gql`
+export const GET_ENVELOPES = gql`
   query GetEnvelopes($budgetID: ID!) {
     envelopes(budgetID: $budgetID) {
       id

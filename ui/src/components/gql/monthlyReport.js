@@ -8,10 +8,25 @@ const MONTHLY_REPORT_FRAGMENT = gql`
     totalPlannedAmount
     totalIncomeAmount
     totalExpenseAmount
+    problems {
+      severity
+      ... on EnvelopeOverLimit {
+        id
+      }
+      ... on NegativeBalanceOnAccount {
+        id
+      }
+      ... on NegativeBalanceOnEnvelope {
+        id
+      }
+      ... on Misplanned {
+        overplanned
+      }
+    }
   }
 `;
 
-const GET_CURRENT_MONTHLY_REPORT = gql`
+export const GET_CURRENT_MONTHLY_REPORT = gql`
   query GetCurrentMonthlyReport($budgetID: ID!) {
     budget(budgetID: $budgetID) {
       currentMonth {

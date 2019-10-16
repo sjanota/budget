@@ -133,6 +133,41 @@ type MonthlyReport {
   totalPlannedAmount: Amount!
   totalIncomeAmount: Amount!
   totalExpenseAmount: Amount!
+  problems: [Problem!]!
+}
+
+enum Severity {
+  ERROR
+  WARNING
+  INFO
+}
+
+type Misplanned implements Problem {
+  severity: Severity!
+  overplanned: Boolean!
+}
+
+type NegativeBalanceOnAccount implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type NegativeBalanceOnEnvelope implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type EnvelopeOverLimit implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type MonthStillInProgress implements Problem {
+  severity: Severity!
+}
+
+interface Problem {
+  severity: Severity!
 }
 
 type Query {

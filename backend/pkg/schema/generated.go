@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -42,6 +43,7 @@ type ResolverRoot interface {
 	Envelope() EnvelopeResolver
 	Expense() ExpenseResolver
 	ExpenseCategory() ExpenseCategoryResolver
+	MonthlyReport() MonthlyReportResolver
 	Mutation() MutationResolver
 	Plan() PlanResolver
 	Query() QueryResolver
@@ -80,6 +82,11 @@ type ComplexityRoot struct {
 		Name    func(childComplexity int) int
 	}
 
+	EnvelopeOverLimit struct {
+		ID       func(childComplexity int) int
+		Severity func(childComplexity int) int
+	}
+
 	Expense struct {
 		Account     func(childComplexity int) int
 		Categories  func(childComplexity int) int
@@ -94,10 +101,20 @@ type ComplexityRoot struct {
 		Category func(childComplexity int) int
 	}
 
+	Misplanned struct {
+		Overplanned func(childComplexity int) int
+		Severity    func(childComplexity int) int
+	}
+
+	MonthStillInProgress struct {
+		Severity func(childComplexity int) int
+	}
+
 	MonthlyReport struct {
 		Expenses           func(childComplexity int) int
 		Month              func(childComplexity int) int
 		Plans              func(childComplexity int) int
+		Problems           func(childComplexity int) int
 		TotalExpenseAmount func(childComplexity int) int
 		TotalIncomeAmount  func(childComplexity int) int
 		TotalPlannedAmount func(childComplexity int) int
@@ -119,6 +136,16 @@ type ComplexityRoot struct {
 		UpdateExpense     func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
 		UpdatePlan        func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) int
 		UpdateTransfer    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) int
+	}
+
+	NegativeBalanceOnAccount struct {
+		ID       func(childComplexity int) int
+		Severity func(childComplexity int) int
+	}
+
+	NegativeBalanceOnEnvelope struct {
+		ID       func(childComplexity int) int
+		Severity func(childComplexity int) int
 	}
 
 	Plan struct {
@@ -164,6 +191,9 @@ type ExpenseResolver interface {
 }
 type ExpenseCategoryResolver interface {
 	Category(ctx context.Context, obj *models.ExpenseCategory) (*models.Category, error)
+}
+type MonthlyReportResolver interface {
+	Problems(ctx context.Context, obj *models.MonthlyReport) ([]models.Problem, error)
 }
 type MutationResolver interface {
 	CreateBudget(ctx context.Context, name string) (*models.Budget, error)
@@ -324,6 +354,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Envelope.Name(childComplexity), true
 
+	case "EnvelopeOverLimit.id":
+		if e.complexity.EnvelopeOverLimit.ID == nil {
+			break
+		}
+
+		return e.complexity.EnvelopeOverLimit.ID(childComplexity), true
+
+	case "EnvelopeOverLimit.severity":
+		if e.complexity.EnvelopeOverLimit.Severity == nil {
+			break
+		}
+
+		return e.complexity.EnvelopeOverLimit.Severity(childComplexity), true
+
 	case "Expense.account":
 		if e.complexity.Expense.Account == nil {
 			break
@@ -380,6 +424,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ExpenseCategory.Category(childComplexity), true
 
+	case "Misplanned.overplanned":
+		if e.complexity.Misplanned.Overplanned == nil {
+			break
+		}
+
+		return e.complexity.Misplanned.Overplanned(childComplexity), true
+
+	case "Misplanned.severity":
+		if e.complexity.Misplanned.Severity == nil {
+			break
+		}
+
+		return e.complexity.Misplanned.Severity(childComplexity), true
+
+	case "MonthStillInProgress.severity":
+		if e.complexity.MonthStillInProgress.Severity == nil {
+			break
+		}
+
+		return e.complexity.MonthStillInProgress.Severity(childComplexity), true
+
 	case "MonthlyReport.expenses":
 		if e.complexity.MonthlyReport.Expenses == nil {
 			break
@@ -400,6 +465,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyReport.Plans(childComplexity), true
+
+	case "MonthlyReport.problems":
+		if e.complexity.MonthlyReport.Problems == nil {
+			break
+		}
+
+		return e.complexity.MonthlyReport.Problems(childComplexity), true
 
 	case "MonthlyReport.totalExpenseAmount":
 		if e.complexity.MonthlyReport.TotalExpenseAmount == nil {
@@ -596,6 +668,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateTransfer(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.TransferUpdate)), true
+
+	case "NegativeBalanceOnAccount.id":
+		if e.complexity.NegativeBalanceOnAccount.ID == nil {
+			break
+		}
+
+		return e.complexity.NegativeBalanceOnAccount.ID(childComplexity), true
+
+	case "NegativeBalanceOnAccount.severity":
+		if e.complexity.NegativeBalanceOnAccount.Severity == nil {
+			break
+		}
+
+		return e.complexity.NegativeBalanceOnAccount.Severity(childComplexity), true
+
+	case "NegativeBalanceOnEnvelope.id":
+		if e.complexity.NegativeBalanceOnEnvelope.ID == nil {
+			break
+		}
+
+		return e.complexity.NegativeBalanceOnEnvelope.ID(childComplexity), true
+
+	case "NegativeBalanceOnEnvelope.severity":
+		if e.complexity.NegativeBalanceOnEnvelope.Severity == nil {
+			break
+		}
+
+		return e.complexity.NegativeBalanceOnEnvelope.Severity(childComplexity), true
 
 	case "Plan.amount":
 		if e.complexity.Plan.Amount == nil {
@@ -926,6 +1026,41 @@ type MonthlyReport {
   totalPlannedAmount: Amount!
   totalIncomeAmount: Amount!
   totalExpenseAmount: Amount!
+  problems: [Problem!]!
+}
+
+enum Severity {
+  ERROR
+  WARNING
+  INFO
+}
+
+type Misplanned implements Problem {
+  severity: Severity!
+  overplanned: Boolean!
+}
+
+type NegativeBalanceOnAccount implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type NegativeBalanceOnEnvelope implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type EnvelopeOverLimit implements Problem {
+  severity: Severity!
+  id: ID!
+}
+
+type MonthStillInProgress implements Problem {
+  severity: Severity!
+}
+
+interface Problem {
+  severity: Severity!
 }
 
 type Query {
@@ -2007,6 +2142,80 @@ func (ec *executionContext) _Envelope_limit(ctx context.Context, field graphql.C
 	return ec.marshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _EnvelopeOverLimit_severity(ctx context.Context, field graphql.CollectedField, obj *models.EnvelopeOverLimit) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "EnvelopeOverLimit",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Severity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Severity)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EnvelopeOverLimit_id(ctx context.Context, field graphql.CollectedField, obj *models.EnvelopeOverLimit) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "EnvelopeOverLimit",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Expense_id(ctx context.Context, field graphql.CollectedField, obj *models.Expense) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -2303,6 +2512,117 @@ func (ec *executionContext) _ExpenseCategory_amount(ctx context.Context, field g
 	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Misplanned_severity(ctx context.Context, field graphql.CollectedField, obj *models.Misplanned) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Misplanned",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Severity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Severity)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Misplanned_overplanned(ctx context.Context, field graphql.CollectedField, obj *models.Misplanned) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Misplanned",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Overplanned, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MonthStillInProgress_severity(ctx context.Context, field graphql.CollectedField, obj *models.MonthStillInProgress) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MonthStillInProgress",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Severity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Severity)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _MonthlyReport_month(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -2560,6 +2880,43 @@ func (ec *executionContext) _MonthlyReport_totalExpenseAmount(ctx context.Contex
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MonthlyReport_problems(ctx context.Context, field graphql.CollectedField, obj *models.MonthlyReport) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "MonthlyReport",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.MonthlyReport().Problems(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]models.Problem)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNProblem2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐProblem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createBudget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3134,6 +3491,154 @@ func (ec *executionContext) _Mutation_closeCurrentMonth(ctx context.Context, fie
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOBudget2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐBudget(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NegativeBalanceOnAccount_severity(ctx context.Context, field graphql.CollectedField, obj *models.NegativeBalanceOnAccount) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "NegativeBalanceOnAccount",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Severity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Severity)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NegativeBalanceOnAccount_id(ctx context.Context, field graphql.CollectedField, obj *models.NegativeBalanceOnAccount) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "NegativeBalanceOnAccount",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NegativeBalanceOnEnvelope_severity(ctx context.Context, field graphql.CollectedField, obj *models.NegativeBalanceOnEnvelope) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "NegativeBalanceOnEnvelope",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Severity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.Severity)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NegativeBalanceOnEnvelope_id(ctx context.Context, field graphql.CollectedField, obj *models.NegativeBalanceOnEnvelope) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "NegativeBalanceOnEnvelope",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Plan_id(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
@@ -5319,6 +5824,35 @@ func (ec *executionContext) unmarshalInputTransferUpdate(ctx context.Context, ob
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _Problem(ctx context.Context, sel ast.SelectionSet, obj *models.Problem) graphql.Marshaler {
+	switch obj := (*obj).(type) {
+	case nil:
+		return graphql.Null
+	case models.Misplanned:
+		return ec._Misplanned(ctx, sel, &obj)
+	case *models.Misplanned:
+		return ec._Misplanned(ctx, sel, obj)
+	case models.NegativeBalanceOnAccount:
+		return ec._NegativeBalanceOnAccount(ctx, sel, &obj)
+	case *models.NegativeBalanceOnAccount:
+		return ec._NegativeBalanceOnAccount(ctx, sel, obj)
+	case models.NegativeBalanceOnEnvelope:
+		return ec._NegativeBalanceOnEnvelope(ctx, sel, &obj)
+	case *models.NegativeBalanceOnEnvelope:
+		return ec._NegativeBalanceOnEnvelope(ctx, sel, obj)
+	case models.EnvelopeOverLimit:
+		return ec._EnvelopeOverLimit(ctx, sel, &obj)
+	case *models.EnvelopeOverLimit:
+		return ec._EnvelopeOverLimit(ctx, sel, obj)
+	case models.MonthStillInProgress:
+		return ec._MonthStillInProgress(ctx, sel, &obj)
+	case *models.MonthStillInProgress:
+		return ec._MonthStillInProgress(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
@@ -5524,6 +6058,38 @@ func (ec *executionContext) _Envelope(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var envelopeOverLimitImplementors = []string{"EnvelopeOverLimit", "Problem"}
+
+func (ec *executionContext) _EnvelopeOverLimit(ctx context.Context, sel ast.SelectionSet, obj *models.EnvelopeOverLimit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, envelopeOverLimitImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EnvelopeOverLimit")
+		case "severity":
+			out.Values[i] = ec._EnvelopeOverLimit_severity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "id":
+			out.Values[i] = ec._EnvelopeOverLimit_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var expenseImplementors = []string{"Expense"}
 
 func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, obj *models.Expense) graphql.Marshaler {
@@ -5626,6 +6192,65 @@ func (ec *executionContext) _ExpenseCategory(ctx context.Context, sel ast.Select
 	return out
 }
 
+var misplannedImplementors = []string{"Misplanned", "Problem"}
+
+func (ec *executionContext) _Misplanned(ctx context.Context, sel ast.SelectionSet, obj *models.Misplanned) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, misplannedImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Misplanned")
+		case "severity":
+			out.Values[i] = ec._Misplanned_severity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "overplanned":
+			out.Values[i] = ec._Misplanned_overplanned(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var monthStillInProgressImplementors = []string{"MonthStillInProgress", "Problem"}
+
+func (ec *executionContext) _MonthStillInProgress(ctx context.Context, sel ast.SelectionSet, obj *models.MonthStillInProgress) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, monthStillInProgressImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonthStillInProgress")
+		case "severity":
+			out.Values[i] = ec._MonthStillInProgress_severity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var monthlyReportImplementors = []string{"MonthlyReport"}
 
 func (ec *executionContext) _MonthlyReport(ctx context.Context, sel ast.SelectionSet, obj *models.MonthlyReport) graphql.Marshaler {
@@ -5640,38 +6265,52 @@ func (ec *executionContext) _MonthlyReport(ctx context.Context, sel ast.Selectio
 		case "month":
 			out.Values[i] = ec._MonthlyReport_month(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "plans":
 			out.Values[i] = ec._MonthlyReport_plans(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "expenses":
 			out.Values[i] = ec._MonthlyReport_expenses(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "transfers":
 			out.Values[i] = ec._MonthlyReport_transfers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "totalPlannedAmount":
 			out.Values[i] = ec._MonthlyReport_totalPlannedAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "totalIncomeAmount":
 			out.Values[i] = ec._MonthlyReport_totalIncomeAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "totalExpenseAmount":
 			out.Values[i] = ec._MonthlyReport_totalExpenseAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "problems":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MonthlyReport_problems(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5726,6 +6365,70 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_updatePlan(ctx, field)
 		case "closeCurrentMonth":
 			out.Values[i] = ec._Mutation_closeCurrentMonth(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var negativeBalanceOnAccountImplementors = []string{"NegativeBalanceOnAccount", "Problem"}
+
+func (ec *executionContext) _NegativeBalanceOnAccount(ctx context.Context, sel ast.SelectionSet, obj *models.NegativeBalanceOnAccount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, negativeBalanceOnAccountImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NegativeBalanceOnAccount")
+		case "severity":
+			out.Values[i] = ec._NegativeBalanceOnAccount_severity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "id":
+			out.Values[i] = ec._NegativeBalanceOnAccount_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var negativeBalanceOnEnvelopeImplementors = []string{"NegativeBalanceOnEnvelope", "Problem"}
+
+func (ec *executionContext) _NegativeBalanceOnEnvelope(ctx context.Context, sel ast.SelectionSet, obj *models.NegativeBalanceOnEnvelope) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, negativeBalanceOnEnvelopeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NegativeBalanceOnEnvelope")
+		case "severity":
+			out.Values[i] = ec._NegativeBalanceOnEnvelope_severity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "id":
+			out.Values[i] = ec._NegativeBalanceOnEnvelope_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6710,6 +7413,56 @@ func (ec *executionContext) unmarshalNPlanInput2githubᚗcomᚋsjanotaᚋbudget�
 
 func (ec *executionContext) unmarshalNPlanUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐPlanUpdate(ctx context.Context, v interface{}) (models.PlanUpdate, error) {
 	return ec.unmarshalInputPlanUpdate(ctx, v)
+}
+
+func (ec *executionContext) marshalNProblem2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐProblem(ctx context.Context, sel ast.SelectionSet, v models.Problem) graphql.Marshaler {
+	return ec._Problem(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProblem2ᚕgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐProblem(ctx context.Context, sel ast.SelectionSet, v []models.Problem) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNProblem2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐProblem(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx context.Context, v interface{}) (models.Severity, error) {
+	var res models.Severity
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNSeverity2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐSeverity(ctx context.Context, sel ast.SelectionSet, v models.Severity) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

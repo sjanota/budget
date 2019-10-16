@@ -19,6 +19,14 @@ const columns = [
     formatter: Amount.format,
   },
   {
+    dataField: 'overlimit',
+    text: 'Over limit',
+    formatter: (cell, row) =>
+      row.limit !== null && row.limit < row.balance
+        ? Amount.format(row.balance - row.limit)
+        : '',
+  },
+  {
     dataField: 'actions',
     text: '',
     isDummyColumn: true,

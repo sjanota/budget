@@ -52,6 +52,10 @@ type Resolver struct {
 	Storage Storage
 }
 
+func (r *Resolver) MonthlyReport() schema.MonthlyReportResolver {
+	return &monthlyReportResolver{r}
+}
+
 func (r *Resolver) Account() schema.AccountResolver {
 	return &accountResolver{r}
 }

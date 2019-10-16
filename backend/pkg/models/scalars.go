@@ -64,6 +64,10 @@ func (a Amount) IsBiggerThan(other Amount) bool {
 	return a > other
 }
 
+func (a Amount) IsNegative() bool {
+	return a < 0
+}
+
 func NewAmount() Amount {
 	return 0
 }

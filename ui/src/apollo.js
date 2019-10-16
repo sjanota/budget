@@ -7,6 +7,13 @@ import { getMainDefinition } from 'apollo-utilities';
 import { onError } from 'apollo-link-error';
 // import { WebSocketLink } from 'apollo-link-ws';
 
+import { IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
+import introspectionQueryResultData from './fragmentTypes.json';
+
+const fragmentMatcher = new IntrospectionFragmentMatcher({
+  introspectionQueryResultData,
+});
+
 export function isSubscriptionOperation({ query }) {
   const definition = getMainDefinition(query);
   return (
@@ -24,7 +31,7 @@ export default function createClient() {
   //     reconnect: true,
   //   },
   // });
-  const cache = new InMemoryCache();
+  const cache = new InMemoryCache({ fragmentMatcher });
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (process.env.REACT_APP_ENV !== 'production') {

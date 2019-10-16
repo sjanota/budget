@@ -301,3 +301,36 @@ func (r MonthlyReport) TotalExpenseAmount() Amount {
 	}
 	return sum
 }
+
+func (r MonthlyReport) ApplyTo(budget *Budget) {
+	for _, expense := range r.Expenses {
+		account := budget.Account(expense.AccountID)
+		for _, expenseCategory := range expense.Categories {
+			category := budget.Category(expenseCategory.CategoryID)
+			envelope := budget.Envelope(category.EnvelopeID)
+
+			account.Balance = account.Balance.Sub(expenseCategory.Amount)
+			envelope.Balance = envelope.Balance.Sub(expenseCategory.Amount)
+		}
+	}
+
+	for _, transfer := range r.Transfers {
+		if transfer.FromAccountID != nil {
+			fromAccount := budget.Account(*transfer.FromAccountID)
+			fromAccount.Balance = fromAccount.Balance.Sub(transfer.Amount)
+		}
+
+		toAccount := budget.Account(transfer.ToAccountID)
+		toAccount.Balance = toAccount.Balance.Add(transfer.Amount)
+	}
+
+	for _, plan := range r.Plans {
+		if plan.FromEnvelopeID != nil {
+			fromEnvelope := budget.Envelope(*plan.FromEnvelopeID)
+			fromEnvelope.Balance = fromEnvelope.Balance.Sub(plan.Amount)
+		}
+
+		toEnvelope := budget.Envelope(plan.ToEnvelopeID)
+		toEnvelope.Balance = toEnvelope.Balance.Add(plan.Amount)
+	}
+}

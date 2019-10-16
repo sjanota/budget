@@ -126,7 +126,7 @@ function TransferModal({ init, ...props }) {
               formData={formData.toAccountID}
               feedback="Provide to"
               as="select"
-              requiured
+              required
             >
               <option />
               {data.accounts.map(({ id, name }) => (
