@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './BudgetContext';
-import { GET_ENVELOPES } from './envelopes';
 import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
 import { GET_ACCOUNTS } from './accounts';
 

@@ -7,22 +7,25 @@ const sizeClasses = {
   normal: '',
 };
 
-export default function SplitButton({
+export function SplitButton({
   children,
   faIcon,
   variant,
   size,
   style,
   className,
+  disabled,
   ...props
 }) {
   const classNames = classnames(
     'btn',
-    `btn-${variant}`,
+    `btn-${disabled ? 'secondary' : variant}`,
     'btn-icon-split',
     sizeClasses[size],
-    className
+    className,
+    { disabled }
   );
+
   const styles = { cursor: 'pointer', ...style };
   return (
     <span className={classNames} style={styles} {...props}>

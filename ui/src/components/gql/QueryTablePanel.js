@@ -9,19 +9,16 @@ export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
   return (
     <Panel
       header={
-        <div className="d-flex justify-content-between align-items-center">
-          <Panel.Title>{title}</Panel.Title>
-          <div>
-            <WithQuery query={query} size="sm" showError={false}>
-              {({ refetch }) => (
-                <>
-                  <RefreshButton onClick={() => refetch()} className="mr-1" />
-                  {buttons}
-                </>
-              )}
-            </WithQuery>
-          </div>
-        </div>
+        <Panel.HeaderWithButton title={title}>
+          <WithQuery query={query} size="sm" showError={false}>
+            {({ refetch }) => (
+              <>
+                <RefreshButton onClick={() => refetch()} className="mr-1" />
+                {buttons}
+              </>
+            )}
+          </WithQuery>
+        </Panel.HeaderWithButton>
       }
       body={
         <WithQuery query={query}>

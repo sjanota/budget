@@ -8,6 +8,8 @@ import { useGetAccounts } from './gql/accounts';
 import Amount from '../model/Amount';
 import { Row } from 'react-bootstrap';
 import { Panel } from './template/Utilities/Panel';
+import { SplitButton } from './template/Utilities/SplitButton';
+import Month from '../model/Month';
 
 function Gauges({ className, month }) {
   return (
@@ -51,11 +53,13 @@ function Gauges({ className, month }) {
 const severityIcon = {
   ERROR: 'exclamation-circle',
   WARNING: 'exclamation-triangle',
+  INFO: 'info-circle',
 };
 
 const severityVariant = {
   ERROR: 'danger',
   WARNING: 'warning',
+  INFO: 'primary',
 };
 
 function ProblemMessage({ problem }) {
@@ -93,7 +97,25 @@ function ProblemMessage({ problem }) {
   );
 }
 
-function MonthSummary({ className, problems }) {
+function Problem({ problem }) {
+  return (
+    <li className={`list-group-item text-${severityVariant[problem.severity]}`}>
+      <i className={`fas fa-fw fa-${severityIcon[problem.severity]} mr-1`} />
+      <ProblemMessage problem={problem} />
+    </li>
+  );
+}
+
+function NoProblems() {
+  return (
+    <li className="list-group-item text-success">
+      <i className="fas fa-fw fa-check-circle mr-1" />
+      Everything is fine
+    </li>
+  );
+}
+
+function MonthProblems({ className, problems }) {
   return (
     <Panel
       className={className}
@@ -106,27 +128,49 @@ function MonthSummary({ className, problems }) {
         <ul className="list-group list-group-flush">
           {problems.length > 0 ? (
             problems.map((problem, idx) => (
-              <li
-                key={idx}
-                className={`list-group-item text-${
-                  severityVariant[problem.severity]
-                }`}
-              >
-                <i
-                  className={`fas fa-fw fa-${
-                    severityIcon[problem.severity]
-                  } mr-1`}
-                />
-                <ProblemMessage problem={problem} />
-              </li>
+              <Problem key={idx} problem={problem} />
             ))
           ) : (
-            <li className="list-group-item text-success">
-              <i className="fas fa-fw fa-check-circle mr-1" />
-              Everything is fine
-            </li>
+            <NoProblems />
           )}
         </ul>
+      }
+    />
+  );
+}
+
+function StartNextmonthButton({ disabled, warn }) {
+  return (
+    <SplitButton
+      faIcon="clipboard-check"
+      variant={warn ? 'warning' : 'success'}
+      disabled={disabled}
+    >
+      Start next month
+    </SplitButton>
+  );
+}
+
+function CurrentMonth({ className, month }) {
+  return (
+    <Panel
+      className={className}
+      header={
+        <Panel.HeaderWithButton
+          title={
+            <span>
+              Current month:{' '}
+              <strong>
+                <em>{Month.parse(month.month).pretty()}</em>
+              </strong>
+            </span>
+          }
+        >
+          <StartNextmonthButton
+            disabled={month.problems.some(p => p.severity === 'ERROR')}
+            warn={month.problems.length > 0}
+          />
+        </Panel.HeaderWithButton>
       }
     />
   );
@@ -139,14 +183,28 @@ export function MonthDashboardPage() {
       <WithQuery query={query}>
         {({ data }) => (
           <Row>
+            <CurrentMonth
+              className="col-12 d-lg-none px-0"
+              month={data.budget.currentMonth}
+            />
             <Gauges
               className="col-12 col-lg-3"
               month={data.budget.currentMonth}
             />
-            <MonthSummary
-              className="col-12 col-lg-9 px-0"
+            <MonthProblems
+              className="col-12 d-lg-none px-0"
               problems={data.budget.currentMonth.problems}
             />
+            <Row className="col-12 col-lg-9 flex-lg-column">
+              <CurrentMonth
+                className="d-none d-lg-block"
+                month={data.budget.currentMonth}
+              />
+              <MonthProblems
+                className="d-none d-lg-block flex-grow-1"
+                problems={data.budget.currentMonth.problems}
+              />
+            </Row>
           </Row>
         )}
       </WithQuery>
