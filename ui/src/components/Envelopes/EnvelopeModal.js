@@ -1,7 +1,7 @@
 import React from 'react';
 import Amount from '../../model/Amount';
 import { FormControl } from '../template/Utilities/FormControl';
-import OptionalFormControl from '../template/Utilities/OptionalFormControl';
+import { OptionalFormControl } from '../template/Utilities/OptionalFormControl';
 import FormModal from '../template/Utilities/FormModal';
 import { useFormData } from '../template/Utilities/useFormData';
 import PropTypes from 'prop-types';
@@ -22,7 +22,7 @@ export function EnvelopeModal({ init, ...props }) {
         formData={formData.name}
       />
       <OptionalFormControl
-        initEnabled={!!formData.limit.init}
+        initEnabled={!!init.limit}
         inline={9}
         label="Limit"
         feedback="Provide a limit for the envelope"

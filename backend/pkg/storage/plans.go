@@ -16,14 +16,11 @@ func (s *Storage) CreatePlan(ctx context.Context, reportID models.MonthlyReportI
 
 	toInsert := &models.Plan{
 		ID:             primitive.NewObjectID(),
-		CurrentAmount:  in.Amount,
+		CurrentAmount:  in.CurrentAmount,
 		Title:          in.Title,
 		FromEnvelopeID: in.FromEnvelopeID,
 		ToEnvelopeID:   in.ToEnvelopeID,
-	}
-
-	if in.Recurring {
-		toInsert.RecurringAmount = in.Amount
+		RecurringAmount: in.RecurringAmount,
 	}
 
 	find := doc{

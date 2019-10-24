@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 
-function simpleFormData({ $init, $process }) {
+function simpleFormData({ $init, $process }, getRoot) {
   const process = $process || (v => v);
   const formData = { current: null };
 
@@ -18,13 +18,16 @@ function simpleFormData({ $init, $process }) {
     );
   };
 
-  formData.init = $init;
+  const init =
+    typeof $init === 'function' ? () => $init(getRoot()) : () => $init;
+
+  formData.init = init;
 
   return formData;
 }
 
-function arrayFormData({ $model, $init }, rerender) {
-  const formData = $init.map(v => createFormData($model(v), rerender));
+function arrayFormData({ $model, $init }, rerender, getRoot) {
+  const formData = $init.map(v => createFormData($model(v), rerender), getRoot);
   formData._originalPush = formData.push;
   formData._originalSplice = formData.splice;
 
@@ -49,11 +52,11 @@ function arrayFormData({ $model, $init }, rerender) {
   return formData;
 }
 
-function compositeFormData({ $includeAllValues, ...model }, rerender) {
+function compositeFormData({ $includeAllValues, ...model }, rerender, getRoot) {
   const formData = Object.keys(model).reduce(
     (acc, key) => ({
       ...acc,
-      [key]: createFormData(model[key], rerender),
+      [key]: createFormData(model[key], rerender, getRoot),
     }),
     {}
   );
@@ -74,20 +77,22 @@ function compositeFormData({ $includeAllValues, ...model }, rerender) {
   return formData;
 }
 
-function createFormData(model, rerender) {
+function createFormData(model, rerender, getRoot) {
   if (Object.prototype.hasOwnProperty.call(model, '$init')) {
     if (Object.prototype.hasOwnProperty.call(model, '$model')) {
-      return arrayFormData(model, rerender);
+      return arrayFormData(model, rerender, getRoot);
     }
-    return simpleFormData(model);
+    return simpleFormData(model, getRoot);
   }
-  return compositeFormData(model, rerender);
+  return compositeFormData(model, rerender, getRoot);
 }
 
 export function useFormData(model) {
   const [, setValue] = useState(false);
   const rerender = () => setValue(v => !v);
-  const formData = createFormData(model, rerender);
+  let formData,
+    getRoot = () => formData;
+  formData = createFormData(model, rerender, getRoot);
   const ref = useRef(formData);
   return ref.current;
 }

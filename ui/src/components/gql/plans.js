@@ -16,7 +16,8 @@ const PLAN_FRAGMENT = gql`
       id
       name
     }
-    amount
+    currentAmount
+    recurringAmount
   }
 `;
 

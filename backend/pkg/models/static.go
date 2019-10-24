@@ -164,7 +164,7 @@ type Plan struct {
 	ID              primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Title           string             `json:"title"`
 	CurrentAmount   Amount             `json:"currentAmount"`
-	RecurringAmount Amount             `json:"recurringAmount"`
+	RecurringAmount *Amount            `json:"recurringAmount"`
 	FromEnvelopeID  *primitive.ObjectID
 	ToEnvelopeID    primitive.ObjectID
 }

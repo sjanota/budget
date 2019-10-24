@@ -11,6 +11,6 @@ export default class Amount {
   }
 
   static format(amount) {
-    return amount == null ? '' : `${(amount / 100).toFixed(2)}`;
+    return amount === null ? '' : `${(amount / 100).toFixed(2)}`;
   }
 }

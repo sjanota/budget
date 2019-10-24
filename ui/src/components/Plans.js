@@ -5,6 +5,7 @@ import ModalButton from './template/Utilities/ModalButton';
 import CreateButton from './template/Utilities/CreateButton';
 import EditTableButton from './template/Utilities/EditTableButton';
 import { FormControl } from './template/Utilities/FormControl';
+import { OptionalFormControl } from './template/Utilities/OptionalFormControl';
 import FormModal from './template/Utilities/FormModal';
 import { useFormData } from './template/Utilities/useFormData';
 import Amount from '../model/Amount';
@@ -16,7 +17,7 @@ import { WithQuery } from './gql/WithQuery';
 const columns = [
   { dataField: 'title', text: 'Title' },
   {
-    dataField: 'amount',
+    dataField: 'currentAmount',
     text: 'Amount',
     formatter: Amount.format,
   },
@@ -29,6 +30,21 @@ const columns = [
     dataField: 'toEnvelope',
     text: 'To',
     formatter: a => a.name,
+  },
+  {
+    dataField: 'recurringAmount',
+    text: 'Recurring',
+    formatter: a => (
+      <div className="custom-control custom-checkbox">
+        <input
+          className="custom-control-input"
+          type="checkbox"
+          checked={a != null}
+          disabled
+        />
+        <label className="custom-control-label">{Amount.format(a)}</label>
+      </div>
+    ),
   },
   {
     dataField: 'actions',
@@ -53,7 +69,17 @@ function PlanModal({ init, ...props }) {
   const query = useGetEnvelopes();
   const formData = useFormData({
     title: { $init: init.title },
-    amount: { $init: Amount.format(init.amount), $process: Amount.parse },
+    currentAmount: {
+      $init: Amount.format(init.currentAmount),
+      $process: Amount.parse,
+    },
+    recurringAmount: {
+      $init: fd =>
+        init.recurringAmount !== null
+          ? Amount.format(init.recurringAmount)
+          : Amount.format(fd.currentAmount.value()),
+      $process: Amount.parse,
+    },
     fromEnvelopeID: {
       $init: init.fromEnvelope && init.fromEnvelope.id,
       $process: v => (v === '' ? null : v),
@@ -73,22 +99,32 @@ function PlanModal({ init, ...props }) {
               feedback="Provide title"
             />
             <FormControl
-              inline={10}
+              inline={8}
               label="Amount"
               feedback="Provide amount"
               type="number"
               required
-              formData={formData.amount}
+              formData={formData.currentAmount}
+              step="0.01"
+            />
+            <OptionalFormControl
+              initEnabled={init.recurringAmount !== null}
+              inline={8}
+              label="Recurring"
+              feedback="Provide amount for recurring plans"
+              type="number"
+              required
+              formData={formData.recurringAmount}
               step="0.01"
             />
             <FormControl
               label="From"
-              inline={10}
+              inline={8}
               formData={formData.fromEnvelopeID}
               feedback="Provide from"
               as="select"
             >
-              <option />
+              <option value={null} />
               {data.envelopes.map(({ id, name }) => (
                 <option key={id} value={id}>
                   {name}
@@ -97,13 +133,13 @@ function PlanModal({ init, ...props }) {
             </FormControl>
             <FormControl
               label="To"
-              inline={10}
+              inline={8}
               formData={formData.toEnvelopeID}
               feedback="Provide to"
               as="select"
-              requiured
+              required
             >
-              <option />
+              <option value={null} />
               {data.envelopes.map(({ id, name }) => (
                 <option key={id} value={id}>
                   {name}
@@ -145,7 +181,8 @@ function CreatePlanButton() {
             title: null,
             fromEnvelope: { id: null },
             toEnvelope: { id: null },
-            amount: null,
+            currentAmount: null,
+            recurringAmount: null,
             date: null,
           }}
           title="Add new plan"

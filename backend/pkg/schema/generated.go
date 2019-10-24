@@ -965,8 +965,8 @@ input PlanInput {
   title: String!
   fromEnvelopeID: ID
   toEnvelopeID: ID!
-  amount: Amount!
-  recurring: Boolean!
+  currentAmount: Amount!
+  recurringAmount: Amount
 }
 input PlanUpdate {
   title: String
@@ -3862,10 +3862,10 @@ func (ec *executionContext) _Plan_recurringAmount(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(models.Amount)
+	res := resTmp.(*models.Amount)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+	return ec.marshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5733,15 +5733,15 @@ func (ec *executionContext) unmarshalInputPlanInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "amount":
+		case "currentAmount":
 			var err error
-			it.Amount, err = ec.unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+			it.CurrentAmount, err = ec.unmarshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "recurring":
+		case "recurringAmount":
 			var err error
-			it.Recurring, err = ec.unmarshalNBoolean2bool(ctx, v)
+			it.RecurringAmount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
 			if err != nil {
 				return it, err
 			}

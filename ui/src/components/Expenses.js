@@ -106,7 +106,7 @@ function CategoriesInput({ formData }) {
               <Col>
                 <Form.Control
                   placeholder="Category"
-                  defaultValue={categoryFormData.categoryID.init}
+                  defaultValue={categoryFormData.categoryID.init()}
                   ref={categoryFormData.categoryID}
                   as="select"
                   required
@@ -124,7 +124,7 @@ function CategoriesInput({ formData }) {
                   type="number"
                   required
                   placeholder="Amount"
-                  defaultValue={categoryFormData.amount.init}
+                  defaultValue={categoryFormData.amount.init()}
                   ref={categoryFormData.amount}
                   step="0.01"
                 />

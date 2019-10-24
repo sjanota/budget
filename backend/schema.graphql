@@ -64,8 +64,8 @@ input PlanInput {
   title: String!
   fromEnvelopeID: ID
   toEnvelopeID: ID!
-  amount: Amount!
-  recurring: Boolean!
+  currentAmount: Amount!
+  recurringAmount: Amount
 }
 input PlanUpdate {
   title: String

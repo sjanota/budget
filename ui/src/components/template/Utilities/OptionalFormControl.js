@@ -3,7 +3,7 @@ import { Form, Row } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { FormControl } from './FormControl';
 
-export default function OptionalFormControl({
+export function OptionalFormControl({
   initEnabled,
   label,
   inline,

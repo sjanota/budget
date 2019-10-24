@@ -87,11 +87,11 @@ type NegativeBalanceOnEnvelope struct {
 func (NegativeBalanceOnEnvelope) IsProblem() {}
 
 type PlanInput struct {
-	Title          string              `json:"title"`
-	FromEnvelopeID *primitive.ObjectID `json:"fromEnvelopeID"`
-	ToEnvelopeID   primitive.ObjectID  `json:"toEnvelopeID"`
-	Amount         Amount              `json:"amount"`
-	Recurring      bool                `json:"recurring"`
+	Title           string              `json:"title"`
+	FromEnvelopeID  *primitive.ObjectID `json:"fromEnvelopeID"`
+	ToEnvelopeID    primitive.ObjectID  `json:"toEnvelopeID"`
+	CurrentAmount   Amount              `json:"currentAmount"`
+	RecurringAmount *Amount             `json:"recurringAmount"`
 }
 
 type PlanUpdate struct {
