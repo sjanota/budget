@@ -45,8 +45,8 @@ function arrayFormData({ $model, $init }, rerender, getRoot) {
     rerender();
   };
 
-  formData.splice = (idx, n) => {
-    formData._originalSplice(idx, n);
+  formData.removeAt = idx => {
+    const removed = formData._originalSplice(idx, 1);
     rerender();
   };
 

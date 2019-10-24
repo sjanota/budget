@@ -100,7 +100,7 @@ function CategoriesInput({ formData }) {
           {formData.map((categoryFormData, idx) => (
             <Form.Group
               as={Row}
-              key={idx}
+              key={categoryFormData.categoryID.init() || idx}
               className="d-flex align-items-center"
             >
               <Col>
@@ -111,7 +111,7 @@ function CategoriesInput({ formData }) {
                   as="select"
                   required
                 >
-                  <option></option>
+                  <option disabled selected />
                   {data.categories.map(({ id, name }) => (
                     <option key={id} value={id}>
                       {name}
@@ -134,7 +134,10 @@ function CategoriesInput({ formData }) {
                   faIcon="minus"
                   variant="danger"
                   size="sm"
-                  onClick={() => formData.splice(idx, 1)}
+                  onClick={() => {
+                    console.log(categoryFormData, idx);
+                    formData.removeAt(idx);
+                  }}
                 />
               </Col>
             </Form.Group>
