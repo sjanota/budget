@@ -15,7 +15,11 @@ func (r *monthlyReportResolver) Problems(ctx context.Context, obj *models.Monthl
 	problems := make([]models.Problem, 0)
 
 	now := time.Now()
-	if now.Year() == obj.Month().Year && now.Month() == obj.Month().Month {
+	currentMonth := models.Month{
+		Year:  now.Year(),
+		Month: now.Month(),
+	}
+	if !obj.Month().IsEarlierThan(currentMonth) {
 		problems = append(problems, models.MonthStillInProgress{
 			Severity: models.SeverityInfo,
 		})

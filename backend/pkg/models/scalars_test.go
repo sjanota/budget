@@ -139,6 +139,27 @@ func TestMonth_Next(t *testing.T) {
 	}
 }
 
+func TestMonth_IsEarlierThan(t *testing.T) {
+	cases := []struct {
+		title    string
+		month    models.Month
+		other models.Month
+		expected bool
+	}{
+		{"Earlier same year", models.Month{2020, time.December}, models.Month{2020, time.January}, false},
+		{"Later same year", models.Month{2020, time.June}, models.Month{2020, time.July}, true},
+		{"Previous year", models.Month{2020, time.June}, models.Month{2019, time.July}, false},
+		{"Next year", models.Month{2020, time.June}, models.Month{2021, time.June}, true},
+		{"Same month", models.Month{2020, time.June}, models.Month{2020, time.June}, false},
+	}
+
+	for _, test := range cases {
+		t.Run(test.title, func(t *testing.T) {
+			assert.Equal(t, test.expected, test.month.IsEarlierThan(test.other))
+		})
+	}
+}
+
 func TestAmount_Add(t *testing.T) {
 	cases := []struct {
 		title    string

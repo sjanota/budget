@@ -138,6 +138,10 @@ func (m Month) Contains(d Date) bool {
 	return m.Month == d.Month && m.Year == d.Year
 }
 
+func (m Month) IsEarlierThan(other Month) bool {
+	return m.Year < other.Year || (m.Year == other.Year && m.Month < other.Month)
+}
+
 func (m Month) Next() Month {
 	if m.Month == time.December {
 		return Month{
