@@ -2,75 +2,62 @@ import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './budget';
 import { removeFromListByID } from '../../util/immutable';
+import { GET_ACCOUNTS } from './accounts';
+import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
+import { GET_ENVELOPES } from './envelopes';
+
+const EXPENSE_FRAGMENT = gql`
+  fragment Expense on Expense {
+    id
+    title
+    account {
+      id
+      name
+    }
+    categories {
+      category {
+        id
+        name
+      }
+      amount
+    }
+    totalAmount
+    date
+  }
+`;
 
 export const GET_CURRENT_EXPENSES = gql`
   query getCurrentExpenses($budgetID: ID!) {
     budget(budgetID: $budgetID) {
       currentMonth {
         expenses {
-          id
-          title
-          account {
-            id
-            name
-          }
-          categories {
-            category {
-              id
-              name
-            }
-            amount
-          }
-          totalAmount
-          date
+          ...Expense
         }
       }
     }
   }
+
+  ${EXPENSE_FRAGMENT}
 `;
 
 const CREATE_EXPENSE = gql`
   mutation createExpense($budgetID: ID!, $input: ExpenseInput!) {
     createExpense(budgetID: $budgetID, in: $input) {
-      id
-      title
-      account {
-        id
-        name
-      }
-      categories {
-        category {
-          id
-          name
-        }
-        amount
-      }
-      totalAmount
-      date
+      ...Expense
     }
   }
+
+  ${EXPENSE_FRAGMENT}
 `;
 
 const UPDATE_EXPENSE = gql`
   mutation updateExpense($budgetID: ID!, $id: ID!, $input: ExpenseUpdate!) {
     updateExpense(budgetID: $budgetID, id: $id, in: $input) {
-      id
-      title
-      account {
-        id
-        name
-      }
-      categories {
-        category {
-          id
-          name
-        }
-        amount
-      }
-      totalAmount
-      date
+      ...Expense
     }
   }
+
+  ${EXPENSE_FRAGMENT}
 `;
 
 export function useCreateExpense() {
@@ -95,6 +82,14 @@ export function useCreateExpense() {
         },
       });
     },
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      { query: GET_ENVELOPES, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
   });
   const wrapper = input => {
     mutation({ variables: { budgetID: selectedBudget.id, input } });
@@ -104,7 +99,16 @@ export function useCreateExpense() {
 
 export function useUpdateExpense() {
   const { selectedBudget } = useBudget();
-  const [mutation, ...rest] = useMutation(UPDATE_EXPENSE);
+  const [mutation, ...rest] = useMutation(UPDATE_EXPENSE, {
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      { query: GET_ENVELOPES, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
+  });
   const wrapper = (id, input) => {
     mutation({ variables: { budgetID: selectedBudget.id, id, input } });
   };
@@ -151,6 +155,14 @@ export function useDeleteExpense() {
         },
       });
     },
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      { query: GET_ENVELOPES, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
   });
   const wrapper = id => {
     mutation({ variables: { budgetID: selectedBudget.id, id } });

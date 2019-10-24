@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './budget';
 import { GET_ENVELOPES } from './envelopes';
 import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
+import { removeFromListByID } from '../../util/immutable';
 
 const PLAN_FRAGMENT = gql`
   fragment Plan on Plan {
@@ -108,6 +109,53 @@ export function useUpdatePlan() {
   });
   const wrapper = (id, input) => {
     mutation({ variables: { budgetID: selectedBudget.id, id, input } });
+  };
+  return [wrapper, ...rest];
+}
+
+const DELETE_PLAN = gql`
+  mutation deletePlan($budgetID: ID!, $id: ID!) {
+    deletePlan(budgetID: $budgetID, id: $id) {
+      id
+    }
+  }
+`;
+
+export function useDeletePlan() {
+  const { selectedBudget } = useBudget();
+  const [mutation, ...rest] = useMutation(DELETE_PLAN, {
+    update: (cache, { data: { deletePlan } }) => {
+      const { budget } = cache.readQuery({
+        query: GET_CURRENT_PLANS,
+        variables: { budgetID: selectedBudget.id },
+      });
+      cache.writeQuery({
+        query: GET_CURRENT_PLANS,
+        variables: { budgetID: selectedBudget.id },
+        data: {
+          budget: {
+            ...budget,
+            currentMonth: {
+              ...budget.currentMonth,
+              plans: removeFromListByID(
+                budget.currentMonth.plans,
+                deletePlan.id
+              ),
+            },
+          },
+        },
+      });
+    },
+    refetchQueries: () => [
+      { query: GET_ENVELOPES, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
+  });
+  const wrapper = id => {
+    mutation({ variables: { budgetID: selectedBudget.id, id } });
   };
   return [wrapper, ...rest];
 }

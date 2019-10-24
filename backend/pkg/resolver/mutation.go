@@ -18,6 +18,15 @@ type mutationResolver struct {
 	*Resolver
 }
 
+func (r *mutationResolver) DeletePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Plan, error) {
+	budget, err := r.Storage.GetBudget(ctx, budgetID)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Storage.DeletePlan(ctx, budget.CurrentMonthID(), id)
+}
+
 func (r *mutationResolver) DeleteExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Expense, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetID)
 	if err != nil {

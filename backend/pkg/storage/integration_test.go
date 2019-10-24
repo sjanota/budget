@@ -165,3 +165,12 @@ func whenSomeExpenseExists(t *testing.T, ctx context.Context, accountID, categor
 	require.NoError(t, err)
 	return expense
 }
+
+func whenSomePlanExists(t *testing.T, ctx context.Context, envelopeID1, envelopeID2 primitive.ObjectID, report *models.MonthlyReport) *models.Plan {
+	input := mock_models.PlanInput().
+		WithTo(envelopeID1).
+		WithFrom(&envelopeID2)
+	plan, err := testStorage.CreatePlan(ctx, report.ID, input)
+	require.NoError(t, err)
+	return plan
+}

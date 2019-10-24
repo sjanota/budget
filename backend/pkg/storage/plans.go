@@ -72,6 +72,30 @@ func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportI
 	return result.Plan(id), err
 }
 
+func (s *Storage) DeletePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (*models.Plan, error) {
+	find := doc{"_id": reportID}
+	project := doc{
+		"plans": doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	updateDoc := doc{
+		"$pull": doc{"plans": doc{"_id": id}},
+	}
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, updateDoc, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.Before))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.MonthlyReport{}
+	err := res.Decode(result)
+	return result.Plan(id), err
+}
+
 func (s *Storage) GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error) {
 	result, err := s.monthlyReports.Aggregate(ctx, list{
 		doc{"$match": doc{"_id": reportID}},

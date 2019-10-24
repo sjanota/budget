@@ -9,10 +9,16 @@ import { OptionalFormControl } from './template/Utilities/OptionalFormControl';
 import FormModal from './template/Utilities/FormModal';
 import { useFormData } from './template/Utilities/useFormData';
 import Amount from '../model/Amount';
-import { useCreatePlan, useGetCurrentPlans, useUpdatePlan } from './gql/plans';
+import {
+  useCreatePlan,
+  useGetCurrentPlans,
+  useUpdatePlan,
+  useDeletePlan,
+} from './gql/plans';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { useGetEnvelopes } from './gql/envelopes';
 import { WithQuery } from './gql/WithQuery';
+import TableButton from './template/Utilities/TableButton';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -53,9 +59,7 @@ const columns = [
     formatter: (cell, row) => (
       <span>
         <UpdatePlanButton plan={row} />
-        <span style={{ cursor: 'pointer' }}>
-          <i className="fas fa-archive fa-fw" />
-        </span>
+        <DeletePlanButton plan={row} />
       </span>
     ),
     style: {
@@ -164,6 +168,17 @@ function UpdatePlanButton({ plan }) {
           {...props}
         />
       )}
+    />
+  );
+}
+
+function DeletePlanButton({ plan }) {
+  const [deletePlan] = useDeletePlan();
+  return (
+    <TableButton
+      faIcon="trash-alt"
+      variant="secondary"
+      onClick={() => deletePlan(plan.id)}
     />
   );
 }

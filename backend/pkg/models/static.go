@@ -189,6 +189,16 @@ type Plan struct {
 	ToEnvelopeID    primitive.ObjectID
 }
 
+func (i PlanInput) WithFrom(fromID *primitive.ObjectID) *PlanInput {
+	i.FromEnvelopeID = fromID
+	return &i
+}
+
+func (i PlanInput) WithTo(toID primitive.ObjectID) *PlanInput {
+	i.ToEnvelopeID = toID
+	return &i
+}
+
 type Category struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name       string             `json:"name"`

@@ -31,6 +31,17 @@ func ExpenseInput() *models.ExpenseInput {
 	}
 }
 
+func PlanInput() *models.PlanInput {
+	from := primitive.NewObjectID()
+	return &models.PlanInput{
+		Title: *Name(),
+		ToEnvelopeID: primitive.NewObjectID(),
+		FromEnvelopeID: &from,
+		CurrentAmount: *Amount(),
+		RecurringAmount: Amount(),
+	}
+}
+
 func ExpenseCategoryInput() *models.ExpenseCategoryInput {
 	return &models.ExpenseCategoryInput{
 		CategoryID: primitive.NewObjectID(),
