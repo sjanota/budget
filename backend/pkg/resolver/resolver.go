@@ -42,7 +42,7 @@ type Storage interface {
 	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.TransferUpdate) (*models.Transfer, error)
 	GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
 	CreatePlan(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanInput) (*models.Plan, error)
-	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update *models.PlanUpdate) (*models.Plan, error)
+	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.PlanUpdate) (*models.Plan, error)
 	GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (models.Amount, error)
 	ReplaceBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }

@@ -247,9 +247,9 @@ func (u ExpenseUpdate) Changes() Changes {
 	return result
 }
 
-type PlanUpdate struct{ Changes }
+type PlanUpdate Changes
 
-func NewPlanUpdate(changes map[string]interface{}) (*PlanUpdate, error) {
+func NewPlanUpdate(changes map[string]interface{}) (PlanUpdate, error) {
 	var err error
 	result := make(map[string]interface{})
 	for key, value := range changes {
@@ -267,7 +267,23 @@ func NewPlanUpdate(changes map[string]interface{}) (*PlanUpdate, error) {
 			return nil, err
 		}
 	}
-	return &PlanUpdate{result}, nil
+	return result, nil
+}
+
+func (u PlanUpdate) FromEnvelopeID() (*primitive.ObjectID, bool) {
+	v, ok := u["fromenvelopeid"]
+	if !ok {
+		return nil, false
+	}
+	return v.(*primitive.ObjectID), true
+}
+
+func (u PlanUpdate) ToEnvelopeID() (primitive.ObjectID, bool) {
+	v, ok := u["toenvelopeid"]
+	if !ok {
+		return primitive.NilObjectID, false
+	}
+	return v.(primitive.ObjectID), true
 }
 
 type TransferUpdate Changes
@@ -298,7 +314,7 @@ func NewTransferUpdate(changes map[string]interface{}) (TransferUpdate, error) {
 }
 
 func (u TransferUpdate) FromAccountID() (*primitive.ObjectID, bool) {
-	v, ok := u["fromAccountID"]
+	v, ok := u["fromaccountid"]
 	if !ok {
 		return nil, false
 	}
@@ -306,7 +322,7 @@ func (u TransferUpdate) FromAccountID() (*primitive.ObjectID, bool) {
 }
 
 func (u TransferUpdate) ToAccountID() (primitive.ObjectID, bool) {
-	v, ok := u["toAccountID"]
+	v, ok := u["toaccountid"]
 	if !ok {
 		return primitive.NilObjectID, false
 	}
