@@ -30,7 +30,6 @@ function simpleFormData({ $init, $process, $default }, getRoot) {
 function arrayFormData({ $model, $init }, rerender, getRoot) {
   const formData = $init.map(v => createFormData($model(v), rerender), getRoot);
   formData._originalPush = formData.push;
-  formData._originalSplice = formData.splice;
 
   formData.value = () => {
     return formData.map(v => v.value());
@@ -46,7 +45,7 @@ function arrayFormData({ $model, $init }, rerender, getRoot) {
   };
 
   formData.removeAt = idx => {
-    const removed = formData._originalSplice(idx, 1);
+    formData.splice(idx, 1);
     rerender();
   };
 
