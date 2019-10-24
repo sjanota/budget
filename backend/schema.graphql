@@ -196,6 +196,7 @@ type Mutation {
 
   createExpense(budgetID: ID!, in: ExpenseInput!): Expense
   updateExpense(budgetID: ID!, id: ID!, in: ExpenseUpdate!): Expense
+  deleteExpense(budgetID: ID!, id: ID!): Expense
 
   createTransfer(budgetID: ID!, in: TransferInput!): Transfer
   updateTransfer(budgetID: ID!, id: ID!, in: TransferUpdate!): Transfer

@@ -13,6 +13,7 @@ import {
   useCreateExpense,
   useGetCurrentExpenses,
   useUpdateExpense,
+  useDeleteExpense,
 } from './gql/expenses';
 import { useGetAccounts } from './gql/accounts';
 import { useGetCategories } from './gql/categories';
@@ -45,9 +46,7 @@ const columns = [
     formatter: (cell, row) => (
       <span>
         <UpdateExpenseButton expense={row} />
-        <span style={{ cursor: 'pointer' }}>
-          <i className="fas fa-archive fa-fw" />
-        </span>
+        <DeleteExpenseButton expense={row} />
       </span>
     ),
     style: {
@@ -111,7 +110,7 @@ function CategoriesInput({ formData }) {
                   as="select"
                   required
                 >
-                  <option disabled selected />
+                  <option disabled />
                   {data.categories.map(({ id, name }) => (
                     <option key={id} value={id}>
                       {name}
@@ -209,6 +208,17 @@ function ExpenseModal({ init, ...props }) {
         )}
       </WithQuery>
     </FormModal>
+  );
+}
+
+function DeleteExpenseButton({ expense }) {
+  const [deleteExpense] = useDeleteExpense();
+  return (
+    <TableButton
+      faIcon="trash-alt"
+      variant="secondary"
+      onClick={() => deleteExpense(expense.id)}
+    />
   );
 }
 

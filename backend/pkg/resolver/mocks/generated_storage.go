@@ -6,11 +6,12 @@ package mock_resolver
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/sjanota/budget/backend/pkg/models"
 	storage "github.com/sjanota/budget/backend/pkg/storage"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"
-	reflect "reflect"
 )
 
 // MockStorage is a mock of Storage interface
@@ -409,4 +410,19 @@ func (m *MockStorage) ReplaceBudget(ctx context.Context, budget *models.Budget) 
 func (mr *MockStorageMockRecorder) ReplaceBudget(ctx, budget interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceBudget", reflect.TypeOf((*MockStorage)(nil).ReplaceBudget), ctx, budget)
+}
+
+// DeleteExpense mocks base method
+func (m *MockStorage) DeleteExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (*models.Expense, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteExpense", ctx, reportID, id)
+	ret0, _ := ret[0].(*models.Expense)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteExpense indicates an expected call of DeleteExpense
+func (mr *MockStorageMockRecorder) DeleteExpense(ctx, reportID, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExpense", reflect.TypeOf((*MockStorage)(nil).DeleteExpense), ctx, reportID, id)
 }

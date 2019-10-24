@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './budget';
+import { removeFromListByID } from '../../util/immutable';
 
 export const GET_CURRENT_EXPENSES = gql`
   query getCurrentExpenses($budgetID: ID!) {
@@ -115,4 +116,44 @@ export function useGetCurrentExpenses() {
   return useQuery(GET_CURRENT_EXPENSES, {
     variables: { budgetID: selectedBudget.id },
   });
+}
+
+const DELETE_EXPENSE = gql`
+  mutation deleteExpense($budgetID: ID!, $id: ID!) {
+    deleteExpense(budgetID: $budgetID, id: $id) {
+      id
+    }
+  }
+`;
+
+export function useDeleteExpense() {
+  const { selectedBudget } = useBudget();
+  const [mutation, ...rest] = useMutation(DELETE_EXPENSE, {
+    update: (cache, { data: { deleteExpense } }) => {
+      const { budget } = cache.readQuery({
+        query: GET_CURRENT_EXPENSES,
+        variables: { budgetID: selectedBudget.id },
+      });
+      cache.writeQuery({
+        query: GET_CURRENT_EXPENSES,
+        variables: { budgetID: selectedBudget.id },
+        data: {
+          budget: {
+            ...budget,
+            currentMonth: {
+              ...budget.currentMonth,
+              expenses: removeFromListByID(
+                budget.currentMonth.expenses,
+                deleteExpense.id
+              ),
+            },
+          },
+        },
+      });
+    },
+  });
+  const wrapper = id => {
+    mutation({ variables: { budgetID: selectedBudget.id, id } });
+  };
+  return [wrapper, ...rest];
 }

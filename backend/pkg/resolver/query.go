@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -41,4 +42,3 @@ func (r *queryResolver) Budgets(ctx context.Context) ([]*models.Budget, error) {
 func (r *queryResolver) Budget(ctx context.Context, id primitive.ObjectID) (*models.Budget, error) {
 	return r.Storage.GetBudget(ctx, id)
 }
-

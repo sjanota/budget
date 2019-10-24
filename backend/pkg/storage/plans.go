@@ -15,11 +15,11 @@ func (s *Storage) CreatePlan(ctx context.Context, reportID models.MonthlyReportI
 	}
 
 	toInsert := &models.Plan{
-		ID:             primitive.NewObjectID(),
-		CurrentAmount:  in.CurrentAmount,
-		Title:          in.Title,
-		FromEnvelopeID: in.FromEnvelopeID,
-		ToEnvelopeID:   in.ToEnvelopeID,
+		ID:              primitive.NewObjectID(),
+		CurrentAmount:   in.CurrentAmount,
+		Title:           in.Title,
+		FromEnvelopeID:  in.FromEnvelopeID,
+		ToEnvelopeID:    in.ToEnvelopeID,
 		RecurringAmount: in.RecurringAmount,
 	}
 

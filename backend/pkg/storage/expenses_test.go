@@ -176,3 +176,26 @@ func TestStorage_GetExpensesTotalForEnvelope(t *testing.T) {
 		assert.Equal(t, models.NewAmount(), total)
 	})
 }
+
+func TestStorage_DeleteExpense(t *testing.T) {
+	ctx := before()
+	budget := whenSomeBudgetExists(t, ctx)
+	report := whenSomeMonthlyReportExists(t, ctx, budget.ID)
+	envelope := whenSomeEnvelopeExists(t, ctx, budget.ID)
+	category1 := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
+	category2 := whenSomeCategoryExists(t, ctx, budget.ID, envelope.ID)
+	account := whenSomeAccountExists(t, ctx, budget.ID)
+	expense1 := whenSomeExpenseExists(t, ctx, account.ID, category1.ID, category2.ID, report)
+	expense2 := whenSomeExpenseExists(t, ctx, account.ID, category1.ID, category2.ID, report)
+
+	t.Run("Success", func(t *testing.T) {
+		deleted, err := testStorage.DeleteExpense(ctx, report.ID, expense1.ID)
+		require.NoError(t, err)
+		assert.Equal(t, expense1, deleted)
+
+		expenses, err := testStorage.GetExpenses(ctx, report.ID)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []*models.Expense{expense2}, expenses)
+	})
+
+}

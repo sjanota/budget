@@ -2,8 +2,9 @@ package resolver
 
 import (
 	"context"
-	"github.com/sjanota/budget/backend/pkg/models"
 	"time"
+
+	"github.com/sjanota/budget/backend/pkg/models"
 )
 
 type monthlyReportResolver struct {
@@ -24,7 +25,7 @@ func (r *monthlyReportResolver) Problems(ctx context.Context, obj *models.Monthl
 	planned := obj.TotalPlannedAmount()
 	if income != planned {
 		problems = append(problems, models.Misplanned{
-			Severity:        models.SeverityError,
+			Severity:    models.SeverityError,
 			Overplanned: planned > income,
 		})
 	}
@@ -40,7 +41,7 @@ func (r *monthlyReportResolver) Problems(ctx context.Context, obj *models.Monthl
 		if envelope.Balance.IsNegative() {
 			problems = append(problems, models.NegativeBalanceOnEnvelope{
 				Severity: models.SeverityError,
-				ID:   envelope.ID,
+				ID:       envelope.ID,
 			})
 		}
 
@@ -56,12 +57,10 @@ func (r *monthlyReportResolver) Problems(ctx context.Context, obj *models.Monthl
 		if account.Balance.IsNegative() {
 			problems = append(problems, models.NegativeBalanceOnAccount{
 				Severity: models.SeverityWarning,
-				ID:   account.ID,
+				ID:       account.ID,
 			})
 		}
 	}
 
 	return problems, nil
 }
-
-

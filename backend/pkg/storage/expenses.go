@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -77,6 +78,30 @@ func (s *Storage) UpdateExpense(ctx context.Context, reportID models.MonthlyRepo
 		"$set": updateFields,
 	}
 	res := s.monthlyReports.FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.MonthlyReport{}
+	err := res.Decode(result)
+	return result.Expense(id), err
+}
+
+func (s *Storage) DeleteExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (*models.Expense, error) {
+	find := doc{"_id": reportID}
+	project := doc{
+		"expenses": doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	updateDoc := doc{
+		"$pull": doc{"expenses": doc{"_id": id}},
+	}
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, updateDoc, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.Before))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
 	} else if err != nil {

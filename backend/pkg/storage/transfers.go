@@ -148,7 +148,7 @@ func (s *Storage) validateTransferUpdate(ctx context.Context, reportID models.Mo
 	if id, has := in.FromAccountID(); has && id != nil && budget.Account(*id) == nil {
 		return ErrInvalidReference
 	}
-	if  id, has := in.ToAccountID(); has && budget.Account(id) == nil {
+	if id, has := in.ToAccountID(); has && budget.Account(id) == nil {
 		return ErrInvalidReference
 	}
 	if date, has := in.Date(); has && !reportID.Month.Contains(date) {
