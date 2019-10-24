@@ -17,7 +17,7 @@ import {
 import { useGetAccounts } from './gql/accounts';
 import { useGetCategories } from './gql/categories';
 import { WithQuery } from './gql/WithQuery';
-import { useBudget } from './gql/BudgetContext';
+import { useBudget } from './gql/budget';
 import Month from '../model/Month';
 import { Form, Row, Col } from 'react-bootstrap';
 import TableButton from './template/Utilities/TableButton';

@@ -10,6 +10,7 @@ import { Row } from 'react-bootstrap';
 import { Panel } from './template/Utilities/Panel';
 import { SplitButton } from './template/Utilities/SplitButton';
 import Month from '../model/Month';
+import { useCloseCurrentMonth } from './gql/budget';
 
 function Gauges({ className, month }) {
   return (
@@ -140,11 +141,13 @@ function MonthProblems({ className, problems }) {
 }
 
 function StartNextmonthButton({ disabled, warn }) {
+  const [closeCurrentMonth] = useCloseCurrentMonth();
   return (
     <SplitButton
       faIcon="clipboard-check"
       variant={warn ? 'warning' : 'success'}
       disabled={disabled}
+      onClick={() => closeCurrentMonth()}
     >
       Start next month
     </SplitButton>

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { useBudget } from './BudgetContext';
+import { useBudget } from './budget';
 import { useQuery } from '@apollo/react-hooks';
 
 const MONTHLY_REPORT_FRAGMENT = gql`

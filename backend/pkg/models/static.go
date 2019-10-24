@@ -14,6 +14,11 @@ type Budget struct {
 	CurrentMonth Month
 }
 
+type Problem interface {
+	IsProblem()
+	IsError() bool
+}
+
 type Changes map[string]interface{}
 
 func (ch Changes) Has(key string) bool {
@@ -396,4 +401,24 @@ func (r MonthlyReport) ApplyTo(budget *Budget) {
 		toEnvelope := budget.Envelope(plan.ToEnvelopeID)
 		toEnvelope.Balance = toEnvelope.Balance.Add(plan.CurrentAmount)
 	}
+}
+
+func (e MonthStillInProgress) IsError() bool {
+	return e.Severity == SeverityError
+}
+
+func (e Misplanned) IsError() bool {
+	return e.Severity == SeverityError
+}
+
+func (e NegativeBalanceOnEnvelope) IsError() bool {
+	return e.Severity == SeverityError
+}
+
+func (e EnvelopeOverLimit) IsError() bool {
+	return e.Severity == SeverityError
+}
+
+func (e NegativeBalanceOnAccount) IsError() bool {
+	return e.Severity == SeverityError
 }

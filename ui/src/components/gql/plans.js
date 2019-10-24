@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import { useBudget } from './BudgetContext';
+import { useBudget } from './budget';
 import { GET_ENVELOPES } from './envelopes';
 import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
 
@@ -21,7 +21,7 @@ const PLAN_FRAGMENT = gql`
   }
 `;
 
-const GET_CURRENT_PLANS = gql`
+export const GET_CURRENT_PLANS = gql`
   query getCurrentPlans($budgetID: ID!) {
     budget(budgetID: $budgetID) {
       currentMonth {

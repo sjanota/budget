@@ -16,7 +16,7 @@ import {
 } from './gql/transfers';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { useGetAccounts } from './gql/accounts';
-import { useBudget } from './gql/BudgetContext';
+import { useBudget } from './gql/budget';
 import { WithQuery } from './gql/WithQuery';
 
 const columns = [

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import { useBudget } from './BudgetContext';
+import { useBudget } from './budget';
 
 export const GET_ENVELOPES = gql`
   query GetEnvelopes($budgetID: ID!) {

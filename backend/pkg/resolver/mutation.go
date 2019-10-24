@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/sjanota/budget/backend/pkg/schema"
@@ -26,6 +27,16 @@ func (r *mutationResolver) CloseCurrentMonth(ctx context.Context, budgetID primi
 	monthlyBudget, err := r.Storage.GetMonthlyReport(ctx, budget.CurrentMonthID())
 	if err != nil {
 		return nil, err
+	}
+	problems, err := r.MonthlyReport().Problems(ctx, monthlyBudget)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range problems {
+		if p.IsError() {
+			return nil, errors.New("cannot close month because of unsolved problems")
+		}
 	}
 
 	monthlyBudget.ApplyTo(budget)

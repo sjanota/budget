@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import { useBudget } from './BudgetContext';
+import { useBudget } from './budget';
 
 const GET_CATEGORIES = gql`
   query GetCategories($budgetID: ID!) {
