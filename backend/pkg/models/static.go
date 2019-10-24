@@ -199,6 +199,21 @@ func (i PlanInput) WithTo(toID primitive.ObjectID) *PlanInput {
 	return &i
 }
 
+func (i TransferInput) WithFrom(fromID *primitive.ObjectID) *TransferInput {
+	i.FromAccountID = fromID
+	return &i
+}
+
+func (i TransferInput) WithTo(toID primitive.ObjectID) *TransferInput {
+	i.ToAccountID = toID
+	return &i
+}
+
+func (i TransferInput) WithDate(date Date) *TransferInput {
+	i.Date = date
+	return &i
+}
+
 type Category struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name       string             `json:"name"`

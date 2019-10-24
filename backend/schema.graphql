@@ -200,6 +200,7 @@ type Mutation {
 
   createTransfer(budgetID: ID!, in: TransferInput!): Transfer
   updateTransfer(budgetID: ID!, id: ID!, in: TransferUpdate!): Transfer
+  deleteTransfer(budgetID: ID!, id: ID!): Transfer
 
   createPlan(budgetID: ID!, in: PlanInput!): Plan
   updatePlan(budgetID: ID!, id: ID!, in: PlanUpdate!): Plan

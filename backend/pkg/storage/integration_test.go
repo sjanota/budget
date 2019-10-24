@@ -174,3 +174,13 @@ func whenSomePlanExists(t *testing.T, ctx context.Context, envelopeID1, envelope
 	require.NoError(t, err)
 	return plan
 }
+
+func whenSomeTransferExists(t *testing.T, ctx context.Context, accountID1, accountID2 primitive.ObjectID, report *models.MonthlyReport) *models.Transfer {
+	input := mock_models.TransferInput().
+		WithTo(accountID1).
+		WithFrom(&accountID2).
+		WithDate(mock_models.DateInReport(report))
+	transfer, err := testStorage.CreateTransfer(ctx, report.ID, input)
+	require.NoError(t, err)
+	return transfer
+}

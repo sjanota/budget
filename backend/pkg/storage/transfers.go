@@ -72,6 +72,30 @@ func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyRep
 	return result.Transfer(id), err
 }
 
+func (s *Storage) DeleteTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (*models.Transfer, error) {
+	find := doc{"_id": reportID}
+	project := doc{
+		"transfers": doc{
+			"$elemMatch": doc{
+				"_id": id,
+			},
+		},
+	}
+	updateDoc := doc{
+		"$pull": doc{"transfers": doc{"_id": id}},
+	}
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, updateDoc, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.Before))
+	if err := res.Err(); err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := &models.MonthlyReport{}
+	err := res.Decode(result)
+	return result.Transfer(id), err
+}
+
 func (s *Storage) GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error) {
 	result, err := s.monthlyReports.Aggregate(ctx, list{
 		doc{"$match": doc{"_id": reportID}},

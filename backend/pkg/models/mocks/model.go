@@ -34,11 +34,22 @@ func ExpenseInput() *models.ExpenseInput {
 func PlanInput() *models.PlanInput {
 	from := primitive.NewObjectID()
 	return &models.PlanInput{
-		Title: *Name(),
-		ToEnvelopeID: primitive.NewObjectID(),
-		FromEnvelopeID: &from,
-		CurrentAmount: *Amount(),
+		Title:           *Name(),
+		ToEnvelopeID:    primitive.NewObjectID(),
+		FromEnvelopeID:  &from,
+		CurrentAmount:   *Amount(),
 		RecurringAmount: Amount(),
+	}
+}
+
+func TransferInput() *models.TransferInput {
+	from := primitive.NewObjectID()
+	return &models.TransferInput{
+		Title:         *Name(),
+		ToAccountID:   primitive.NewObjectID(),
+		FromAccountID: &from,
+		Amount:        *Amount(),
+		Date:          Date(),
 	}
 }
 

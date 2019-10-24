@@ -13,11 +13,13 @@ import {
   useCreateTransfer,
   useGetCurrentTransfers,
   useUpdateTransfer,
+  useDeleteTranfer,
 } from './gql/transfers';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { useGetAccounts } from './gql/accounts';
 import { useBudget } from './gql/budget';
 import { WithQuery } from './gql/WithQuery';
+import TableButton from './template/Utilities/TableButton';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -47,9 +49,7 @@ const columns = [
     formatter: (cell, row) => (
       <span>
         <UpdateTransferButton transfer={row} />
-        <span style={{ cursor: 'pointer' }}>
-          <i className="fas fa-archive fa-fw" />
-        </span>
+        <DeleteTransferButton transfer={row} />
       </span>
     ),
     style: {
@@ -139,6 +139,17 @@ function TransferModal({ init, ...props }) {
         )}
       </WithQuery>
     </FormModal>
+  );
+}
+
+function DeleteTransferButton({ transfer }) {
+  const [deleteTransfer] = useDeleteTranfer();
+  return (
+    <TableButton
+      faIcon="trash-alt"
+      variant="secondary"
+      onClick={() => deleteTransfer(transfer.id)}
+    />
   );
 }
 

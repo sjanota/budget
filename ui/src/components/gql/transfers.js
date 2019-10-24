@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useBudget } from './budget';
 import { GET_CURRENT_MONTHLY_REPORT } from './monthlyReport';
 import { GET_ACCOUNTS } from './accounts';
+import { removeFromListByID } from '../../util/immutable';
 
 const TRANSFER_FRAGMENT = gql`
   fragment Transfer on Transfer {
@@ -108,6 +109,53 @@ export function useUpdateTransfer() {
   });
   const wrapper = (id, input) => {
     mutation({ variables: { budgetID: selectedBudget.id, id, input } });
+  };
+  return [wrapper, ...rest];
+}
+
+const DELETE_TRANSFER = gql`
+  mutation deleteTransfer($budgetID: ID!, $id: ID!) {
+    deleteTransfer(budgetID: $budgetID, id: $id) {
+      id
+    }
+  }
+`;
+
+export function useDeleteTranfer() {
+  const { selectedBudget } = useBudget();
+  const [mutation, ...rest] = useMutation(DELETE_TRANSFER, {
+    update: (cache, { data: { deleteTransfer } }) => {
+      const { budget } = cache.readQuery({
+        query: GET_CURRENT_TRANSFERS,
+        variables: { budgetID: selectedBudget.id },
+      });
+      cache.writeQuery({
+        query: GET_CURRENT_TRANSFERS,
+        variables: { budgetID: selectedBudget.id },
+        data: {
+          budget: {
+            ...budget,
+            currentMonth: {
+              ...budget.currentMonth,
+              transfers: removeFromListByID(
+                budget.currentMonth.transfers,
+                deleteTransfer.id
+              ),
+            },
+          },
+        },
+      });
+    },
+    refetchQueries: () => [
+      { query: GET_ACCOUNTS, variables: { budgetID: selectedBudget.id } },
+      {
+        query: GET_CURRENT_MONTHLY_REPORT,
+        variables: { budgetID: selectedBudget.id },
+      },
+    ],
+  });
+  const wrapper = id => {
+    mutation({ variables: { budgetID: selectedBudget.id, id } });
   };
   return [wrapper, ...rest];
 }

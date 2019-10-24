@@ -425,3 +425,18 @@ func (mr *MockStorageMockRecorder) DeleteExpense(ctx, reportID, id interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExpense", reflect.TypeOf((*MockStorage)(nil).DeleteExpense), ctx, reportID, id)
 }
+
+// DeletePlan mocks base method
+func (m *MockStorage) DeletePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (*models.Plan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePlan", ctx, reportID, id)
+	ret0, _ := ret[0].(*models.Plan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeletePlan indicates an expected call of DeletePlan
+func (mr *MockStorageMockRecorder) DeletePlan(ctx, reportID, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePlan", reflect.TypeOf((*MockStorage)(nil).DeletePlan), ctx, reportID, id)
+}
