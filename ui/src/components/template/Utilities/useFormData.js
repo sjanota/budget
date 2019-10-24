@@ -14,10 +14,10 @@ function simpleFormData({ $init, $process, $default }, getRoot) {
   };
 
   formData.changed = () => {
-    return (
-      (formData.current === null && $init !== null) ||
-      formData.current.value !== $init
-    );
+    if (formData.current === null) {
+      return $init !== null;
+    }
+    return formData.current.value !== $init;
   };
 
   formData.default = () => ($init !== null ? $init : _default());
