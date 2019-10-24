@@ -16,7 +16,11 @@ FormControl.Input = ({ inline, formData, feedback, ...props }) => {
 
   return wrap(
     <>
-      <Form.Control ref={formData} defaultValue={formData.init()} {...props} />
+      <Form.Control
+        ref={formData}
+        defaultValue={formData.default()}
+        {...props}
+      />
       <Form.Control.Feedback type="invalid">{feedback}</Form.Control.Feedback>
     </>
   );

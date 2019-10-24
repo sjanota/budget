@@ -25,6 +25,10 @@ func (ch Changes) GetID(key string) primitive.ObjectID {
 	return ch[key].(primitive.ObjectID)
 }
 
+func (ch Changes) GetDate(key string) Date {
+	return ch[key].(Date)
+}
+
 func (b Budget) Category(id primitive.ObjectID) *Category {
 	for _, category := range b.Categories {
 		if category.ID == id {
@@ -243,36 +247,38 @@ func (u ExpenseUpdate) Changes() Changes {
 	return result
 }
 
-func (u TransferUpdate) Changes() Changes {
-	result := make(map[string]interface{})
-	if u.Title != nil {
-		result["title"] = *u.Title
-	}
-	if u.FromAccountID != nil {
-		result["fromaccountid"] = *u.FromAccountID
-	}
-	if u.Date != nil {
-		result["date"] = *u.Date
-	}
-	if u.ToAccountID != nil {
-		result["toaccountid"] = *u.ToAccountID
-	}
-	if u.Amount != nil {
-		result["amount"] = *u.Amount
-	}
-	return result
-}
-
-func PlanChanges(changes map[string]interface{}) (Changes, error) {
+type PlanUpdate Changes
+func NewPlanUpdate(changes map[string]interface{}) (PlanUpdate, error) {
 	var err error
 	result := make(map[string]interface{})
 	for key, value := range changes {
 		switch key {
 		case "fromEnvelopeID":
-			result["fromenvelopeid"], err = UnmarshalID(value)
+			result["fromenvelopeid"], err = MaybeUnmarshalID(value)
 			break
 		case "toEnvelopeID":
 			result["toenvelopeid"], err = UnmarshalID(value)
+			break
+		default:
+			result[strings.ToLower(key)] = value
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
+}
+
+func TransferChanges(changes map[string]interface{}) (Changes, error) {
+	var err error
+	result := make(map[string]interface{})
+	for key, value := range changes {
+		switch key {
+		case "fromEnvelopeID":
+			result["fromaccountid"], err = MaybeUnmarshalID(value)
+			break
+		case "toEnvelopeID":
+			result["toaccountid"], err = UnmarshalID(value)
 			break
 		default:
 			result[strings.ToLower(key)] = value

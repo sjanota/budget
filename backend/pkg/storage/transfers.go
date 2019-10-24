@@ -40,7 +40,11 @@ func (s *Storage) CreateTransfer(ctx context.Context, reportID models.MonthlyRep
 	return toInsert, nil
 }
 
-func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet ChangeSet) (*models.Transfer, error) {
+func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changes models.Changes) (*models.Transfer, error) {
+	if err := s.validateTransferUpdate(ctx, reportID, changes); err != nil {
+		return nil, err
+	}
+
 	find := doc{"_id": reportID, "transfers._id": id}
 	project := doc{
 		"transfers": doc{
@@ -50,7 +54,7 @@ func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyRep
 		},
 	}
 	updateFields := doc{}
-	for field, value := range changeSet.Changes() {
+	for field, value := range changes {
 		updateFields["transfers.$."+field] = value
 	}
 	update := doc{
@@ -136,18 +140,18 @@ func (s *Storage) validateTransferInput(ctx context.Context, reportID models.Mon
 	return nil
 }
 
-func (s *Storage) validateTransferUpdate(ctx context.Context, reportID models.MonthlyReportID, in *models.TransferUpdate) error {
+func (s *Storage) validateTransferUpdate(ctx context.Context, reportID models.MonthlyReportID, in models.Changes) error {
 	budget, err := s.GetBudget(ctx, reportID.BudgetID)
 	if err != nil {
 		return err
 	}
-	if in.FromAccountID != nil && budget.Account(*in.FromAccountID) == nil {
+	if in.Has("fromaccountid") && budget.Account(in.GetID("fromaccountid")) == nil {
 		return ErrInvalidReference
 	}
-	if in.ToAccountID != nil && budget.Account(*in.ToAccountID) == nil {
+	if in.Has("toaccountid") && budget.Account(in.GetID("toaccountid")) == nil {
 		return ErrInvalidReference
 	}
-	if in.Date != nil && !reportID.Month.Contains(*in.Date) {
+	if in.Has("date") && !reportID.Month.Contains(in.GetDate("date")) {
 		return ErrWrongDate
 	}
 	return nil

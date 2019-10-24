@@ -1,6 +1,6 @@
 export default class Amount {
   static parse(string) {
-    if (string === null) {
+    if (string === null || string === '') {
       return null;
     }
     return Math.round(Number(string) * 100);
@@ -11,6 +11,6 @@ export default class Amount {
   }
 
   static format(amount) {
-    return amount === null ? '' : `${(amount / 100).toFixed(2)}`;
+    return amount === null ? null : `${(amount / 100).toFixed(2)}`;
   }
 }

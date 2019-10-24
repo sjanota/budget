@@ -82,7 +82,7 @@ func (mr *MockStorageMockRecorder) UpdateEnvelope(ctx, budgetID, id, in interfac
 }
 
 // CreateMonthlyReport mocks base method
-func (m *MockStorage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.Plan) (*models.MonthlyReport, error) {
+func (m *MockStorage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.PlanInput) (*models.MonthlyReport, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateMonthlyReport", ctx, budgetID, month, plans)
 	ret0, _ := ret[0].(*models.MonthlyReport)
@@ -322,7 +322,7 @@ func (mr *MockStorageMockRecorder) CreateTransfer(ctx, reportID, in interface{})
 }
 
 // UpdateTransfer mocks base method
-func (m *MockStorage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in storage.ChangeSet) (*models.Transfer, error) {
+func (m *MockStorage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in models.Changes) (*models.Transfer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateTransfer", ctx, reportID, id, in)
 	ret0, _ := ret[0].(*models.Transfer)
@@ -367,7 +367,7 @@ func (mr *MockStorageMockRecorder) CreatePlan(ctx, reportID, in interface{}) *go
 }
 
 // UpdatePlan mocks base method
-func (m *MockStorage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet storage.ChangeSet) (*models.Plan, error) {
+func (m *MockStorage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet models.Changes) (*models.Plan, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePlan", ctx, reportID, id, changeSet)
 	ret0, _ := ret[0].(*models.Plan)

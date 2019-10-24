@@ -25,9 +25,9 @@ models:
     model: "map[string]interface{}"
   EnvelopeUpdate:
     model: "map[string]interface{}"
-  #  CategoryUpdate:
-  #    model: "map[string]interface{}"
   PlanUpdate:
+    model: "map[string]interface{}"
+  TransferUpdate:
     model: "map[string]interface{}"
   Account:
     fields:

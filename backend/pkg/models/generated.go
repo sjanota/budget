@@ -102,14 +102,6 @@ type TransferInput struct {
 	Date          Date                `json:"date"`
 }
 
-type TransferUpdate struct {
-	Title         *string             `json:"title"`
-	FromAccountID *primitive.ObjectID `json:"fromAccountID"`
-	ToAccountID   *primitive.ObjectID `json:"toAccountID"`
-	Amount        *Amount             `json:"amount"`
-	Date          *Date               `json:"date"`
-}
-
 type Severity string
 
 const (

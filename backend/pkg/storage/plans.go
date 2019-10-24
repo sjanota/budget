@@ -40,7 +40,7 @@ func (s *Storage) CreatePlan(ctx context.Context, reportID models.MonthlyReportI
 	return toInsert, nil
 }
 
-func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changes models.Changes) (*models.Plan, error) {
+func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.PlanUpdate) (*models.Plan, error) {
 	find := doc{"_id": reportID, "plans._id": id}
 	project := doc{
 		"plans": doc{
@@ -50,13 +50,13 @@ func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportI
 		},
 	}
 	updateFields := doc{}
-	for field, value := range changes {
+	for field, value := range update {
 		updateFields["plans.$."+field] = value
 	}
-	update := doc{
+	updateDoc := doc{
 		"$set": updateFields,
 	}
-	res := s.monthlyReports.FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, updateDoc, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
 	} else if err != nil {

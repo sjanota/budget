@@ -39,10 +39,10 @@ type Storage interface {
 	GetAccount(ctx context.Context, budgetID primitive.ObjectID, accountID primitive.ObjectID) (*models.Account, error)
 	UpdateExpense(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update storage.ChangeSet) (*models.Expense, error)
 	CreateTransfer(ctx context.Context, reportID models.MonthlyReportID, in *models.TransferInput) (*models.Transfer, error)
-	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in storage.ChangeSet) (*models.Transfer, error)
+	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in models.Changes) (*models.Transfer, error)
 	GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
 	CreatePlan(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanInput) (*models.Plan, error)
-	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet models.Changes) (*models.Plan, error)
+	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.PlanUpdate) (*models.Plan, error)
 	GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (models.Amount, error)
 	ReplaceBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }

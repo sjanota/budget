@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 
-function simpleFormData({ $init, $process }, getRoot) {
+function simpleFormData({ $init, $process, $default }, getRoot) {
   const process = $process || (v => v);
   const formData = { current: null };
+  const _default =
+    typeof $default === 'function' ? () => $default(getRoot()) : () => $default;
 
   formData.value = () => {
     if (formData.current === null) {
@@ -18,10 +20,9 @@ function simpleFormData({ $init, $process }, getRoot) {
     );
   };
 
-  const init =
-    typeof $init === 'function' ? () => $init(getRoot()) : () => $init;
+  formData.default = () => ($init !== null ? $init : _default());
 
-  formData.init = init;
+  formData.init = () => $init;
 
   return formData;
 }

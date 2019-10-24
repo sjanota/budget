@@ -74,14 +74,12 @@ function PlanModal({ init, ...props }) {
       $process: Amount.parse,
     },
     recurringAmount: {
-      $init: fd =>
-        init.recurringAmount !== null
-          ? Amount.format(init.recurringAmount)
-          : Amount.format(fd.currentAmount.value()),
+      $init: Amount.format(init.recurringAmount),
+      $default: fd => Amount.format(fd.currentAmount.value()),
       $process: Amount.parse,
     },
     fromEnvelopeID: {
-      $init: init.fromEnvelope && init.fromEnvelope.id,
+      $init: init.fromEnvelope !== null ? init.fromEnvelope.id : '',
       $process: v => (v === '' ? null : v),
     },
     toEnvelopeID: { $init: init.toEnvelope.id },
@@ -124,7 +122,7 @@ function PlanModal({ init, ...props }) {
               feedback="Provide from"
               as="select"
             >
-              <option value={null} />
+              <option selected />
               {data.envelopes.map(({ id, name }) => (
                 <option key={id} value={id}>
                   {name}
@@ -139,7 +137,7 @@ function PlanModal({ init, ...props }) {
               as="select"
               required
             >
-              <option value={null} />
+              <option disabled selected />
               {data.envelopes.map(({ id, name }) => (
                 <option key={id} value={id}>
                   {name}

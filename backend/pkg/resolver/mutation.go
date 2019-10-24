@@ -54,15 +54,23 @@ func (r *mutationResolver) UpdatePlan(ctx context.Context, budgetID primitive.Ob
 	if err != nil {
 		return nil, err
 	}
-	return r.Storage.UpdatePlan(ctx, budget.CurrentMonthID(), id, in)
+	changes, err := models.NewPlanUpdate(in)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.UpdatePlan(ctx, budget.CurrentMonthID(), id, changes)
 }
 
-func (r *mutationResolver) UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error) {
+func (r *mutationResolver) UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Transfer, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetID)
 	if err != nil {
 		return nil, err
 	}
-	return r.Storage.UpdateTransfer(ctx, budget.CurrentMonthID(), id, in)
+	changes, err := models.TransferChanges(in)
+	if err != nil {
+		return nil, err
+	}
+	return r.Storage.UpdateTransfer(ctx, budget.CurrentMonthID(), id, changes)
 }
 
 func (r *mutationResolver) CreateTransfer(ctx context.Context, budgetID primitive.ObjectID, in models.TransferInput) (*models.Transfer, error) {

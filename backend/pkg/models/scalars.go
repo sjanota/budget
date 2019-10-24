@@ -26,6 +26,14 @@ func UnmarshalID(v interface{}) (primitive.ObjectID, error) {
 	return oid, nil
 }
 
+func MaybeUnmarshalID(v interface{}) (*primitive.ObjectID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	id, err := UnmarshalID(v)
+	return &id, err
+}
+
 func MarshalID(id primitive.ObjectID) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
 		_, _ = io.WriteString(w, strconv.Quote(id.Hex()))

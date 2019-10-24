@@ -135,7 +135,7 @@ type ComplexityRoot struct {
 		UpdateEnvelope    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 		UpdateExpense     func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) int
 		UpdatePlan        func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
-		UpdateTransfer    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) int
+		UpdateTransfer    func(childComplexity int, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) int
 	}
 
 	NegativeBalanceOnAccount struct {
@@ -207,7 +207,7 @@ type MutationResolver interface {
 	CreateExpense(ctx context.Context, budgetID primitive.ObjectID, in models.ExpenseInput) (*models.Expense, error)
 	UpdateExpense(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.ExpenseUpdate) (*models.Expense, error)
 	CreateTransfer(ctx context.Context, budgetID primitive.ObjectID, in models.TransferInput) (*models.Transfer, error)
-	UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.TransferUpdate) (*models.Transfer, error)
+	UpdateTransfer(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Transfer, error)
 	CreatePlan(ctx context.Context, budgetID primitive.ObjectID, in models.PlanInput) (*models.Plan, error)
 	UpdatePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Plan, error)
 	CloseCurrentMonth(ctx context.Context, budgetID primitive.ObjectID) (*models.Budget, error)
@@ -668,7 +668,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTransfer(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.TransferUpdate)), true
+		return e.complexity.Mutation.UpdateTransfer(childComplexity, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{})), true
 
 	case "NegativeBalanceOnAccount.id":
 		if e.complexity.NegativeBalanceOnAccount.ID == nil {
@@ -1447,9 +1447,9 @@ func (ec *executionContext) field_Mutation_updateTransfer_args(ctx context.Conte
 		}
 	}
 	args["id"] = arg1
-	var arg2 models.TransferUpdate
+	var arg2 map[string]interface{}
 	if tmp, ok := rawArgs["in"]; ok {
-		arg2, err = ec.unmarshalNTransferUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferUpdate(ctx, tmp)
+		arg2, err = ec.unmarshalNTransferUpdate2map(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3366,7 +3366,7 @@ func (ec *executionContext) _Mutation_updateTransfer(ctx context.Context, field 
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTransfer(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(models.TransferUpdate))
+		return ec.resolvers.Mutation().UpdateTransfer(rctx, args["budgetID"].(primitive.ObjectID), args["id"].(primitive.ObjectID), args["in"].(map[string]interface{}))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5793,48 +5793,6 @@ func (ec *executionContext) unmarshalInputTransferInput(ctx context.Context, obj
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTransferUpdate(ctx context.Context, obj interface{}) (models.TransferUpdate, error) {
-	var it models.TransferUpdate
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "title":
-			var err error
-			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "fromAccountID":
-			var err error
-			it.FromAccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "toAccountID":
-			var err error
-			it.ToAccountID, err = ec.unmarshalOID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "amount":
-			var err error
-			it.Amount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "date":
-			var err error
-			it.Date, err = ec.unmarshalODate2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐDate(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -7554,8 +7512,11 @@ func (ec *executionContext) unmarshalNTransferInput2githubᚗcomᚋsjanotaᚋbud
 	return ec.unmarshalInputTransferInput(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNTransferUpdate2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐTransferUpdate(ctx context.Context, v interface{}) (models.TransferUpdate, error) {
-	return ec.unmarshalInputTransferUpdate(ctx, v)
+func (ec *executionContext) unmarshalNTransferUpdate2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	if v == nil {
+		return nil, nil
+	}
+	return v.(map[string]interface{}), nil
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
