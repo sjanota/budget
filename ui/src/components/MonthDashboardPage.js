@@ -149,7 +149,7 @@ function StartNextmonthButton({ disabled, warn }) {
       disabled={disabled}
       onClick={() => closeCurrentMonth()}
     >
-      Start next month
+      Close current month
     </SplitButton>
   );
 }
