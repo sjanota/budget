@@ -148,7 +148,7 @@ func whenSomeAccountExists(t *testing.T, ctx context.Context, budgetID primitive
 
 func whenSomeMonthlyReportExists(t *testing.T, ctx context.Context, budgetID primitive.ObjectID) *models.MonthlyReport {
 	month := mock_models.Month()
-	report, err := testStorage.CreateMonthlyReport(ctx, budgetID, month)
+	report, err := testStorage.CreateMonthlyReport(ctx, budgetID, month, make([]*models.Plan, 0))
 	require.NoError(t, err)
 	return report
 }

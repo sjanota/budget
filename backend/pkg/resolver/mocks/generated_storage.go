@@ -82,18 +82,18 @@ func (mr *MockStorageMockRecorder) UpdateEnvelope(ctx, budgetID, id, in interfac
 }
 
 // CreateMonthlyReport mocks base method
-func (m *MockStorage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error) {
+func (m *MockStorage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.Plan) (*models.MonthlyReport, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMonthlyReport", ctx, budgetID, month)
+	ret := m.ctrl.Call(m, "CreateMonthlyReport", ctx, budgetID, month, plans)
 	ret0, _ := ret[0].(*models.MonthlyReport)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateMonthlyReport indicates an expected call of CreateMonthlyReport
-func (mr *MockStorageMockRecorder) CreateMonthlyReport(ctx, budgetID, month interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) CreateMonthlyReport(ctx, budgetID, month, plans interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonthlyReport", reflect.TypeOf((*MockStorage)(nil).CreateMonthlyReport), ctx, budgetID, month)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMonthlyReport", reflect.TypeOf((*MockStorage)(nil).CreateMonthlyReport), ctx, budgetID, month, plans)
 }
 
 // GetMonthlyReport mocks base method

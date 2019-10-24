@@ -142,3 +142,16 @@ func (m Month) Next() Month {
 		Month: m.Month + 1,
 	}
 }
+
+func (m Month) Previous() Month {
+	if m.Month == time.January {
+		return Month{
+			Year:  m.Year - 1,
+			Month: time.December,
+		}
+	}
+	return Month{
+		Year:  m.Year,
+		Month: m.Month - 1,
+	}
+}

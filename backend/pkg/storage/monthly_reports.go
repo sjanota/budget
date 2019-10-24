@@ -5,10 +5,9 @@ import (
 
 	"github.com/sjanota/budget/backend/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month) (*models.MonthlyReport, error) {
+func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.Plan) (*models.MonthlyReport, error) {
 	toInsert := &models.MonthlyReport{
 		ID: models.MonthlyReportID{
 			Month:    month,
@@ -16,7 +15,7 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 		},
 		Expenses:  make([]*models.Expense, 0),
 		Transfers: make([]*models.Transfer, 0),
-		Plans:     make([]*models.Plan, 0),
+		Plans:     plans,
 	}
 
 	_, err := s.monthlyReports.InsertOne(ctx, toInsert)
@@ -31,7 +30,7 @@ func (s *Storage) CreateMonthlyReport(ctx context.Context, budgetID primitive.Ob
 
 func (s *Storage) GetMonthlyReport(ctx context.Context, id models.MonthlyReportID) (*models.MonthlyReport, error) {
 	result, err := s.monthlyReports.FindOneByID(ctx, id)
-	if err == mongo.ErrNoDocuments {
+	if err == ErrNoReport {
 		return nil, nil
 	}
 	return result, err

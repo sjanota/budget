@@ -138,7 +138,24 @@ func (r *mutationResolver) withMonthlyReport(ctx context.Context, budgetID primi
 	}
 	err = do(reportID)
 	if err == storage.ErrNoReport {
-		_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth)
+		previousReportID := models.MonthlyReportID{
+			Month:    budget.CurrentMonth.Previous(),
+			BudgetID: budgetID,
+		}
+		plans := make([]*models.Plan, 0)
+		previousReport, err := r.Storage.GetMonthlyReport(ctx, previousReportID)
+		if err != nil {
+			return err
+		}
+		if previousReport != nil {
+			for _, p := range previousReport.Plans {
+				if p.RecurringAmount != nil {
+					p.CurrentAmount = *p.RecurringAmount
+					plans = append(plans, p)
+				}
+			}
+		}
+		_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth, plans)
 		if err == storage.ErrAlreadyExists || err == nil {
 			err = do(reportID)
 		}

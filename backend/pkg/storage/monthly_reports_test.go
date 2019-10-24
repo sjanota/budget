@@ -19,7 +19,7 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		month := mock_models.Month()
-		report, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
+		report, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month, make([]*models.Plan, 0))
 		require.NoError(t, err)
 		assert.NotEqual(t, primitive.ObjectID{}, report.ID)
 		assert.Equal(t, &models.MonthlyReport{
@@ -32,19 +32,19 @@ func TestStorage_CreateMonthlyReport(t *testing.T) {
 
 	t.Run("Duplicated date", func(t *testing.T) {
 		month := mock_models.Month()
-		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
+		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month, make([]*models.Plan, 0))
 		require.NoError(t, err)
 
-		_, err = testStorage.CreateMonthlyReport(ctx, budget.ID, month)
+		_, err = testStorage.CreateMonthlyReport(ctx, budget.ID, month, make([]*models.Plan, 0))
 		require.EqualError(t, err, storage.ErrAlreadyExists.Error())
 	})
 
 	t.Run("Duplicated date on different budget", func(t *testing.T) {
 		month := mock_models.Month()
-		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month)
+		_, err := testStorage.CreateMonthlyReport(ctx, budget.ID, month, make([]*models.Plan, 0))
 		require.NoError(t, err)
 
-		_, err = testStorage.CreateMonthlyReport(ctx, otherBudget.ID, month)
+		_, err = testStorage.CreateMonthlyReport(ctx, otherBudget.ID, month, make([]*models.Plan, 0))
 		require.NoError(t, err)
 	})
 }
