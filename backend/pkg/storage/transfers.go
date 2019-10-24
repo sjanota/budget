@@ -40,8 +40,8 @@ func (s *Storage) CreateTransfer(ctx context.Context, reportID models.MonthlyRep
 	return toInsert, nil
 }
 
-func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changes models.Changes) (*models.Transfer, error) {
-	if err := s.validateTransferUpdate(ctx, reportID, changes); err != nil {
+func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.TransferUpdate) (*models.Transfer, error) {
+	if err := s.validateTransferUpdate(ctx, reportID, update); err != nil {
 		return nil, err
 	}
 
@@ -54,13 +54,13 @@ func (s *Storage) UpdateTransfer(ctx context.Context, reportID models.MonthlyRep
 		},
 	}
 	updateFields := doc{}
-	for field, value := range changes {
+	for field, value := range update {
 		updateFields["transfers.$."+field] = value
 	}
-	update := doc{
+	updateDoc := doc{
 		"$set": updateFields,
 	}
-	res := s.monthlyReports.FindOneAndUpdate(ctx, find, update, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
+	res := s.monthlyReports.FindOneAndUpdate(ctx, find, updateDoc, options.FindOneAndUpdate().SetProjection(project).SetReturnDocument(options.After))
 	if err := res.Err(); err == mongo.ErrNoDocuments {
 		return nil, nil
 	} else if err != nil {
@@ -140,18 +140,18 @@ func (s *Storage) validateTransferInput(ctx context.Context, reportID models.Mon
 	return nil
 }
 
-func (s *Storage) validateTransferUpdate(ctx context.Context, reportID models.MonthlyReportID, in models.Changes) error {
+func (s *Storage) validateTransferUpdate(ctx context.Context, reportID models.MonthlyReportID, in models.TransferUpdate) error {
 	budget, err := s.GetBudget(ctx, reportID.BudgetID)
 	if err != nil {
 		return err
 	}
-	if in.Has("fromaccountid") && budget.Account(in.GetID("fromaccountid")) == nil {
+	if id, has := in.FromAccountID(); has && id != nil && budget.Account(*id) == nil {
 		return ErrInvalidReference
 	}
-	if in.Has("toaccountid") && budget.Account(in.GetID("toaccountid")) == nil {
+	if  id, has := in.ToAccountID(); has && budget.Account(id) == nil {
 		return ErrInvalidReference
 	}
-	if in.Has("date") && !reportID.Month.Contains(in.GetDate("date")) {
+	if date, has := in.Date(); has && !reportID.Month.Contains(date) {
 		return ErrWrongDate
 	}
 	return nil

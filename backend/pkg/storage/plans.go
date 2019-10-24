@@ -40,7 +40,11 @@ func (s *Storage) CreatePlan(ctx context.Context, reportID models.MonthlyReportI
 	return toInsert, nil
 }
 
-func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update models.PlanUpdate) (*models.Plan, error) {
+func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update *models.PlanUpdate) (*models.Plan, error) {
+	if err := s.validatePlanUpdate(ctx, reportID, update); err != nil {
+		return nil, err
+	}
+
 	find := doc{"_id": reportID, "plans._id": id}
 	project := doc{
 		"plans": doc{
@@ -50,7 +54,7 @@ func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportI
 		},
 	}
 	updateFields := doc{}
-	for field, value := range update {
+	for field, value := range update.Changes {
 		updateFields["plans.$."+field] = value
 	}
 	updateDoc := doc{
@@ -133,7 +137,7 @@ func (s *Storage) validatePlanInput(ctx context.Context, reportID models.Monthly
 	return nil
 }
 
-func (s *Storage) validatePlanUpdate(ctx context.Context, reportID models.MonthlyReportID, in *models.Changes) error {
+func (s *Storage) validatePlanUpdate(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanUpdate) error {
 	budget, err := s.GetBudget(ctx, reportID.BudgetID)
 	if err != nil {
 		return err

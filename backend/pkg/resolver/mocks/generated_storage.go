@@ -322,18 +322,18 @@ func (mr *MockStorageMockRecorder) CreateTransfer(ctx, reportID, in interface{})
 }
 
 // UpdateTransfer mocks base method
-func (m *MockStorage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in models.Changes) (*models.Transfer, error) {
+func (m *MockStorage) UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update *models.TransferUpdate) (*models.Transfer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateTransfer", ctx, reportID, id, in)
+	ret := m.ctrl.Call(m, "UpdateTransfer", ctx, reportID, id, update)
 	ret0, _ := ret[0].(*models.Transfer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateTransfer indicates an expected call of UpdateTransfer
-func (mr *MockStorageMockRecorder) UpdateTransfer(ctx, reportID, id, in interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) UpdateTransfer(ctx, reportID, id, update interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransfer", reflect.TypeOf((*MockStorage)(nil).UpdateTransfer), ctx, reportID, id, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransfer", reflect.TypeOf((*MockStorage)(nil).UpdateTransfer), ctx, reportID, id, update)
 }
 
 // GetTransfersTotalForAccount mocks base method
@@ -367,18 +367,18 @@ func (mr *MockStorageMockRecorder) CreatePlan(ctx, reportID, in interface{}) *go
 }
 
 // UpdatePlan mocks base method
-func (m *MockStorage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet models.Changes) (*models.Plan, error) {
+func (m *MockStorage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, update *models.PlanUpdate) (*models.Plan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePlan", ctx, reportID, id, changeSet)
+	ret := m.ctrl.Call(m, "UpdatePlan", ctx, reportID, id, update)
 	ret0, _ := ret[0].(*models.Plan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdatePlan indicates an expected call of UpdatePlan
-func (mr *MockStorageMockRecorder) UpdatePlan(ctx, reportID, id, changeSet interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) UpdatePlan(ctx, reportID, id, update interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlan", reflect.TypeOf((*MockStorage)(nil).UpdatePlan), ctx, reportID, id, changeSet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlan", reflect.TypeOf((*MockStorage)(nil).UpdatePlan), ctx, reportID, id, update)
 }
 
 // GetPlansTotalForEnvelope mocks base method

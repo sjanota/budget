@@ -247,8 +247,9 @@ func (u ExpenseUpdate) Changes() Changes {
 	return result
 }
 
-type PlanUpdate Changes
-func NewPlanUpdate(changes map[string]interface{}) (PlanUpdate, error) {
+type PlanUpdate struct{ Changes }
+
+func NewPlanUpdate(changes map[string]interface{}) (*PlanUpdate, error) {
 	var err error
 	result := make(map[string]interface{})
 	for key, value := range changes {
@@ -266,20 +267,26 @@ func NewPlanUpdate(changes map[string]interface{}) (PlanUpdate, error) {
 			return nil, err
 		}
 	}
-	return result, nil
+	return &PlanUpdate{result}, nil
 }
 
-func TransferChanges(changes map[string]interface{}) (Changes, error) {
+type TransferUpdate Changes
+
+func NewTransferUpdate(changes map[string]interface{}) (TransferUpdate, error) {
 	var err error
 	result := make(map[string]interface{})
 	for key, value := range changes {
 		switch key {
-		case "fromEnvelopeID":
+		case "fromAccountID":
 			result["fromaccountid"], err = MaybeUnmarshalID(value)
 			break
-		case "toEnvelopeID":
+		case "toAccountID":
 			result["toaccountid"], err = UnmarshalID(value)
 			break
+		case "date":
+			date := &Date{}
+			err = date.UnmarshalGQL(value)
+			result["date"] = *date
 		default:
 			result[strings.ToLower(key)] = value
 		}
@@ -288,6 +295,30 @@ func TransferChanges(changes map[string]interface{}) (Changes, error) {
 		}
 	}
 	return result, nil
+}
+
+func (u TransferUpdate) FromAccountID() (*primitive.ObjectID, bool) {
+	v, ok := u["fromAccountID"]
+	if !ok {
+		return nil, false
+	}
+	return v.(*primitive.ObjectID), true
+}
+
+func (u TransferUpdate) ToAccountID() (primitive.ObjectID, bool) {
+	v, ok := u["toAccountID"]
+	if !ok {
+		return primitive.NilObjectID, false
+	}
+	return v.(primitive.ObjectID), true
+}
+
+func (u TransferUpdate) Date() (Date, bool) {
+	v, ok := u["date"]
+	if !ok {
+		return Date{}, false
+	}
+	return v.(Date), true
 }
 
 func (r MonthlyReport) TotalPlannedAmount() Amount {

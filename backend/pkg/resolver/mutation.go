@@ -66,7 +66,7 @@ func (r *mutationResolver) UpdateTransfer(ctx context.Context, budgetID primitiv
 	if err != nil {
 		return nil, err
 	}
-	changes, err := models.TransferChanges(in)
+	changes, err := models.NewTransferUpdate(in)
 	if err != nil {
 		return nil, err
 	}
