@@ -49,7 +49,7 @@ func (r *mutationResolver) CreatePlan(ctx context.Context, budgetID primitive.Ob
 	return plan, err
 }
 
-func (r *mutationResolver) UpdatePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.PlanUpdate) (*models.Plan, error) {
+func (r *mutationResolver) UpdatePlan(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in map[string]interface{}) (*models.Plan, error) {
 	budget, err := r.Storage.GetBudget(ctx, budgetID)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (r *mutationResolver) CreateBudget(ctx context.Context, name string) (*mode
 	return r.Storage.CreateBudget(ctx, name, month)
 }
 
-func (r *mutationResolver) withMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, do func(reportID models.MonthlyReportID) error) error {
+func (r *Resolver) withMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, do func(reportID models.MonthlyReportID) error) error {
 	budget, err := r.Query().Budget(ctx, budgetID)
 	if err != nil {
 		return err
@@ -137,28 +137,38 @@ func (r *mutationResolver) withMonthlyReport(ctx context.Context, budgetID primi
 		BudgetID: budgetID,
 	}
 	err = do(reportID)
-	if err == storage.ErrNoReport {
-		previousReportID := models.MonthlyReportID{
-			Month:    budget.CurrentMonth.Previous(),
-			BudgetID: budgetID,
-		}
-		plans := make([]*models.Plan, 0)
-		previousReport, err := r.Storage.GetMonthlyReport(ctx, previousReportID)
-		if err != nil {
-			return err
-		}
-		if previousReport != nil {
-			for _, p := range previousReport.Plans {
-				if p.RecurringAmount != nil {
-					p.CurrentAmount = *p.RecurringAmount
-					plans = append(plans, p)
-				}
+	if err != storage.ErrNoReport {
+		return err
+	}
+
+	previousReportID := models.MonthlyReportID{
+		Month:    budget.CurrentMonth.Previous(),
+		BudgetID: budgetID,
+	}
+	plans := make([]*models.PlanInput, 0)
+	previousReport, err := r.Storage.GetMonthlyReport(ctx, previousReportID)
+	if err != nil {
+		return err
+	}
+
+	if previousReport != nil {
+		for _, p := range previousReport.Plans {
+			if p.RecurringAmount != nil {
+				p.CurrentAmount = *p.RecurringAmount
+				p.ID = primitive.NewObjectID()
+				plans = append(plans, &models.PlanInput{
+					Title:           p.Title,
+					FromEnvelopeID:  p.FromEnvelopeID,
+					ToEnvelopeID:    p.ToEnvelopeID,
+					CurrentAmount:   *p.RecurringAmount,
+					RecurringAmount: p.RecurringAmount,
+				})
 			}
 		}
-		_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth, plans)
-		if err == storage.ErrAlreadyExists || err == nil {
-			err = do(reportID)
-		}
+	}
+	_, err = r.Storage.CreateMonthlyReport(ctx, budgetID, budget.CurrentMonth, plans)
+	if err == storage.ErrAlreadyExists || err == nil {
+		err = do(reportID)
 	}
 
 	return err

@@ -94,14 +94,6 @@ type PlanInput struct {
 	RecurringAmount *Amount             `json:"recurringAmount"`
 }
 
-type PlanUpdate struct {
-	Title           *string             `json:"title"`
-	FromEnvelopeID  *primitive.ObjectID `json:"fromEnvelopeID"`
-	ToEnvelopeID    *primitive.ObjectID `json:"toEnvelopeID"`
-	CurrentAmount   *Amount             `json:"currentAmount"`
-	RecurringAmount *Amount             `json:"recurringAmount"`
-}
-
 type TransferInput struct {
 	Title         string              `json:"title"`
 	FromAccountID *primitive.ObjectID `json:"fromAccountID"`

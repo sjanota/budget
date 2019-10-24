@@ -2,6 +2,7 @@ package models
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 )
 
 type Budget struct {
@@ -14,6 +15,15 @@ type Budget struct {
 }
 
 type Changes map[string]interface{}
+
+func (ch Changes) Has(key string) bool {
+	_, ok := ch[key]
+	return ok
+}
+
+func (ch Changes) GetID(key string) primitive.ObjectID {
+	return ch[key].(primitive.ObjectID)
+}
 
 func (b Budget) Category(id primitive.ObjectID) *Category {
 	for _, category := range b.Categories {
@@ -253,24 +263,25 @@ func (u TransferUpdate) Changes() Changes {
 	return result
 }
 
-func (u PlanUpdate) Changes() Changes {
+func PlanChanges(changes map[string]interface{}) (Changes, error) {
+	var err error
 	result := make(map[string]interface{})
-	if u.Title != nil {
-		result["title"] = *u.Title
+	for key, value := range changes {
+		switch key {
+		case "fromEnvelopeID":
+			result["fromenvelopeid"], err = UnmarshalID(value)
+			break
+		case "toEnvelopeID":
+			result["toenvelopeid"], err = UnmarshalID(value)
+			break
+		default:
+			result[strings.ToLower(key)] = value
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
-	if u.FromEnvelopeID != nil {
-		result["fromenvelopeid"] = *u.FromEnvelopeID
-	}
-	if u.ToEnvelopeID != nil {
-		result["toenvelopeid"] = *u.ToEnvelopeID
-	}
-	if u.CurrentAmount != nil {
-		result["currentamount"] = *u.CurrentAmount
-	}
-	if u.RecurringAmount != nil {
-		result["recurringamount"] = *u.RecurringAmount
-	}
-	return result
+	return result, nil
 }
 
 func (r MonthlyReport) TotalPlannedAmount() Amount {

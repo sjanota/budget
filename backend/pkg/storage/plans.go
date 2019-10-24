@@ -40,7 +40,7 @@ func (s *Storage) CreatePlan(ctx context.Context, reportID models.MonthlyReportI
 	return toInsert, nil
 }
 
-func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet ChangeSet) (*models.Plan, error) {
+func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changes models.Changes) (*models.Plan, error) {
 	find := doc{"_id": reportID, "plans._id": id}
 	project := doc{
 		"plans": doc{
@@ -50,7 +50,7 @@ func (s *Storage) UpdatePlan(ctx context.Context, reportID models.MonthlyReportI
 		},
 	}
 	updateFields := doc{}
-	for field, value := range changeSet.Changes() {
+	for field, value := range changes {
 		updateFields["plans.$."+field] = value
 	}
 	update := doc{
@@ -133,15 +133,15 @@ func (s *Storage) validatePlanInput(ctx context.Context, reportID models.Monthly
 	return nil
 }
 
-func (s *Storage) validatePlanUpdate(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanUpdate) error {
+func (s *Storage) validatePlanUpdate(ctx context.Context, reportID models.MonthlyReportID, in *models.Changes) error {
 	budget, err := s.GetBudget(ctx, reportID.BudgetID)
 	if err != nil {
 		return err
 	}
-	if in.FromEnvelopeID != nil && budget.Envelope(*in.FromEnvelopeID) == nil {
+	if in.Has("fromenvelopeid") && budget.Envelope(in.GetID("fromenvelopeid")) == nil {
 		return ErrInvalidReference
 	}
-	if in.ToEnvelopeID != nil && budget.Envelope(*in.ToEnvelopeID) == nil {
+	if in.Has("toenvelopeid") && budget.Envelope(in.GetID("toenvelopeid")) == nil {
 		return ErrInvalidReference
 	}
 	return nil

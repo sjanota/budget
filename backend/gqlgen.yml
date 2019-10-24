@@ -27,6 +27,8 @@ models:
     model: "map[string]interface{}"
   #  CategoryUpdate:
   #    model: "map[string]interface{}"
+  PlanUpdate:
+    model: "map[string]interface{}"
   Account:
     fields:
       balance:

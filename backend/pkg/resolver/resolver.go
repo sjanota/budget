@@ -19,7 +19,7 @@ type Storage interface {
 	GetEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID) (*models.Envelope, error)
 	UpdateEnvelope(ctx context.Context, budgetID primitive.ObjectID, id primitive.ObjectID, in models.Changes) (*models.Envelope, error)
 
-	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.Plan) (*models.MonthlyReport, error)
+	CreateMonthlyReport(ctx context.Context, budgetID primitive.ObjectID, month models.Month, plans []*models.PlanInput) (*models.MonthlyReport, error)
 	GetMonthlyReport(ctx context.Context, id models.MonthlyReportID) (*models.MonthlyReport, error)
 
 	CreateCategory(ctx context.Context, budgetID primitive.ObjectID, in *models.CategoryInput) (*models.Category, error)
@@ -42,7 +42,7 @@ type Storage interface {
 	UpdateTransfer(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, in storage.ChangeSet) (*models.Transfer, error)
 	GetTransfersTotalForAccount(ctx context.Context, reportID models.MonthlyReportID, accountID primitive.ObjectID) (models.Amount, error)
 	CreatePlan(ctx context.Context, reportID models.MonthlyReportID, in *models.PlanInput) (*models.Plan, error)
-	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet storage.ChangeSet) (*models.Plan, error)
+	UpdatePlan(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID, changeSet models.Changes) (*models.Plan, error)
 	GetPlansTotalForEnvelope(ctx context.Context, reportID models.MonthlyReportID, id primitive.ObjectID) (models.Amount, error)
 	ReplaceBudget(ctx context.Context, budget *models.Budget) (*models.Budget, error)
 }
