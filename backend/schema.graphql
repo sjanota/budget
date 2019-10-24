@@ -57,19 +57,22 @@ type Plan {
   title: String!
   fromEnvelope: Envelope
   toEnvelope: Envelope!
-  amount: Amount!
+  currentAmount: Amount!
+  recurringAmount: Amount
 }
 input PlanInput {
   title: String!
   fromEnvelopeID: ID
   toEnvelopeID: ID!
   amount: Amount!
+  recurring: Boolean!
 }
 input PlanUpdate {
   title: String
   fromEnvelopeID: ID
   toEnvelopeID: ID
-  amount: Amount
+  currentAmount: Amount
+  recurringAmount: Amount
 }
 
 type Transfer {

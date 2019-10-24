@@ -149,11 +149,12 @@ type ComplexityRoot struct {
 	}
 
 	Plan struct {
-		Amount       func(childComplexity int) int
-		FromEnvelope func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Title        func(childComplexity int) int
-		ToEnvelope   func(childComplexity int) int
+		CurrentAmount   func(childComplexity int) int
+		FromEnvelope    func(childComplexity int) int
+		ID              func(childComplexity int) int
+		RecurringAmount func(childComplexity int) int
+		Title           func(childComplexity int) int
+		ToEnvelope      func(childComplexity int) int
 	}
 
 	Query struct {
@@ -697,12 +698,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.NegativeBalanceOnEnvelope.Severity(childComplexity), true
 
-	case "Plan.amount":
-		if e.complexity.Plan.Amount == nil {
+	case "Plan.currentAmount":
+		if e.complexity.Plan.CurrentAmount == nil {
 			break
 		}
 
-		return e.complexity.Plan.Amount(childComplexity), true
+		return e.complexity.Plan.CurrentAmount(childComplexity), true
 
 	case "Plan.fromEnvelope":
 		if e.complexity.Plan.FromEnvelope == nil {
@@ -717,6 +718,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Plan.ID(childComplexity), true
+
+	case "Plan.recurringAmount":
+		if e.complexity.Plan.RecurringAmount == nil {
+			break
+		}
+
+		return e.complexity.Plan.RecurringAmount(childComplexity), true
 
 	case "Plan.title":
 		if e.complexity.Plan.Title == nil {
@@ -950,19 +958,22 @@ type Plan {
   title: String!
   fromEnvelope: Envelope
   toEnvelope: Envelope!
-  amount: Amount!
+  currentAmount: Amount!
+  recurringAmount: Amount
 }
 input PlanInput {
   title: String!
   fromEnvelopeID: ID
   toEnvelopeID: ID!
   amount: Amount!
+  recurring: Boolean!
 }
 input PlanUpdate {
   title: String
   fromEnvelopeID: ID
   toEnvelopeID: ID
-  amount: Amount
+  currentAmount: Amount
+  recurringAmount: Amount
 }
 
 type Transfer {
@@ -3786,7 +3797,7 @@ func (ec *executionContext) _Plan_toEnvelope(ctx context.Context, field graphql.
 	return ec.marshalNEnvelope2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐEnvelope(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Plan_amount(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
+func (ec *executionContext) _Plan_currentAmount(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -3805,7 +3816,7 @@ func (ec *executionContext) _Plan_amount(ctx context.Context, field graphql.Coll
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Amount, nil
+		return obj.CurrentAmount, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3821,6 +3832,40 @@ func (ec *executionContext) _Plan_amount(ctx context.Context, field graphql.Coll
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Plan_recurringAmount(ctx context.Context, field graphql.CollectedField, obj *models.Plan) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Plan",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RecurringAmount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(models.Amount)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOAmount2githubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_budget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5694,6 +5739,12 @@ func (ec *executionContext) unmarshalInputPlanInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "recurring":
+			var err error
+			it.Recurring, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5724,9 +5775,15 @@ func (ec *executionContext) unmarshalInputPlanUpdate(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "amount":
+		case "currentAmount":
 			var err error
-			it.Amount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+			it.CurrentAmount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "recurringAmount":
+			var err error
+			it.RecurringAmount, err = ec.unmarshalOAmount2ᚖgithubᚗcomᚋsjanotaᚋbudgetᚋbackendᚋpkgᚋmodelsᚐAmount(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6486,11 +6543,13 @@ func (ec *executionContext) _Plan(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
-		case "amount":
-			out.Values[i] = ec._Plan_amount(ctx, field, obj)
+		case "currentAmount":
+			out.Values[i] = ec._Plan_currentAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "recurringAmount":
+			out.Values[i] = ec._Plan_recurringAmount(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

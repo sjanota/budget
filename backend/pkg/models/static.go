@@ -146,7 +146,7 @@ type Account struct {
 
 type Transfer struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Amount        Amount             `json:"balance"`
+	Amount        Amount             `json:"amount"`
 	Title         string             `json:"title"`
 	Date          Date               `json:"date"`
 	FromAccountID *primitive.ObjectID
@@ -156,16 +156,17 @@ type Transfer struct {
 type Envelope struct {
 	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name    string             `json:"name"`
-	Limit   *Amount            `json:"Limit"`
+	Limit   *Amount            `json:"limit"`
 	Balance Amount
 }
 
 type Plan struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Title          string             `json:"title"`
-	Amount         Amount             `json:"balance"`
-	FromEnvelopeID *primitive.ObjectID
-	ToEnvelopeID   primitive.ObjectID
+	ID              primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Title           string             `json:"title"`
+	CurrentAmount   Amount             `json:"currentAmount"`
+	RecurringAmount Amount             `json:"recurringAmount"`
+	FromEnvelopeID  *primitive.ObjectID
+	ToEnvelopeID    primitive.ObjectID
 }
 
 type Category struct {
@@ -177,11 +178,6 @@ type Category struct {
 func (c Category) WithEnvelope(envelopeID primitive.ObjectID) Category {
 	c.EnvelopeID = envelopeID
 	return c
-}
-
-type CategoryInput struct {
-	Name       string             `json:"name"`
-	EnvelopeID primitive.ObjectID `json:"envelopeID"`
 }
 
 func (i ExpenseInput) WithDate(date Date) *ExpenseInput {
@@ -268,8 +264,11 @@ func (u PlanUpdate) Changes() Changes {
 	if u.ToEnvelopeID != nil {
 		result["toenvelopeid"] = *u.ToEnvelopeID
 	}
-	if u.Amount != nil {
-		result["amount"] = *u.Amount
+	if u.CurrentAmount != nil {
+		result["currentamount"] = *u.CurrentAmount
+	}
+	if u.RecurringAmount != nil {
+		result["recurringamount"] = *u.RecurringAmount
 	}
 	return result
 }
@@ -278,7 +277,7 @@ func (r MonthlyReport) TotalPlannedAmount() Amount {
 	var sum Amount
 	for _, p := range r.Plans {
 		if p.FromEnvelopeID == nil {
-			sum = sum.Add(p.Amount)
+			sum = sum.Add(p.CurrentAmount)
 		}
 	}
 	return sum
@@ -327,10 +326,10 @@ func (r MonthlyReport) ApplyTo(budget *Budget) {
 	for _, plan := range r.Plans {
 		if plan.FromEnvelopeID != nil {
 			fromEnvelope := budget.Envelope(*plan.FromEnvelopeID)
-			fromEnvelope.Balance = fromEnvelope.Balance.Sub(plan.Amount)
+			fromEnvelope.Balance = fromEnvelope.Balance.Sub(plan.CurrentAmount)
 		}
 
 		toEnvelope := budget.Envelope(plan.ToEnvelopeID)
-		toEnvelope.Balance = toEnvelope.Balance.Add(plan.Amount)
+		toEnvelope.Balance = toEnvelope.Balance.Add(plan.CurrentAmount)
 	}
 }

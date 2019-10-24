@@ -18,6 +18,11 @@ type AccountInput struct {
 	Name string `json:"name"`
 }
 
+type CategoryInput struct {
+	Name       string             `json:"name"`
+	EnvelopeID primitive.ObjectID `json:"envelopeID"`
+}
+
 type CategoryUpdate struct {
 	Name       *string             `json:"name"`
 	EnvelopeID *primitive.ObjectID `json:"envelopeID"`
@@ -86,13 +91,15 @@ type PlanInput struct {
 	FromEnvelopeID *primitive.ObjectID `json:"fromEnvelopeID"`
 	ToEnvelopeID   primitive.ObjectID  `json:"toEnvelopeID"`
 	Amount         Amount              `json:"amount"`
+	Recurring      bool                `json:"recurring"`
 }
 
 type PlanUpdate struct {
-	Title          *string             `json:"title"`
-	FromEnvelopeID *primitive.ObjectID `json:"fromEnvelopeID"`
-	ToEnvelopeID   *primitive.ObjectID `json:"toEnvelopeID"`
-	Amount         *Amount             `json:"amount"`
+	Title           *string             `json:"title"`
+	FromEnvelopeID  *primitive.ObjectID `json:"fromEnvelopeID"`
+	ToEnvelopeID    *primitive.ObjectID `json:"toEnvelopeID"`
+	CurrentAmount   *Amount             `json:"currentAmount"`
+	RecurringAmount *Amount             `json:"recurringAmount"`
 }
 
 type TransferInput struct {
