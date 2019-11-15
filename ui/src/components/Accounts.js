@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -14,6 +14,7 @@ import {
   useUpdateAccount,
 } from './gql/accounts';
 import { QueryTablePanel } from './gql/QueryTablePanel';
+import { GlobalHotKeys } from 'react-hotkeys';
 
 const columns = [
   { dataField: 'name', text: 'Name' },
@@ -74,10 +75,11 @@ function UpdateAccountButton({ account }) {
   );
 }
 
-function CreateAccountButton() {
+function CreateAccountButton({ openRef }) {
   const [createAccount] = useCreateAccount();
   return (
     <ModalButton
+      openRef={openRef}
       button={CreateButton}
       modal={props => (
         <AccountModal
@@ -91,20 +93,30 @@ function CreateAccountButton() {
   );
 }
 
+const keyMap = {
+  openModal: 'n',
+};
+const keyHandlers = openCreateModal => ({
+  openModal: () => openCreateModal.current(),
+});
+
 export default function Accounts() {
   const query = useGetAccounts();
+  const openCreateModal = useRef();
 
   return (
-    <Page>
-      <PageHeader>Accounts</PageHeader>
-      <QueryTablePanel
-        title="Accounts"
-        query={query}
-        getData={data => data.accounts}
-        buttons={<CreateAccountButton />}
-        columns={columns}
-        keyField="id"
-      />
-    </Page>
+    <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
+      <Page>
+        <PageHeader>Accounts</PageHeader>
+        <QueryTablePanel
+          title="Accounts"
+          query={query}
+          getData={data => data.accounts}
+          buttons={<CreateAccountButton openRef={openCreateModal} />}
+          columns={columns}
+          keyField="id"
+        />
+      </Page>
+    </GlobalHotKeys>
   );
 }
