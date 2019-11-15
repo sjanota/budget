@@ -5,9 +5,27 @@ import RefreshButton from '../template/Utilities/RefreshButton';
 import { WithQuery } from '../gql/WithQuery';
 import PropTypes from 'prop-types';
 
-export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
+export function QueryTablePanel({
+  title,
+  query,
+  buttons,
+  getData,
+  columns,
+  ...props
+}) {
+  const paddedFirstColumn = {
+    ...columns[0],
+    classes: 'pl-3',
+    headerClasses: 'pl-3',
+  };
+  const modifiedColumns = [
+    paddedFirstColumn,
+    ...columns.slice(1, columns.length),
+  ];
+
   return (
     <Panel
+      headerClassName="p-2 pl-3"
       header={
         <Panel.HeaderWithButton title={title}>
           <WithQuery query={query} size="sm" showError={false}>
@@ -20,14 +38,18 @@ export function QueryTablePanel({ title, query, buttons, getData, ...props }) {
           </WithQuery>
         </Panel.HeaderWithButton>
       }
+      bodyClassName="p-0"
       body={
         <WithQuery query={query}>
           {({ data }) => (
             <BootstrapTable
-              classes="table-layout-auto table-sm"
+              bootstrap4
+              classes="table-layout-auto table-sm m-0"
               data={getData(data)}
               striped
               hover
+              bordered={false}
+              columns={modifiedColumns}
               {...props}
             />
           )}

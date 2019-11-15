@@ -2,12 +2,19 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import classnames from 'classnames';
 
-export function Panel({ header, body, className }) {
+export function Panel({
+  header,
+  headerClassName,
+  body,
+  bodyClassName,
+  className,
+}) {
   const classNames = classnames('card', 'shadow', 'mb-4', className);
+  const headerClassNames = classnames(headerClassName, 'card-header');
   return (
     <div className={classNames}>
-      {header && <div className="card-header py-3">{header}</div>}
-      {body && <Card.Body>{body}</Card.Body>}
+      {header && <div className={headerClassNames}>{header}</div>}
+      {body && <Card.Body className={bodyClassName}>{body}</Card.Body>}
     </div>
   );
 }

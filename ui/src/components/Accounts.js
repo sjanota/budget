@@ -98,7 +98,7 @@ export default function Accounts() {
     <Page>
       <PageHeader>Accounts</PageHeader>
       <QueryTablePanel
-        title="Account list"
+        title="Accounts"
         query={query}
         getData={data => data.accounts}
         buttons={<CreateAccountButton />}
