@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -20,6 +20,7 @@ import { useGetAccounts } from './gql/accounts';
 import { useBudget } from './gql/budget';
 import { WithQuery } from './gql/WithQuery';
 import TableButton from './template/Utilities/TableButton';
+import { GlobalHotKeys } from 'react-hotkeys';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -170,10 +171,11 @@ function UpdateTransferButton({ transfer }) {
   );
 }
 
-function CreateTransferButton() {
+function CreateTransferButton({ openRef }) {
   const [createTransfer] = useCreateTransfer();
   return (
     <ModalButton
+      openRef={openRef}
       button={CreateButton}
       modal={props => (
         <TransferModal
@@ -193,20 +195,30 @@ function CreateTransferButton() {
   );
 }
 
+const keyMap = {
+  openModal: 'n',
+};
+const keyHandlers = openCreateModal => ({
+  openModal: () => openCreateModal.current(),
+});
+
 export default function Transfers() {
   const query = useGetCurrentTransfers();
+  const openCreateModal = useRef();
 
   return (
-    <Page>
-      <PageHeader>Transfers</PageHeader>
-      <QueryTablePanel
-        title="Transfer list"
-        query={query}
-        getData={data => data.budget.currentMonth.transfers}
-        buttons={<CreateTransferButton />}
-        columns={columns}
-        keyField="id"
-      />
-    </Page>
+    <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
+      <Page>
+        <PageHeader>Transfers</PageHeader>
+        <QueryTablePanel
+          title="Transfer list"
+          query={query}
+          getData={data => data.budget.currentMonth.transfers}
+          buttons={<CreateTransferButton openRef={openCreateModal} />}
+          columns={columns}
+          keyField="id"
+        />
+      </Page>
+    </GlobalHotKeys>
   );
 }
