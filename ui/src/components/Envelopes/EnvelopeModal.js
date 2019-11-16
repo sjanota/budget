@@ -10,7 +10,7 @@ import * as model from '../../model/propTypes';
 export function EnvelopeModal({ init, ...props }) {
   const formData = useFormData({
     name: { $init: init.name },
-    limit: { $init: Amount.format(init.limit), $process: Amount.parse },
+    limit: { $init: Amount.format(init.limit, false), $process: Amount.parse },
   });
   return (
     <FormModal formData={formData} autoFocusRef={formData.name} {...props}>

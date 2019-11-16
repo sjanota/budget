@@ -20,8 +20,9 @@ import { useGetAccounts } from './gql/accounts';
 import { useBudget } from './gql/budget';
 import { WithQuery } from './gql/WithQuery';
 import TableButton from './template/Utilities/TableButton';
-import { HotKeys } from 'react-hotkeys';
+import { GlobalHotKeys } from 'react-hotkeys';
 import { Combobox } from './template/Utilities/Combobox';
+import { InlineFormControl } from './template/Utilities/InlineFormControl';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
@@ -71,7 +72,10 @@ function TransferModal({ init, ...props }) {
   const formData = useFormData({
     title: { $init: init.title },
     date: { $init: init.date },
-    amount: { $init: Amount.format(init.amount), $process: Amount.parse },
+    amount: {
+      $init: Amount.format(init.amount, false),
+      $process: Amount.parse,
+    },
     fromAccountID: {
       $init: init.fromAccount && init.fromAccount.id,
       $process: v => (v === '' ? null : v),
@@ -112,32 +116,26 @@ function TransferModal({ init, ...props }) {
               formData={formData.amount}
               step="0.01"
             />
-            <div className="form-group row">
-              <label className="col col-form-label">From</label>
-              <div className="col-sm-10">
-                <Combobox
-                  allowedValues={data.accounts.map(({ id, name }) => ({
-                    id,
-                    label: name,
-                  }))}
-                  _ref={formData.fromAccountID}
-                  defaultValue={formData.fromAccountID.default()}
-                />
-              </div>
-            </div>
-            <div className="form-group row">
-              <label className="col col-form-label">To</label>
-              <div className="col-sm-10">
-                <Combobox
-                  allowedValues={data.accounts.map(({ id, name }) => ({
-                    id,
-                    label: name,
-                  }))}
-                  _ref={formData.toAccountID}
-                  defaultValue={formData.toAccountID.default()}
-                />
-              </div>
-            </div>
+            <InlineFormControl size={10} label="From">
+              <Combobox
+                allowedValues={data.accounts.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+                _ref={formData.fromAccountID}
+                defaultValue={formData.fromAccountID.default()}
+              />
+            </InlineFormControl>
+            <InlineFormControl size={10} label="To">
+              <Combobox
+                allowedValues={data.accounts.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+                _ref={formData.toAccountID}
+                defaultValue={formData.toAccountID.default()}
+              />
+            </InlineFormControl>
           </>
         )}
       </WithQuery>
@@ -209,18 +207,17 @@ export default function Transfers() {
   const openCreateModal = useRef();
 
   return (
-    <HotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
-      <Page>
-        <PageHeader>Transfers</PageHeader>
-        <QueryTablePanel
-          title="Transfer list"
-          query={query}
-          getData={data => data.budget.currentMonth.transfers}
-          buttons={<CreateTransferButton openRef={openCreateModal} />}
-          columns={columns}
-          keyField="id"
-        />
-      </Page>
-    </HotKeys>
+    <Page>
+      <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)} />
+      <PageHeader>Transfers</PageHeader>
+      <QueryTablePanel
+        title="Transfer list"
+        query={query}
+        getData={data => data.budget.currentMonth.transfers}
+        buttons={<CreateTransferButton openRef={openCreateModal} />}
+        columns={columns}
+        keyField="id"
+      />
+    </Page>
   );
 }

@@ -106,7 +106,7 @@ func (s *Storage) GetPlansTotalForEnvelope(ctx context.Context, reportID models.
 				doc{"$group": doc{
 					"_id": nil,
 					"val": doc{
-						"$sum": "$plans.amount",
+						"$sum": "$plans.currentamount",
 					},
 				}},
 			},
@@ -115,7 +115,7 @@ func (s *Storage) GetPlansTotalForEnvelope(ctx context.Context, reportID models.
 				doc{"$group": doc{
 					"_id": nil,
 					"val": doc{
-						"$sum": "$plans.amount",
+						"$sum": "$plans.currentamount",
 					},
 				}},
 			},

@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { useGetEnvelopes } from '../gql/envelopes';
 import { WithQuery } from '../gql/WithQuery';
 import { Combobox } from '../template/Utilities/Combobox';
+import { InlineFormControl } from '../template/Utilities/InlineFormControl';
 
 export function CategoryModal({ init, ...props }) {
   const query = useGetEnvelopes();
@@ -26,19 +27,16 @@ export function CategoryModal({ init, ...props }) {
               formData={formData.name}
               feedback="Provide name"
             />
-            <div className="form-group row">
-              <label className="col col-form-label">Envelope</label>
-              <div className="col-sm-9">
-                <Combobox
-                  allowedValues={data.envelopes.map(({ id, name }) => ({
-                    id,
-                    label: name,
-                  }))}
-                  _ref={formData.envelopeID}
-                  defaultValue={formData.envelopeID.default()}
-                />
-              </div>
-            </div>
+            <InlineFormControl size={9} label="Envelope">
+              <Combobox
+                allowedValues={data.envelopes.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+                _ref={formData.envelopeID}
+                defaultValue={formData.envelopeID.default()}
+              />
+            </InlineFormControl>
           </>
         )}
       </WithQuery>

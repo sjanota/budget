@@ -10,11 +10,15 @@ export default class Amount {
     return 0;
   }
 
-  static format(amount) {
+  static format(amount, kSeparator = true) {
     if (amount === null) {
       return null;
     }
-    var parts = (amount / 100).toFixed(2).split('.');
+    const fixed = (amount / 100).toFixed(2);
+    if (!kSeparator) {
+      return fixed;
+    }
+    var parts = fixed.split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return parts.join('.');
   }

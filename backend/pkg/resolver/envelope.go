@@ -24,10 +24,10 @@ func (r *envelopeResolver) Balance(ctx context.Context, obj *models.Envelope) (m
 		return models.NewAmount(), err
 	}
 
-	forTransfers, err := r.Storage.GetPlansTotalForEnvelope(ctx, budget.CurrentMonthID(), obj.ID)
+	forPlans, err := r.Storage.GetPlansTotalForEnvelope(ctx, budget.CurrentMonthID(), obj.ID)
 	if err != nil {
 		return models.NewAmount(), err
 	}
-	sub := forTransfers.Sub(forExpenses).Add(obj.Balance)
+	sub := forPlans.Sub(forExpenses).Add(obj.Balance)
 	return sub, nil
 }

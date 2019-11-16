@@ -24,7 +24,7 @@ func main() {
 		port = defaultPort
 	}
 
-	mongoURI := "mongodb://localhost:32768/budget"
+	mongoURI := "mongodb://localhost:32769/budget"
 	//mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
 		log.Fatal("Missing required MONGODB_URI env")

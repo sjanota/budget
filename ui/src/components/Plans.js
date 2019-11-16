@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -19,14 +19,12 @@ import { QueryTablePanel } from './gql/QueryTablePanel';
 import { useGetEnvelopes } from './gql/envelopes';
 import { WithQuery } from './gql/WithQuery';
 import TableButton from './template/Utilities/TableButton';
+import { GlobalHotKeys } from 'react-hotkeys';
+import { InlineFormControl } from './template/Utilities/InlineFormControl';
+import { Combobox } from './template/Utilities/Combobox';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
-  {
-    dataField: 'currentAmount',
-    text: 'Amount',
-    formatter: Amount.format,
-  },
   {
     dataField: 'fromEnvelope',
     text: 'From',
@@ -38,19 +36,17 @@ const columns = [
     formatter: a => a.name,
   },
   {
+    dataField: 'currentAmount',
+    text: 'Amount',
+    formatter: Amount.format,
+    align: 'right',
+    headerAlign: 'right',
+  },
+  {
     dataField: 'recurringAmount',
-    text: 'Recurring',
-    formatter: a => (
-      <div className="custom-control custom-checkbox">
-        <input
-          className="custom-control-input"
-          type="checkbox"
-          checked={a != null}
-          disabled
-        />
-        <label className="custom-control-label">{Amount.format(a)}</label>
-      </div>
-    ),
+    text: '',
+    formatter: a =>
+      a !== null ? <i className="fas fa-fw fa-sync-alt" /> : null,
   },
   {
     dataField: 'actions',
@@ -74,11 +70,11 @@ function PlanModal({ init, ...props }) {
   const formData = useFormData({
     title: { $init: init.title },
     currentAmount: {
-      $init: Amount.format(init.currentAmount),
+      $init: Amount.format(init.currentAmount, false),
       $process: Amount.parse,
     },
     recurringAmount: {
-      $init: Amount.format(init.recurringAmount),
+      $init: Amount.format(init.recurringAmount, false),
       $default: fd => Amount.format(fd.currentAmount.value()),
       $process: Amount.parse,
     },
@@ -119,35 +115,26 @@ function PlanModal({ init, ...props }) {
               formData={formData.recurringAmount}
               step="0.01"
             />
-            <FormControl
-              label="From"
-              inline={8}
-              formData={formData.fromEnvelopeID}
-              feedback="Provide from"
-              as="select"
-            >
-              <option selected />
-              {data.envelopes.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </FormControl>
-            <FormControl
-              label="To"
-              inline={8}
-              formData={formData.toEnvelopeID}
-              feedback="Provide to"
-              as="select"
-              required
-            >
-              <option disabled selected />
-              {data.envelopes.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </FormControl>
+            <InlineFormControl size={8} label="From">
+              <Combobox
+                _ref={formData.fromEnvelopeID}
+                defaultValue={formData.fromEnvelopeID.default()}
+                allowedValues={data.envelopes.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+              />
+            </InlineFormControl>
+            <InlineFormControl size={8} label="To">
+              <Combobox
+                _ref={formData.toEnvelopeID}
+                defaultValue={formData.toEnvelopeID.default()}
+                allowedValues={data.envelopes.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+              />
+            </InlineFormControl>
           </>
         )}
       </WithQuery>
@@ -183,10 +170,11 @@ function DeletePlanButton({ plan }) {
   );
 }
 
-function CreatePlanButton() {
+function CreatePlanButton({ openRef }) {
   const [createPlan] = useCreatePlan();
   return (
     <ModalButton
+      openRef={openRef}
       button={CreateButton}
       modal={props => (
         <PlanModal
@@ -207,17 +195,27 @@ function CreatePlanButton() {
   );
 }
 
+const keyMap = {
+  create: 'n',
+};
+
+const handlers = openCreateModalRef => ({
+  create: () => openCreateModalRef.current(),
+});
+
 export default function Plans() {
+  const openCreateModalRef = useRef();
   const query = useGetCurrentPlans();
 
   return (
     <Page>
+      <GlobalHotKeys keyMap={keyMap} handlers={handlers(openCreateModalRef)} />
       <PageHeader>Plans</PageHeader>
       <QueryTablePanel
         title="Plan list"
         query={query}
         getData={data => data.budget.currentMonth.plans}
-        buttons={<CreatePlanButton />}
+        buttons={<CreatePlanButton openRef={openCreateModalRef} />}
         columns={columns}
         keyField="id"
       />
