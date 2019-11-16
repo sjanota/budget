@@ -2,6 +2,7 @@ import React from 'react';
 import TopbarContextSwitcher from './template/Topbar/TopbarContextSwitcher';
 import { useBudget } from './gql/budget';
 import Spinner from './template/Utilities/Spinner';
+import { useDictionary } from './template/Utilities/Lang';
 
 export default function TopbarBudgetSwitcher() {
   const {
@@ -11,6 +12,7 @@ export default function TopbarBudgetSwitcher() {
     loading,
     error,
   } = useBudget();
+  const { topbar } = useDictionary();
   const value = loading ? (
     <Spinner size="sm" variant="secondary" />
   ) : error ? (
@@ -24,7 +26,7 @@ export default function TopbarBudgetSwitcher() {
   };
   return (
     <TopbarContextSwitcher
-      label="Budget"
+      label={topbar.budgetLabel}
       value={value}
       onChange={onChange}
       allowedValues={budgets.map(b => ({ id: b.id, label: b.name }))}

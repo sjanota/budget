@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useImperativeHandle } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -15,12 +15,13 @@ import {
 } from './gql/accounts';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { GlobalHotKeys } from 'react-hotkeys';
+import { useDictionary } from './template/Utilities/Lang';
 
-const columns = [
-  { dataField: 'name', text: 'Name' },
+const columns = dictionary => [
+  { dataField: 'name', text: dictionary.columns.name },
   {
     dataField: 'balance',
-    text: 'Balance',
+    text: dictionary.columns.balance,
     align: 'right',
     headerAlign: 'right',
     formatter: Amount.format,
@@ -45,13 +46,14 @@ const columns = [
 ];
 
 function AccountModal({ init, ...props }) {
+  const { accounts } = useDictionary();
   const formData = useFormData({
     name: { $init: init.name },
   });
   return (
     <FormModal formData={formData} autoFocusRef={formData.name} {...props}>
       <FormControl
-        label="Name"
+        label={accounts.modal.labels.name}
         inline={10}
         formData={formData.name}
         feedback="Provide name"
@@ -62,13 +64,14 @@ function AccountModal({ init, ...props }) {
 
 function UpdateAccountButton({ account }) {
   const [updateAccount] = useUpdateAccount();
+  const { accounts } = useDictionary();
   return (
     <ModalButton
       button={EditTableButton}
       modal={props => (
         <AccountModal
           init={account}
-          title="Edit account"
+          title={accounts.modal.editTitle}
           onSave={input => updateAccount(account.id, input)}
           {...props}
         />
@@ -79,6 +82,7 @@ function UpdateAccountButton({ account }) {
 
 function CreateAccountButton({ openRef }) {
   const [createAccount] = useCreateAccount();
+  const { accounts } = useDictionary();
   return (
     <ModalButton
       openRef={openRef}
@@ -86,7 +90,7 @@ function CreateAccountButton({ openRef }) {
       modal={props => (
         <AccountModal
           init={{ name: '' }}
-          title="Add new account"
+          title={accounts.modal.createTitle}
           onSave={createAccount}
           {...props}
         />
@@ -105,17 +109,18 @@ const keyHandlers = openCreateModal => ({
 export default function Accounts() {
   const query = useGetAccounts();
   const openCreateModal = useRef();
+  const { accounts } = useDictionary();
 
   return (
     <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
       <Page>
-        <PageHeader>Accounts</PageHeader>
+        <PageHeader>{accounts.header}</PageHeader>
         <QueryTablePanel
-          title="Accounts"
+          title={accounts.table.title}
           query={query}
           getData={data => data.accounts}
           buttons={<CreateAccountButton openRef={openCreateModal} />}
-          columns={columns}
+          columns={columns(accounts.table)}
           keyField="id"
         />
       </Page>

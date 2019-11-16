@@ -1,43 +1,43 @@
-export const sidebarConfig = [
+export const sidebarConfig = ({ sidebar }) => [
   {
     entries: [
       {
-        name: 'Dashboard',
+        name: sidebar.pages.dashboard,
         faIcon: 'receipt',
         to: '/',
       },
     ],
   },
   {
-    name: 'Current month',
+    name: sidebar.sections.currentMonth,
     entries: [
       {
-        name: 'Expenses',
+        name: sidebar.pages.expenses,
         faIcon: 'receipt',
         to: '/expenses',
       },
       {
-        name: 'Transfers',
+        name: sidebar.pages.transfers,
         faIcon: 'exchange-alt',
         to: '/transfers',
       },
       {
-        name: 'Plans',
+        name: sidebar.pages.plans,
         faIcon: 'map-marked-alt',
         to: '/plans',
       },
     ],
   },
   {
-    name: 'Budget',
+    name: sidebar.sections.budget,
     entries: [
       {
-        name: 'Accounts',
+        name: sidebar.pages.accounts,
         faIcon: 'credit-card',
         to: '/accounts',
       },
       {
-        name: 'Envelopes',
+        name: sidebar.pages.envelopes,
         faIcon: 'envelope-open-text',
         to: '/envelopes',
       },

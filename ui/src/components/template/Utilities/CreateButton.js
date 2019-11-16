@@ -1,11 +1,13 @@
 import React from 'react';
 import { SplitButton } from './SplitButton';
 import PropTypes from 'prop-types';
+import { useDictionary } from './Lang';
 
 export default function CreateButton({ onClick }) {
+  const { buttons } = useDictionary();
   return (
     <SplitButton faIcon="plus" size="small" onClick={onClick}>
-      Create
+      {buttons.create}
     </SplitButton>
   );
 }

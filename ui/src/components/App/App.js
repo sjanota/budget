@@ -11,6 +11,8 @@ import Transfers from '../Transfers';
 import Plans from '../Plans';
 import { MonthDashboardPage } from '../MonthDashboardPage';
 import { useAuth0 } from '../../react-auth0-spa';
+import { LangProvider } from '../template/Utilities/Lang';
+import pl from '../../lang/pl';
 
 export default function App() {
   const { isAuthenticated, loginWithRedirect, loading } = useAuth0();
@@ -34,31 +36,33 @@ export default function App() {
   }
 
   return (
-    <BudgetProvider>
-      <SBAdmin2
-        sidebarProps={{
-          renderBrandName: () => 'Budget',
-          renderBrandIcon: () => <i className="fas fa-bold" />,
-          config: sidebarConfig,
-        }}
-        topbar={Topbar}
-        copyright={'Budget 2019'}
-      >
-        <BudgetContext.Consumer>
-          {({ selectedBudget }) =>
-            selectedBudget && (
-              <Switch>
-                <Route path="/accounts" component={Accounts} />
-                <Route path="/envelopes" component={Envelopes} />
-                <Route path="/expenses" component={Expenses} />
-                <Route path="/transfers" component={Transfers} />
-                <Route path="/plans" component={Plans} />
-                <Route path="/" component={MonthDashboardPage} />
-              </Switch>
-            )
-          }
-        </BudgetContext.Consumer>
-      </SBAdmin2>
-    </BudgetProvider>
+    <LangProvider dictionary={pl}>
+      <BudgetProvider>
+        <SBAdmin2
+          sidebarProps={{
+            renderBrandName: () => 'Budget',
+            renderBrandIcon: () => <i className="fas fa-bold" />,
+            config: sidebarConfig(pl),
+          }}
+          topbar={Topbar}
+          copyright={'Budget 2019'}
+        >
+          <BudgetContext.Consumer>
+            {({ selectedBudget }) =>
+              selectedBudget && (
+                <Switch>
+                  <Route path="/accounts" component={Accounts} />
+                  <Route path="/envelopes" component={Envelopes} />
+                  <Route path="/expenses" component={Expenses} />
+                  <Route path="/transfers" component={Transfers} />
+                  <Route path="/plans" component={Plans} />
+                  <Route path="/" component={MonthDashboardPage} />
+                </Switch>
+              )
+            }
+          </BudgetContext.Consumer>
+        </SBAdmin2>
+      </BudgetProvider>
+    </LangProvider>
   );
 }

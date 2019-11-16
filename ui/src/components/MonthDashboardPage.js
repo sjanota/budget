@@ -11,29 +11,31 @@ import { Panel } from './template/Utilities/Panel';
 import { SplitButton } from './template/Utilities/SplitButton';
 import Month from '../model/Month';
 import { useCloseCurrentMonth } from './gql/budget';
+import { useDictionary } from './template/Utilities/Lang';
 
 function Gauges({ className, month }) {
+  const { dashboard } = useDictionary();
   return (
     <div className={className}>
       <Row>
         <Gauge
           className="col-6 col-lg-12 mb-4"
           variant="primary"
-          title="Planned budget"
+          title={dashboard.planned}
           value={Amount.format(month.totalPlannedAmount)}
           faIcon="clipboard-list"
         />
         <Gauge
           className="col-6 col-lg-12 mb-4"
           variant="primary"
-          title="Incomes"
+          title={dashboard.incomes}
           value={Amount.format(month.totalIncomeAmount)}
           faIcon="briefcase"
         />
         <Gauge
           className="col-6 col-lg-12 mb-4"
           variant="primary"
-          title="Left to plan"
+          title={dashboard.leftToPlan}
           value={Amount.format(
             month.totalIncomeAmount - month.totalPlannedAmount
           )}
@@ -42,7 +44,7 @@ function Gauges({ className, month }) {
         <Gauge
           className="col-6 col-lg-12 mb-4"
           variant="primary"
-          title="Expenses"
+          title={dashboard.expenses}
           value={Amount.format(month.totalExpenseAmount)}
           faIcon="receipt"
         />
@@ -66,6 +68,7 @@ const severityVariant = {
 function ProblemMessage({ problem }) {
   const envelopesQuery = useGetEnvelopes();
   const accountsQuery = useGetAccounts();
+  const { dashboard } = useDictionary();
 
   return (
     <WithQuery query={envelopesQuery}>
@@ -74,22 +77,22 @@ function ProblemMessage({ problem }) {
           {({ data: accountsData }) =>
             problem.__typename === 'Misplanned'
               ? problem.overplanned
-                ? 'Plans for this month exceeds incomes'
-                : 'There are unplanned resources'
+                ? dashboard.problems.overplanned
+                : dashboard.problems.underplanned
               : problem.__typename === 'NegativeBalanceOnEnvelope'
-              ? `Expenses have exceeded plans for envelope "${
+              ? dashboard.problems.expensesExceedPlans(
                   envelopesData.envelopes.find(e => e.id === problem.id).name
-                }"`
+                )
               : problem.__typename === 'EnvelopeOverLimit'
-              ? `Plans for envelope "${
+              ? dashboard.problems.envelopeOverLimit(
                   envelopesData.envelopes.find(e => e.id === problem.id).name
-                }" exceed the limit`
+                )
               : problem.__typename === 'NegativeBalanceOnAccount'
-              ? `Expenses have exceeded incomes on account "${
+              ? dashboard.problems.negativeAccountBalance(
                   accountsData.accounts.find(a => a.id === problem.id).name
-                }"`
+                )
               : problem.__typename === 'MonthStillInProgress'
-              ? 'Month has not ended yet'
+              ? dashboard.problems.monthNotEnded
               : problem.__typename
           }
         </WithQuery>
@@ -108,10 +111,11 @@ function Problem({ problem }) {
 }
 
 function NoProblems() {
+  const { dashboard } = useDictionary();
   return (
     <li className="list-group-item text-success">
       <i className="fas fa-fw fa-check-circle mr-1" />
-      Everything is fine
+      {dashboard.noProblems}
     </li>
   );
 }
@@ -140,8 +144,9 @@ function MonthProblems({ className, problems }) {
   );
 }
 
-function StartNextmonthButton({ disabled, warn }) {
+function StartNextMonthButton({ disabled, warn }) {
   const [closeCurrentMonth] = useCloseCurrentMonth();
+  const { dashboard } = useDictionary();
   return (
     <SplitButton
       faIcon="clipboard-check"
@@ -149,12 +154,15 @@ function StartNextmonthButton({ disabled, warn }) {
       disabled={disabled}
       onClick={() => closeCurrentMonth()}
     >
-      Close current month
+      {dashboard.buttons.closeMonth}
     </SplitButton>
   );
 }
 
 function CurrentMonth({ className, month }) {
+  const { dashboard, months } = useDictionary();
+  const parsed = Month.parse(month.month);
+
   return (
     <Panel
       className={className}
@@ -162,14 +170,16 @@ function CurrentMonth({ className, month }) {
         <Panel.HeaderWithButton
           title={
             <span>
-              Current month:{' '}
+              {dashboard.currentMonth}:{' '}
               <strong>
-                <em>{Month.parse(month.month).pretty()}</em>
+                <em>
+                  {months[parsed.month - 1]} {parsed.year}
+                </em>
               </strong>
             </span>
           }
         >
-          <StartNextmonthButton
+          <StartNextMonthButton
             disabled={month.problems.some(p => p.severity === 'ERROR')}
             warn={month.problems.length > 0}
           />

@@ -8,7 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { ApolloProvider } from '@apollo/react-hooks';
 import createClient from './apollo';
-import { Auth0Provider } from './react-auth0-spa';
+import { Auth0Provider, Auth0Context } from './react-auth0-spa';
 import config from './auth_config.json';
 
 // A function that routes the user to the right place
@@ -23,19 +23,46 @@ const onRedirectCallback = appState => {
   );
 };
 
-ReactDOM.render(
+const ProdAuthorizationProvider = ({ children }) => (
   <Auth0Provider
     domain={config.domain}
     client_id={config.clientId}
     redirect_uri={window.location.origin}
     onRedirectCallback={onRedirectCallback}
   >
+    {children}
+  </Auth0Provider>
+);
+
+const DevAuthorizationProvider = ({ children }) => (
+  <Auth0Context.Provider
+    value={{
+      isAuthenticated: true,
+      loading: false,
+      loginWithRedirect: () => {},
+      user: {
+        name: 'Valerie Luna',
+        picture: 'https://source.unsplash.com/QAB-WJcbgJk/60x60',
+      },
+    }}
+  >
+    {children}
+  </Auth0Context.Provider>
+);
+
+const AuthorizationProvider =
+  process.env.NODE_ENV === 'production'
+    ? ProdAuthorizationProvider
+    : DevAuthorizationProvider;
+
+ReactDOM.render(
+  <AuthorizationProvider>
     <ApolloProvider client={createClient()}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </ApolloProvider>
-  </Auth0Provider>,
+  </AuthorizationProvider>,
   document.getElementById('root')
 );
 
