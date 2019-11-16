@@ -119,6 +119,29 @@ export default {
       },
     },
   },
+  transfers: {
+    table: {
+      title: 'Przelewy',
+      columns: {
+        title: 'Tytuł',
+        fromAccount: 'Z',
+        toAccount: 'Do',
+        amount: 'Kwota',
+        date: 'Data',
+      },
+    },
+    modal: {
+      createTitle: 'Dodaj nowy przelew',
+      editTitle: 'Edytuj przelew',
+      labels: {
+        title: 'Tytuł',
+        fromAccount: 'Z',
+        toAccount: 'Do',
+        amount: 'Kwota',
+        date: 'Data',
+      },
+    },
+  },
   months: [
     'Styczeń',
     'Luty',

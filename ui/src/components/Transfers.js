@@ -23,35 +23,31 @@ import TableButton from './template/Utilities/TableButton';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { Combobox } from './template/Utilities/Combobox';
 import { InlineFormControl } from './template/Utilities/InlineFormControl';
+import { withColumnNames, useDictionary } from './template/Utilities/Lang';
 
 const columns = [
-  { dataField: 'title', text: 'Title' },
+  { dataField: 'title' },
   {
     dataField: 'fromAccount',
-    text: 'From',
     formatter: a => a && a.name,
   },
   {
     dataField: 'toAccount',
-    text: 'To',
     formatter: a => a.name,
   },
   {
     dataField: 'amount',
-    text: 'Amount',
     align: 'right',
     headerAlign: 'right',
     formatter: Amount.format,
   },
   {
     dataField: 'date',
-    text: 'Date',
     align: 'right',
     headerAlign: 'right',
   },
   {
     dataField: 'actions',
-    text: '',
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
@@ -68,6 +64,7 @@ const columns = [
 
 function TransferModal({ init, ...props }) {
   const { selectedBudget } = useBudget();
+  const { transfers } = useDictionary();
   const query = useGetAccounts();
   const formData = useFormData({
     title: { $init: init.title },
@@ -92,13 +89,13 @@ function TransferModal({ init, ...props }) {
           <>
             <FormControl
               required
-              label="Title"
+              label={transfers.modal.labels.title}
               inline={10}
               formData={formData.title}
               feedback="Provide title"
             />
             <FormControl
-              label="Date"
+              label={transfers.modal.labels.date}
               inline={10}
               formData={formData.date}
               feedback="Provide date"
@@ -109,14 +106,17 @@ function TransferModal({ init, ...props }) {
             />
             <FormControl
               inline={10}
-              label="Amount"
+              label={transfers.modal.labels.amount}
               feedback="Provide amount"
               type="number"
               required
               formData={formData.amount}
               step="0.01"
             />
-            <InlineFormControl size={10} label="From">
+            <InlineFormControl
+              size={10}
+              label={transfers.modal.labels.fromAccount}
+            >
               <Combobox
                 allowedValues={data.accounts.map(({ id, name }) => ({
                   id,
@@ -126,7 +126,10 @@ function TransferModal({ init, ...props }) {
                 defaultValue={formData.fromAccountID.default()}
               />
             </InlineFormControl>
-            <InlineFormControl size={10} label="To">
+            <InlineFormControl
+              size={10}
+              label={transfers.modal.labels.toAccount}
+            >
               <Combobox
                 allowedValues={data.accounts.map(({ id, name }) => ({
                   id,
@@ -156,13 +159,14 @@ function DeleteTransferButton({ transfer }) {
 
 function UpdateTransferButton({ transfer }) {
   const [updateTransfer] = useUpdateTransfer();
+  const { transfers } = useDictionary();
   return (
     <ModalButton
       button={EditTableButton}
       modal={props => (
         <TransferModal
           init={transfer}
-          title="Edit transfer"
+          title={transfers.modal.editTitle}
           onSave={input => updateTransfer(transfer.id, input)}
           {...props}
         />
@@ -173,6 +177,8 @@ function UpdateTransferButton({ transfer }) {
 
 function CreateTransferButton({ openRef }) {
   const [createTransfer] = useCreateTransfer();
+  const { transfers } = useDictionary();
+
   return (
     <ModalButton
       openRef={openRef}
@@ -186,7 +192,7 @@ function CreateTransferButton({ openRef }) {
             amount: null,
             date: null,
           }}
-          title="Add new transfer"
+          title={transfers.modal.createTitle}
           onSave={createTransfer}
           {...props}
         />
@@ -205,17 +211,18 @@ const keyHandlers = openCreateModal => ({
 export default function Transfers() {
   const query = useGetCurrentTransfers();
   const openCreateModal = useRef();
+  const { sidebar, transfers } = useDictionary();
 
   return (
     <Page>
       <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)} />
-      <PageHeader>Transfers</PageHeader>
+      <PageHeader>{sidebar.pages.transfers}</PageHeader>
       <QueryTablePanel
-        title="Transfer list"
+        title={transfers.table.title}
         query={query}
         getData={data => data.budget.currentMonth.transfers}
         buttons={<CreateTransferButton openRef={openCreateModal} />}
-        columns={columns}
+        columns={withColumnNames(columns, transfers.table.columns)}
         keyField="id"
       />
     </Page>
