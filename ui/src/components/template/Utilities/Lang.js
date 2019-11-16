@@ -7,3 +7,7 @@ export const LangProvider = ({ dictionary, children }) => (
 );
 
 export const useDictionary = () => useContext(LangContext);
+
+export function withColumnNames(columns, dictionary) {
+  return columns.map(c => ({ ...c, text: dictionary[c.dataField] || '' }));
+}

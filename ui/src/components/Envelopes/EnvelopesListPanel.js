@@ -5,26 +5,24 @@ import Amount from '../../model/Amount';
 import ArchiveTableButton from '../template/Utilities/ArchiveTableButton';
 import { UpdateEnvelopeButton } from './UpdateEnvelopeButton';
 import { QueryTablePanel } from '../gql/QueryTablePanel';
+import { withColumnNames, useDictionary } from '../template/Utilities/Lang';
 
 const columns = [
-  { dataField: 'name', text: 'Name' },
+  { dataField: 'name' },
   {
     dataField: 'limit',
-    text: 'Limit',
     formatter: Amount.format,
     align: 'right',
     headerAlign: 'right',
   },
   {
     dataField: 'balance',
-    text: 'Balance',
     formatter: Amount.format,
     align: 'right',
     headerAlign: 'right',
   },
   {
-    dataField: 'overlimit',
-    text: 'Over limit',
+    dataField: 'overLimit',
     align: 'right',
     headerAlign: 'right',
     formatter: (cell, row) =>
@@ -34,7 +32,6 @@ const columns = [
   },
   {
     dataField: 'actions',
-    text: '',
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
@@ -51,13 +48,14 @@ const columns = [
 
 export function EnvelopesListPanel({ createFunRef }) {
   const query = useGetEnvelopes();
+  const { envelopes } = useDictionary();
   return (
     <QueryTablePanel
-      title="Envelope list"
+      title={envelopes.table.title}
       query={query}
       buttons={<CreateEnvelopeButton openRef={createFunRef} />}
       getData={data => data.envelopes}
-      columns={columns}
+      columns={withColumnNames(columns, envelopes.table.columns)}
       keyField="id"
     />
   );

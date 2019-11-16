@@ -7,9 +7,11 @@ import { useGetEnvelopes } from '../gql/envelopes';
 import { WithQuery } from '../gql/WithQuery';
 import { Combobox } from '../template/Utilities/Combobox';
 import { InlineFormControl } from '../template/Utilities/InlineFormControl';
+import { useDictionary } from '../template/Utilities/Lang';
 
 export function CategoryModal({ init, ...props }) {
   const query = useGetEnvelopes();
+  const { categories } = useDictionary();
   const formData = useFormData({
     name: { $init: init.name },
     envelopeID: {
@@ -22,12 +24,15 @@ export function CategoryModal({ init, ...props }) {
         {({ data }) => (
           <>
             <FormControl
-              label="Name"
+              label={categories.modal.labels.name}
               inline={9}
               formData={formData.name}
               feedback="Provide name"
             />
-            <InlineFormControl size={9} label="Envelope">
+            <InlineFormControl
+              size={9}
+              label={categories.modal.labels.envelope}
+            >
               <Combobox
                 allowedValues={data.envelopes.map(({ id, name }) => ({
                   id,

@@ -4,6 +4,7 @@ import PageHeader from '../template/Page/PageHeader';
 import { EnvelopesListPanel } from './EnvelopesListPanel';
 import { CategoriesListPanel } from '../Categories/CategoriesListPanel';
 import { GlobalHotKeys } from 'react-hotkeys';
+import { useDictionary } from '../template/Utilities/Lang';
 
 const keyMap = {
   createEnvelope: 'e',
@@ -18,13 +19,14 @@ const handlers = (createEnvelopeFunRef, createCategoryFunRef) => ({
 export default function EnvelopesPage() {
   const createEnvelopeFunRef = useRef();
   const createCategoryFunRef = useRef();
+  const { sidebar } = useDictionary();
   return (
     <Page>
       <GlobalHotKeys
         keyMap={keyMap}
         handlers={handlers(createEnvelopeFunRef, createCategoryFunRef)}
       />
-      <PageHeader>Envelopes</PageHeader>
+      <PageHeader>{sidebar.pages.envelopes}</PageHeader>
       <EnvelopesListPanel createFunRef={createEnvelopeFunRef} />
       <CategoriesListPanel createFunRef={createCategoryFunRef} />
     </Page>

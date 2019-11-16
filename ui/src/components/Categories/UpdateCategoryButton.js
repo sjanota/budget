@@ -4,9 +4,11 @@ import EditTableButton from '../template/Utilities/EditTableButton';
 import { CategoryModal } from './CategoryModal';
 import PropTypes from 'prop-types';
 import { useUpdateCategory } from '../gql/categories';
+import { useDictionary } from '../template/Utilities/Lang';
 
 export function UpdateCategoryButton({ category }) {
   const [updateEnvelope] = useUpdateCategory();
+  const { categories } = useDictionary();
   const onSave = input => {
     updateEnvelope(category.id, input);
   };
@@ -15,7 +17,7 @@ export function UpdateCategoryButton({ category }) {
       button={EditTableButton}
       modal={props => (
         <CategoryModal
-          title="Edit category"
+          title={categories.modal.editTitle}
           init={category}
           onSave={onSave}
           {...props}

@@ -4,17 +4,16 @@ import ArchiveTableButton from '../template/Utilities/ArchiveTableButton';
 import { QueryTablePanel } from '../gql/QueryTablePanel';
 import { CreateCategoryButton } from './CreateCategoryButton';
 import { UpdateCategoryButton } from './UpdateCategoryButton';
+import { useDictionary, withColumnNames } from '../template/Utilities/Lang';
 
 const columns = [
-  { dataField: 'name', text: 'Name' },
+  { dataField: 'name' },
   {
     dataField: 'envelope',
-    text: 'Envelope',
     formatter: a => a.name,
   },
   {
     dataField: 'actions',
-    text: '',
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
@@ -31,13 +30,14 @@ const columns = [
 
 export function CategoriesListPanel({ createFunRef }) {
   const query = useGetCategories();
+  const { categories } = useDictionary();
   return (
     <QueryTablePanel
       buttons={<CreateCategoryButton openRef={createFunRef} />}
-      title="Category list"
+      title={categories.table.title}
       query={query}
       getData={data => data.categories}
-      columns={columns}
+      columns={withColumnNames(columns, categories.table.columns)}
       keyField="id"
     />
   );

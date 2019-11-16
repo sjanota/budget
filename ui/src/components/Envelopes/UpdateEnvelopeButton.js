@@ -4,9 +4,12 @@ import EditTableButton from '../template/Utilities/EditTableButton';
 import { useUpdateEnvelope } from '../gql/envelopes';
 import { EnvelopeModal } from './EnvelopeModal';
 import PropTypes from 'prop-types';
+import { useDictionary } from '../template/Utilities/Lang';
 
 export function UpdateEnvelopeButton({ envelope }) {
   const [updateEnvelope] = useUpdateEnvelope();
+  const { envelopes } = useDictionary();
+
   const onSave = input => {
     updateEnvelope(envelope.id, input);
   };
@@ -15,7 +18,7 @@ export function UpdateEnvelopeButton({ envelope }) {
       button={EditTableButton}
       modal={props => (
         <EnvelopeModal
-          title="Edit envelope"
+          title={envelopes.modal.editTitle}
           init={envelope}
           onSave={onSave}
           {...props}

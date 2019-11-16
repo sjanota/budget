@@ -46,7 +46,6 @@ export default {
     },
   },
   accounts: {
-    header: 'Konta',
     table: {
       title: 'Konta',
       columns: {
@@ -59,6 +58,42 @@ export default {
       editTitle: 'Edytuj konto',
       labels: {
         name: 'Nazwa',
+      },
+    },
+  },
+  envelopes: {
+    table: {
+      title: 'Koperty',
+      columns: {
+        balance: 'Bilans',
+        name: 'Nazwa',
+        limit: 'Limit',
+        overLimit: 'Ponad limit',
+      },
+    },
+    modal: {
+      createTitle: 'Dodaj nową kopertę',
+      editTitle: 'Edytuj kopertę',
+      labels: {
+        name: 'Nazwa',
+        limit: 'Limit',
+      },
+    },
+  },
+  categories: {
+    table: {
+      title: 'Kategorie',
+      columns: {
+        name: 'Nazwa',
+        envelope: 'Koperta',
+      },
+    },
+    modal: {
+      createTitle: 'Dodaj nową kategorię',
+      editTitle: 'Edytuj kategorię',
+      labels: {
+        name: 'Nazwa',
+        envelope: 'Koperta',
       },
     },
   },

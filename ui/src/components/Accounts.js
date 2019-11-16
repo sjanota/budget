@@ -15,20 +15,18 @@ import {
 } from './gql/accounts';
 import { QueryTablePanel } from './gql/QueryTablePanel';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useDictionary } from './template/Utilities/Lang';
+import { useDictionary, withColumnNames } from './template/Utilities/Lang';
 
-const columns = dictionary => [
-  { dataField: 'name', text: dictionary.columns.name },
+const columns = [
+  { dataField: 'name' },
   {
     dataField: 'balance',
-    text: dictionary.columns.balance,
     align: 'right',
     headerAlign: 'right',
     formatter: Amount.format,
   },
   {
     dataField: 'actions',
-    text: '',
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
@@ -109,18 +107,18 @@ const keyHandlers = openCreateModal => ({
 export default function Accounts() {
   const query = useGetAccounts();
   const openCreateModal = useRef();
-  const { accounts } = useDictionary();
+  const { sidebar, accounts } = useDictionary();
 
   return (
     <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
       <Page>
-        <PageHeader>{accounts.header}</PageHeader>
+        <PageHeader>{sidebar.pages.accounts}</PageHeader>
         <QueryTablePanel
           title={accounts.table.title}
           query={query}
           getData={data => data.accounts}
           buttons={<CreateAccountButton openRef={openCreateModal} />}
-          columns={columns(accounts.table)}
+          columns={withColumnNames(columns, accounts.table.columns)}
           keyField="id"
         />
       </Page>
