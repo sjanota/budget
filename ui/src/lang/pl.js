@@ -142,6 +142,31 @@ export default {
       },
     },
   },
+  expenses: {
+    table: {
+      title: 'Wydatki',
+      columns: {
+        title: 'Tytuł',
+        totalAmount: 'Kwota',
+        date: 'Data',
+        account: 'Konto',
+      },
+    },
+    modal: {
+      createTitle: 'Dodaj nowy wydatek',
+      editTitle: 'Edytuj wydatek',
+      labels: {
+        title: 'Tytuł',
+        fromAccount: 'Z',
+        toAccount: 'Do',
+        account: 'Kwota',
+        date: 'Data',
+        categories: 'Kategorie',
+        amount: 'Kwota',
+        category: 'Kategoria',
+      },
+    },
+  },
   months: [
     'Styczeń',
     'Luty',

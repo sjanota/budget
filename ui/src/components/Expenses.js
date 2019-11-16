@@ -22,22 +22,21 @@ import { useBudget } from './gql/budget';
 import Month from '../model/Month';
 import { Form, Row, Col } from 'react-bootstrap';
 import TableButton from './template/Utilities/TableButton';
+import { useDictionary, withColumnNames } from './template/Utilities/Lang';
 
 const columns = [
-  { dataField: 'title', text: 'Title' },
+  { dataField: 'title' },
+  { dataField: 'date' },
   {
-    dataField: 'date',
-    text: 'Date',
+    dataField: 'account',
+    formatter: a => a.name,
   },
   {
     dataField: 'totalAmount',
     text: 'Amount',
     formatter: Amount.format,
-  },
-  {
-    dataField: 'account',
-    text: 'Account',
-    formatter: a => a.name,
+    align: 'right',
+    headerAlign: 'right',
   },
   {
     dataField: 'actions',
@@ -63,11 +62,11 @@ const rowClasses = (row, rowIndex) => {
 const expandRow = {
   className: 'background-color-white',
   renderer: row => (
-    <table className="table table-sm">
+    <table className="table table-sm mb-0">
       <tbody>
         {row.categories.map((category, idx) => (
           <tr key={idx}>
-            <td>{category.category.name}</td>
+            <td className="pl-3">{category.category.name}</td>
             <td>{Amount.format(category.amount)}</td>
           </tr>
         ))}
@@ -78,12 +77,14 @@ const expandRow = {
 
 function CategoriesInput({ formData }) {
   const query = useGetCategories();
+  const { expenses } = useDictionary();
+
   return (
     <WithQuery query={query}>
       {({ data }) => (
         <>
           <small className="d-flex align-items-center">
-            Categories
+            {expenses.modal.labels.categories}
             <TableButton
               faIcon="plus"
               variant="primary"
@@ -104,13 +105,14 @@ function CategoriesInput({ formData }) {
             >
               <Col>
                 <Form.Control
-                  placeholder="Category"
                   defaultValue={categoryFormData.categoryID.init()}
                   ref={categoryFormData.categoryID}
                   as="select"
                   required
                 >
-                  <option disabled />
+                  <option disabled selected>
+                    {expenses.modal.labels.category}
+                  </option>
                   {data.categories.map(({ id, name }) => (
                     <option key={id} value={id}>
                       {name}
@@ -122,7 +124,7 @@ function CategoriesInput({ formData }) {
                 <Form.Control
                   type="number"
                   required
-                  placeholder="Amount"
+                  placeholder={expenses.modal.labels.amount}
                   defaultValue={categoryFormData.amount.init()}
                   ref={categoryFormData.amount}
                   step="0.01"
@@ -149,6 +151,7 @@ function CategoriesInput({ formData }) {
 
 function ExpenseModal({ init, ...props }) {
   const { selectedBudget } = useBudget();
+  const { expenses } = useDictionary();
   const accountsQuery = useGetAccounts();
   const formData = useFormData({
     title: { $init: init.title },
@@ -158,7 +161,10 @@ function ExpenseModal({ init, ...props }) {
       $init: init.categories,
       $model: c => ({
         categoryID: { $init: c.category.id },
-        amount: { $init: Amount.format(c.amount), $process: Amount.parse },
+        amount: {
+          $init: Amount.format(c.amount, false),
+          $process: Amount.parse,
+        },
         $includeAllValues: true,
       }),
     },
@@ -172,14 +178,14 @@ function ExpenseModal({ init, ...props }) {
         {({ data: accountsData }) => (
           <>
             <FormControl
-              label="Title"
+              label={expenses.modal.labels.title}
               inline={10}
               formData={formData.title}
               feedback="Provide name"
               required
             />
             <FormControl
-              label="Date"
+              label={expenses.modal.labels.date}
               inline={10}
               formData={formData.date}
               feedback="Provide date"
@@ -189,7 +195,7 @@ function ExpenseModal({ init, ...props }) {
               max={last.format()}
             />
             <FormControl
-              label="Account"
+              label={expenses.modal.labels.account}
               inline={9}
               formData={formData.accountID}
               feedback="Provide account"
@@ -224,13 +230,15 @@ function DeleteExpenseButton({ expense }) {
 
 function UpdateExpenseButton({ expense }) {
   const [updateExpense] = useUpdateExpense();
+  const { expenses } = useDictionary();
+
   return (
     <ModalButton
       button={EditTableButton}
       modal={props => (
         <ExpenseModal
           init={expense}
-          title="Edit expense"
+          title={expenses.modal.editTitle}
           onSave={input => updateExpense(expense.id, input)}
           {...props}
         />
@@ -241,6 +249,8 @@ function UpdateExpenseButton({ expense }) {
 
 function CreateExpenseButton() {
   const [createExpense] = useCreateExpense();
+  const { expenses } = useDictionary();
+
   return (
     <ModalButton
       button={CreateButton}
@@ -252,7 +262,7 @@ function CreateExpenseButton() {
             date: null,
             categories: [],
           }}
-          title="Add new expense"
+          title={expenses.modal.createTitle}
           onSave={createExpense}
           {...props}
         />
@@ -263,16 +273,17 @@ function CreateExpenseButton() {
 
 export default function Expenses() {
   const query = useGetCurrentExpenses();
+  const { expenses, sidebar } = useDictionary();
 
   return (
     <Page>
-      <PageHeader>Expenses</PageHeader>
+      <PageHeader>{sidebar.pages.expenses}</PageHeader>
       <QueryTablePanel
-        title="Expense list"
+        title={expenses.table.title}
         query={query}
         getData={data => data.budget.currentMonth.expenses}
         buttons={<CreateExpenseButton />}
-        columns={columns}
+        columns={withColumnNames(columns, expenses.table.columns)}
         keyField="id"
         expandRow={expandRow}
         rowClasses={rowClasses}
