@@ -11,6 +11,11 @@ export default class Amount {
   }
 
   static format(amount) {
-    return amount === null ? null : `${(amount / 100).toFixed(2)}`;
+    if (amount === null) {
+      return null;
+    }
+    var parts = (amount / 100).toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return parts.join('.');
   }
 }

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Page from './template/Page/Page';
 import PageHeader from './template/Page/PageHeader';
 import ModalButton from './template/Utilities/ModalButton';
@@ -20,13 +20,15 @@ import { useGetAccounts } from './gql/accounts';
 import { useBudget } from './gql/budget';
 import { WithQuery } from './gql/WithQuery';
 import TableButton from './template/Utilities/TableButton';
-import { GlobalHotKeys } from 'react-hotkeys';
+import { HotKeys } from 'react-hotkeys';
+import classnames from 'classnames';
 
 const columns = [
   { dataField: 'title', text: 'Title' },
   {
     dataField: 'amount',
     text: 'Amount',
+    align: 'right',
     formatter: Amount.format,
   },
   {
@@ -59,6 +61,118 @@ const columns = [
     },
   },
 ];
+
+function Combobox({ allowedValues, _ref, defaultValue, className }) {
+  const defaultValueObject = allowedValues.find(v => v.id === defaultValue);
+  const [show, setShow] = useState(false);
+  const [filter, setFilter] = useState(
+    defaultValueObject ? defaultValueObject.label : ''
+  );
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const menuRef = useRef();
+  const classNames = classnames('input-group', className);
+  const filtered = allowedValues.filter(v =>
+    v.label.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  useEffect(() => {
+    _ref.current = { value: defaultValue };
+  }, []);
+
+  function onClick(id) {
+    const selectedLabel = allowedValues.find(v => v.id === id).label;
+    setShow(false);
+    setFilter(selectedLabel);
+    _ref.current = { value: id };
+  }
+
+  function onInputChange(e) {
+    const value = e.target.value;
+    setShow(true);
+    setFilter(value);
+    setSelectedIdx(0);
+    const selected = allowedValues.find(v => v.label === value);
+    if (selected) {
+      _ref.current = { value: selected.id };
+    }
+  }
+
+  function onInputBlur() {
+    setShow(false);
+    const selected = allowedValues.find(v => v.label === filter);
+    if (!selected) {
+      setFilter('');
+    }
+  }
+
+  function onKeyDown(e) {
+    if (e.keyCode === 40) {
+      // up
+      e.preventDefault();
+      if (selectedIdx >= filtered.length - 1) {
+        setSelectedIdx(0);
+      } else {
+        setSelectedIdx(v => v + 1);
+      }
+    } else if (e.keyCode === 38) {
+      // down
+      e.preventDefault();
+      if (selectedIdx <= 0) {
+        setSelectedIdx(filtered.length - 1);
+      } else {
+        setSelectedIdx(v => v - 1);
+      }
+    } else if (e.keyCode === 13 && show) {
+      e.preventDefault();
+      onClick(filtered[selectedIdx].id);
+    }
+  }
+
+  return (
+    <div className={classNames}>
+      <input
+        className="form-control"
+        value={filter}
+        type="text"
+        onChange={onInputChange}
+        onBlur={onInputBlur}
+        onKeyDown={onKeyDown}
+      />
+      <button
+        className="btn btn-secondary dropdown-toggle dropdown-toggle-split no-arrow"
+        data-toggle="dropdown"
+        data-reference="parent"
+        data-flip="false"
+        style={{
+          maxWidth: '2rem',
+          borderTopLeftRadius: 0,
+          borderBottomLeftRadius: 0,
+          margin: -1,
+        }}
+      />
+      <ul
+        ref={menuRef}
+        role="menu"
+        className={classnames('dropdown-menu', { show })}
+        style={{
+          maxHeight: '200px',
+          overflowY: 'auto',
+        }}
+      >
+        {filtered.map((v, idx) => (
+          <li
+            className={`dropdown-item ${idx === selectedIdx ? 'active' : ''}`}
+            onClick={() => onClick(v.id)}
+            key={v.id}
+          >
+            {v.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function TransferModal({ init, ...props }) {
   const { selectedBudget } = useBudget();
@@ -107,35 +221,32 @@ function TransferModal({ init, ...props }) {
               formData={formData.amount}
               step="0.01"
             />
-            <FormControl
-              label="From"
-              inline={10}
-              formData={formData.fromAccountID}
-              feedback="Provide from"
-              as="select"
-            >
-              <option />
-              {data.accounts.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </FormControl>
-            <FormControl
-              label="To"
-              inline={10}
-              formData={formData.toAccountID}
-              feedback="Provide to"
-              as="select"
-              required
-            >
-              <option />
-              {data.accounts.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </FormControl>
+            <div className="form-group row">
+              <label className="col col-form-label">From</label>
+              <div className="col-sm-10">
+                <Combobox
+                  allowedValues={data.accounts.map(({ id, name }) => ({
+                    id,
+                    label: name,
+                  }))}
+                  _ref={formData.fromAccountID}
+                  defaultValue={formData.fromAccountID.default()}
+                />
+              </div>
+            </div>
+            <div className="form-group row">
+              <label className="col col-form-label">To</label>
+              <div className="col-sm-10">
+                <Combobox
+                  allowedValues={data.accounts.map(({ id, name }) => ({
+                    id,
+                    label: name,
+                  }))}
+                  _ref={formData.toAccountID}
+                  defaultValue={formData.toAccountID.default()}
+                />
+              </div>
+            </div>
           </>
         )}
       </WithQuery>
@@ -207,7 +318,7 @@ export default function Transfers() {
   const openCreateModal = useRef();
 
   return (
-    <GlobalHotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
+    <HotKeys keyMap={keyMap} handlers={keyHandlers(openCreateModal)}>
       <Page>
         <PageHeader>Transfers</PageHeader>
         <QueryTablePanel
@@ -219,6 +330,6 @@ export default function Transfers() {
           keyField="id"
         />
       </Page>
-    </GlobalHotKeys>
+    </HotKeys>
   );
 }
