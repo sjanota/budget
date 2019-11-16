@@ -5,13 +5,21 @@ import TopbarMessage from './template/Topbar/TopbarMessage';
 import { TopbarMenu } from './template/Topbar/TopbarMenu';
 import TopbarUser from './template/Topbar/TopbarUser';
 import TopbarBudgetSwitcher from './TopbarBudgetSwitcher';
+import { useAuth0 } from '../react-auth0-spa';
 
 export default function Topbar() {
+  const { user, logout } = useAuth0();
   return (
     <TemplateTopbar
       faIconContextMinified="search"
       renderContext={() => <TopbarBudgetSwitcher />}
-      renderUser={() => <TopbarUser />}
+      renderUser={() => (
+        <TopbarUser
+          name={user.name}
+          pictureUrl={user.picture}
+          logout={logout}
+        />
+      )}
       renderMenus={() => (
         <>
           <TopbarMenu name="Alerts center" faIcon="bell" counter={0}>

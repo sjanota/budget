@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Topbar from '../Topbar';
 import SBAdmin2 from '../template/SBAdmin2';
@@ -10,8 +10,29 @@ import Expenses from '../Expenses';
 import Transfers from '../Transfers';
 import Plans from '../Plans';
 import { MonthDashboardPage } from '../MonthDashboardPage';
+import { useAuth0 } from '../../react-auth0-spa';
 
 export default function App() {
+  const { isAuthenticated, loginWithRedirect, loading } = useAuth0();
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+    if (!isAuthenticated) {
+      loginWithRedirect({});
+      return;
+    }
+  }, [isAuthenticated, loginWithRedirect, loading]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <div />;
+  }
+
   return (
     <BudgetProvider>
       <SBAdmin2
