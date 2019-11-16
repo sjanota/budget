@@ -12,15 +12,21 @@ const columns = [
     dataField: 'limit',
     text: 'Limit',
     formatter: Amount.format,
+    align: 'right',
+    headerAlign: 'right',
   },
   {
     dataField: 'balance',
     text: 'Balance',
     formatter: Amount.format,
+    align: 'right',
+    headerAlign: 'right',
   },
   {
     dataField: 'overlimit',
     text: 'Over limit',
+    align: 'right',
+    headerAlign: 'right',
     formatter: (cell, row) =>
       row.limit !== null && row.limit < row.balance
         ? Amount.format(row.balance - row.limit)
@@ -43,13 +49,13 @@ const columns = [
   },
 ];
 
-export function EnvelopesListPanel() {
+export function EnvelopesListPanel({ createFunRef }) {
   const query = useGetEnvelopes();
   return (
     <QueryTablePanel
       title="Envelope list"
       query={query}
-      buttons={<CreateEnvelopeButton />}
+      buttons={<CreateEnvelopeButton openRef={createFunRef} />}
       getData={data => data.envelopes}
       columns={columns}
       keyField="id"

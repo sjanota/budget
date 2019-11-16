@@ -4,10 +4,11 @@ import CreateButton from '../template/Utilities/CreateButton';
 import { useCreateEnvelope } from '../gql/envelopes';
 import { EnvelopeModal } from './EnvelopeModal';
 
-export function CreateEnvelopeButton() {
+export function CreateEnvelopeButton({ openRef }) {
   const [createEnvelope] = useCreateEnvelope();
   return (
     <ModalButton
+      openRef={openRef}
       button={CreateButton}
       modal={props => (
         <EnvelopeModal

@@ -29,11 +29,11 @@ const columns = [
   },
 ];
 
-export function CategoriesListPanel() {
+export function CategoriesListPanel({ createFunRef }) {
   const query = useGetCategories();
   return (
     <QueryTablePanel
-      buttons={<CreateCategoryButton />}
+      buttons={<CreateCategoryButton openRef={createFunRef} />}
       title="Category list"
       query={query}
       getData={data => data.categories}

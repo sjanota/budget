@@ -4,14 +4,15 @@ import CreateButton from '../template/Utilities/CreateButton';
 import { useCreateCategory } from '../gql/categories';
 import { CategoryModal } from './CategoryModal';
 
-export function CreateCategoryButton() {
+export function CreateCategoryButton({ openRef }) {
   const [createCategory] = useCreateCategory();
   return (
     <ModalButton
+      openRef={openRef}
       button={CreateButton}
       modal={props => (
         <CategoryModal
-          title="Add new envelope"
+          title="Add new category"
           init={{ name: '', envelope: { id: null } }}
           onSave={createCategory}
           {...props}

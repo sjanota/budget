@@ -21,6 +21,8 @@ const columns = [
   {
     dataField: 'balance',
     text: 'Balance',
+    align: 'right',
+    headerAlign: 'right',
     formatter: Amount.format,
   },
   {
