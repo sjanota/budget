@@ -20,7 +20,7 @@ export function InlineFormControl({ label, size, feedback, children }) {
 
 InlineFormControl.propTypes = {
   children: PropTypes.element,
-  feedback: PropTypes.string.isRequired,
+  feedback: PropTypes.string,
   label: PropTypes.string.isRequired,
   size: PropTypes.number,
 };

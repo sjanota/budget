@@ -15,6 +15,7 @@ export function Combobox({ allowedValues, _ref, defaultValue, className }) {
   );
   useEffect(() => {
     _ref.current = { value: defaultValue };
+    // eslint-disable-next-line
   }, []);
   function onClick(id) {
     const selectedLabel = allowedValues.find(v => v.id === id).label;

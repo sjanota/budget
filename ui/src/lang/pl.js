@@ -97,6 +97,28 @@ export default {
       },
     },
   },
+  plans: {
+    table: {
+      title: 'Plany',
+      columns: {
+        title: 'Tytuł',
+        fromEnvelope: 'Z',
+        toEnvelope: 'Do',
+        currentAmount: 'Kwota',
+      },
+    },
+    modal: {
+      createTitle: 'Dodaj nowy plan',
+      editTitle: 'Edytuj plan',
+      labels: {
+        title: 'Tytuł',
+        fromEnvelope: 'Z',
+        toEnvelope: 'Do',
+        amount: 'Kwota',
+        recurring: 'Cyklicznie',
+      },
+    },
+  },
   months: [
     'Styczeń',
     'Luty',

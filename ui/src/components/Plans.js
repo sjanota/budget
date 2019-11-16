@@ -22,35 +22,31 @@ import TableButton from './template/Utilities/TableButton';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { InlineFormControl } from './template/Utilities/InlineFormControl';
 import { Combobox } from './template/Utilities/Combobox';
+import { useDictionary, withColumnNames } from './template/Utilities/Lang';
 
 const columns = [
-  { dataField: 'title', text: 'Title' },
+  { dataField: 'title' },
   {
     dataField: 'fromEnvelope',
-    text: 'From',
     formatter: a => a && a.name,
   },
   {
     dataField: 'toEnvelope',
-    text: 'To',
     formatter: a => a.name,
   },
   {
     dataField: 'currentAmount',
-    text: 'Amount',
     formatter: Amount.format,
     align: 'right',
     headerAlign: 'right',
   },
   {
     dataField: 'recurringAmount',
-    text: '',
     formatter: a =>
       a !== null ? <i className="fas fa-fw fa-sync-alt" /> : null,
   },
   {
     dataField: 'actions',
-    text: '',
     isDummyColumn: true,
     formatter: (cell, row) => (
       <span>
@@ -67,6 +63,7 @@ const columns = [
 
 function PlanModal({ init, ...props }) {
   const query = useGetEnvelopes();
+  const { plans } = useDictionary();
   const formData = useFormData({
     title: { $init: init.title },
     currentAmount: {
@@ -91,14 +88,14 @@ function PlanModal({ init, ...props }) {
           <>
             <FormControl
               required
-              label="Title"
+              label={plans.modal.labels.title}
               inline={10}
               formData={formData.title}
               feedback="Provide title"
             />
             <FormControl
               inline={8}
-              label="Amount"
+              label={plans.modal.labels.amount}
               feedback="Provide amount"
               type="number"
               required
@@ -108,14 +105,14 @@ function PlanModal({ init, ...props }) {
             <OptionalFormControl
               initEnabled={init.recurringAmount !== null}
               inline={8}
-              label="Recurring"
+              label={plans.modal.labels.recurring}
               feedback="Provide amount for recurring plans"
               type="number"
               required
               formData={formData.recurringAmount}
               step="0.01"
             />
-            <InlineFormControl size={8} label="From">
+            <InlineFormControl size={8} label={plans.modal.labels.fromEnvelope}>
               <Combobox
                 _ref={formData.fromEnvelopeID}
                 defaultValue={formData.fromEnvelopeID.default()}
@@ -125,7 +122,7 @@ function PlanModal({ init, ...props }) {
                 }))}
               />
             </InlineFormControl>
-            <InlineFormControl size={8} label="To">
+            <InlineFormControl size={8} label={plans.modal.labels.toEnvelope}>
               <Combobox
                 _ref={formData.toEnvelopeID}
                 defaultValue={formData.toEnvelopeID.default()}
@@ -144,13 +141,15 @@ function PlanModal({ init, ...props }) {
 
 function UpdatePlanButton({ plan }) {
   const [updatePlan] = useUpdatePlan();
+  const { plans } = useDictionary();
+
   return (
     <ModalButton
       button={EditTableButton}
       modal={props => (
         <PlanModal
           init={plan}
-          title="Edit plan"
+          title={plans.modal.editTitle}
           onSave={input => updatePlan(plan.id, input)}
           {...props}
         />
@@ -172,6 +171,8 @@ function DeletePlanButton({ plan }) {
 
 function CreatePlanButton({ openRef }) {
   const [createPlan] = useCreatePlan();
+  const { plans } = useDictionary();
+
   return (
     <ModalButton
       openRef={openRef}
@@ -186,7 +187,7 @@ function CreatePlanButton({ openRef }) {
             recurringAmount: null,
             date: null,
           }}
-          title="Add new plan"
+          title={plans.modal.createTitle}
           onSave={createPlan}
           {...props}
         />
@@ -206,17 +207,18 @@ const handlers = openCreateModalRef => ({
 export default function Plans() {
   const openCreateModalRef = useRef();
   const query = useGetCurrentPlans();
+  const { sidebar, plans } = useDictionary();
 
   return (
     <Page>
       <GlobalHotKeys keyMap={keyMap} handlers={handlers(openCreateModalRef)} />
-      <PageHeader>Plans</PageHeader>
+      <PageHeader>{sidebar.pages.plans}</PageHeader>
       <QueryTablePanel
-        title="Plan list"
+        title={plans.table.title}
         query={query}
         getData={data => data.budget.currentMonth.plans}
         buttons={<CreatePlanButton openRef={openCreateModalRef} />}
-        columns={columns}
+        columns={withColumnNames(columns, plans.table.columns)}
         keyField="id"
       />
     </Page>
