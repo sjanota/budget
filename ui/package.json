@@ -9,6 +9,7 @@
     "apollo-cache-inmemory": "^1.6.3",
     "apollo-client": "^2.6.4",
     "apollo-link": "^1.2.13",
+    "apollo-link-context": "^1.0.19",
     "apollo-link-error": "^1.1.12",
     "apollo-link-http": "^1.5.16",
     "apollo-link-ws": "^1.0.19",
@@ -30,7 +31,8 @@
   },
   "scripts": {
     "createFragmentMatcher": "node createFragmentMatcher.js",
-    "start": "npm run createFragmentMatcher && react-scripts start",
+    "start": "npm run createFragmentMatcher && REACT_APP_INSECURE_AUTH_DISABLED=true react-scripts start",
+    "start:secure": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

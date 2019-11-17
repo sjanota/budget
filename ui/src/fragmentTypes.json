@@ -1,28 +1,40 @@
 {
   "__schema": {
     "types": [
-      { "kind": "SCALAR", "name": "ID", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "Month", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "AccountInput", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "AccountUpdate", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "EnvelopeInput", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "EnvelopeUpdate", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Plan", "possibleTypes": [] },
       { "kind": "OBJECT", "name": "MonthStillInProgress", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "Int", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "Amount", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "Date", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Month", "possibleTypes": [] },
       { "kind": "INPUT_OBJECT", "name": "CategoryInput", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "PlanInput", "possibleTypes": [] },
-      { "kind": "ENUM", "name": "Severity", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "CategoryUpdate", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "ExpenseUpdate", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "MonthlyReport", "possibleTypes": [] },
       {
         "kind": "OBJECT",
-        "name": "NegativeBalanceOnEnvelope",
+        "name": "NegativeBalanceOnAccount",
         "possibleTypes": []
       },
-      { "kind": "OBJECT", "name": "Query", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "EnvelopeInput", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "PlanUpdate", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "EnvelopeOverLimit", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Float", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "ID", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Account", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Int", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Date", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Category", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "AccountInput", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "PlanInput", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "ExpenseCategory", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Budget", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Expense", "possibleTypes": [] },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "ExpenseCategoryInput",
+        "possibleTypes": []
+      },
       { "kind": "INPUT_OBJECT", "name": "TransferInput", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "String", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "CategoryUpdate", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Envelope", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Misplanned", "possibleTypes": [] },
       {
         "kind": "INTERFACE",
         "name": "Problem",
@@ -34,34 +46,22 @@
           { "name": "MonthStillInProgress" }
         ]
       },
-      { "kind": "SCALAR", "name": "Float", "possibleTypes": [] },
-      { "kind": "SCALAR", "name": "Boolean", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Expense", "possibleTypes": [] },
-      {
-        "kind": "OBJECT",
-        "name": "NegativeBalanceOnAccount",
-        "possibleTypes": []
-      },
-      { "kind": "OBJECT", "name": "EnvelopeOverLimit", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Mutation", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Account", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Budget", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "TransferUpdate", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "ExpenseCategory", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "AccountUpdate", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "ExpenseUpdate", "possibleTypes": [] },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "ExpenseCategoryInput",
-        "possibleTypes": []
-      },
-      { "kind": "OBJECT", "name": "Misplanned", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Category", "possibleTypes": [] },
-      { "kind": "INPUT_OBJECT", "name": "EnvelopeUpdate", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "Plan", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "PlanUpdate", "possibleTypes": [] },
       { "kind": "OBJECT", "name": "Transfer", "possibleTypes": [] },
       { "kind": "INPUT_OBJECT", "name": "ExpenseInput", "possibleTypes": [] },
-      { "kind": "OBJECT", "name": "MonthlyReport", "possibleTypes": [] }
+      { "kind": "OBJECT", "name": "Query", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "String", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Boolean", "possibleTypes": [] },
+      { "kind": "INPUT_OBJECT", "name": "TransferUpdate", "possibleTypes": [] },
+      { "kind": "ENUM", "name": "Severity", "possibleTypes": [] },
+      {
+        "kind": "OBJECT",
+        "name": "NegativeBalanceOnEnvelope",
+        "possibleTypes": []
+      },
+      { "kind": "OBJECT", "name": "Mutation", "possibleTypes": [] },
+      { "kind": "SCALAR", "name": "Amount", "possibleTypes": [] },
+      { "kind": "OBJECT", "name": "Envelope", "possibleTypes": [] }
     ]
   }
 }

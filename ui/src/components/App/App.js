@@ -10,31 +10,10 @@ import Expenses from '../Expenses';
 import Transfers from '../Transfers';
 import Plans from '../Plans';
 import { MonthDashboardPage } from '../MonthDashboardPage';
-import { useAuth0 } from '../../react-auth0-spa';
 import { LangProvider } from '../template/Utilities/Lang';
 import pl from '../../lang/pl';
 
 export default function App() {
-  const { isAuthenticated, loginWithRedirect, loading } = useAuth0();
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (!isAuthenticated) {
-      loginWithRedirect({});
-      return;
-    }
-  }, [isAuthenticated, loginWithRedirect, loading]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <div />;
-  }
-
   return (
     <LangProvider dictionary={pl}>
       <BudgetProvider>

@@ -2,10 +2,9 @@ import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import { ApolloLink } from 'apollo-link';
-// import { ApolloLink, split } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 import { onError } from 'apollo-link-error';
-// import { WebSocketLink } from 'apollo-link-ws';
+import { setContext } from 'apollo-link-context';
 
 import { IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
 import introspectionQueryResultData from './fragmentTypes.json';
@@ -22,15 +21,19 @@ export function isSubscriptionOperation({ query }) {
   );
 }
 
-export default function createClient() {
+export default function createClient(token) {
   const graphqlApiUrl = 'localhost:8080/query';
   const httpLink = createHttpLink({ uri: `http://${graphqlApiUrl}` });
-  // const wsLink = new WebSocketLink({
-  //   uri: `ws://${graphqlApiUrl}`,
-  //   options: {
-  //     reconnect: true,
-  //   },
-  // });
+  const authLink = setContext((_, { headers }) => {
+    // get the authentication token from local storage if it exists
+    // return the headers to the context so httpLink can read them
+    return {
+      headers: {
+        ...headers,
+        authorization: token ? `Bearer ${token}` : '',
+      },
+    };
+  });
   const cache = new InMemoryCache({ fragmentMatcher });
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -48,7 +51,7 @@ export default function createClient() {
   });
 
   // const link = split(isSubscriptionOperation, wsLink, httpLink);
-  const link = httpLink;
+  const link = authLink.concat(httpLink);
 
   return new ApolloClient({
     uri: graphqlApiUrl,
