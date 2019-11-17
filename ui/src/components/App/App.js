@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Topbar from '../Topbar';
 import SBAdmin2 from '../template/SBAdmin2';

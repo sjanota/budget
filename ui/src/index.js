@@ -29,6 +29,7 @@ const ProdAuthorizationProvider = ({ children }) => (
     redirect_uri={window.location.origin}
     onRedirectCallback={onRedirectCallback}
     audience={config.audience}
+    scope="beta"
   >
     {children}
   </Auth0Provider>

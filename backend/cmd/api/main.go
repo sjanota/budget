@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
@@ -14,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
@@ -39,6 +41,11 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
+type CustomClaims struct {
+	Scope string `json:"scope"`
+	jwt.StandardClaims
+}
+
 const (
 	issuer   = "https://damp-pond-6290.eu.auth0.com/"
 	audience = "https://backend/api"
@@ -50,8 +57,7 @@ func main() {
 		port = defaultPort
 	}
 
-	mongoURI := "mongodb://localhost:32768/budget"
-	//mongoURI := os.Getenv("MONGODB_URI")
+	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
 		log.Fatal("Missing required MONGODB_URI env")
 	}
@@ -108,6 +114,20 @@ func main() {
 	} else {
 		log.Print("Running with disabled authentication")
 	}
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rsp http.ResponseWriter, req *http.Request) {
+			token := req.Context().Value("user").(*jwt.Token)
+			fmt.Printf("%#v\n", token)
+			mapClaims := map[string]interface{}(token.Claims.(jwt.MapClaims))
+			result := strings.Split(mapClaims["scope"].(string), " ")
+			for i := range result {
+				if result[i] == "beta" {
+					next.ServeHTTP(rsp, req)
+				}
+			}
+			rsp.WriteHeader(403)
+		})
+	})
 
 	gqlHandler := handler.GraphQL(
 		schema.NewExecutableSchema(schema.Config{Resolvers: resolver}),
