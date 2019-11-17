@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import './sb-admin-2.css';
 import './index.css';
@@ -6,9 +6,8 @@ import App from './components/App/App';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter } from 'react-router-dom';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import { ApolloProvider } from '@apollo/react-hooks';
-import createClient from './apollo';
-import { Auth0Provider, Auth0Context, useAuth0 } from './react-auth0-spa';
+import { AuthApolloProvider } from './apollo';
+import { Auth0Provider, Auth0Context } from './react-auth0-spa';
 import config from './auth_config.json';
 
 // A function that routes the user to the right place
@@ -57,47 +56,13 @@ const AuthorizationProvider =
     ? ProdAuthorizationProvider
     : DevAuthorizationProvider;
 
-function Apollo({ children }) {
-  const {
-    isAuthenticated,
-    loading,
-    loginWithRedirect,
-    getTokenSilently,
-  } = useAuth0();
-  const [token, setToken] = useState();
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (!isAuthenticated) {
-      loginWithRedirect({});
-      return;
-    }
-
-    getTokenSilently().then(setToken);
-  }, [isAuthenticated, loginWithRedirect, loading, getTokenSilently]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated || !token) {
-    return <div />;
-  }
-
-  return (
-    <ApolloProvider client={createClient(token)}>{children}</ApolloProvider>
-  );
-}
-
 ReactDOM.render(
   <AuthorizationProvider>
-    <Apollo>
+    <AuthApolloProvider>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </Apollo>
+    </AuthApolloProvider>
   </AuthorizationProvider>,
   document.getElementById('root')
 );

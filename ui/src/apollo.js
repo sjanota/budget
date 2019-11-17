@@ -8,6 +8,9 @@ import { setContext } from 'apollo-link-context';
 
 import { IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
 import introspectionQueryResultData from './fragmentTypes.json';
+import { useAuth0 } from './react-auth0-spa.js';
+import React, { useEffect, useState } from 'react';
+import { ApolloProvider } from '@apollo/react-hooks';
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
   introspectionQueryResultData,
@@ -21,7 +24,7 @@ export function isSubscriptionOperation({ query }) {
   );
 }
 
-export default function createClient(token) {
+export function createClient(token) {
   const graphqlApiUrl = 'localhost:8080/query';
   const httpLink = createHttpLink({ uri: `http://${graphqlApiUrl}` });
   const authLink = setContext((_, { headers }) => {
@@ -59,4 +62,38 @@ export default function createClient(token) {
     link: ApolloLink.from([errorLink, link]),
     connectToDevTools: true,
   });
+}
+
+export function AuthApolloProvider({ children }) {
+  const {
+    isAuthenticated,
+    loading,
+    loginWithRedirect,
+    getTokenSilently,
+  } = useAuth0();
+  const [token, setToken] = useState();
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+    if (!isAuthenticated) {
+      loginWithRedirect({});
+      return;
+    }
+
+    getTokenSilently().then(setToken);
+  }, [isAuthenticated, loginWithRedirect, loading, getTokenSilently]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated || !token) {
+    return <div />;
+  }
+
+  return (
+    <ApolloProvider client={createClient(token)}>{children}</ApolloProvider>
+  );
 }
