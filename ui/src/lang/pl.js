@@ -159,7 +159,7 @@ export default {
         title: 'Tytuł',
         fromAccount: 'Z',
         toAccount: 'Do',
-        account: 'Kwota',
+        account: 'Konto',
         date: 'Data',
         categories: 'Kategorie',
         amount: 'Kwota',

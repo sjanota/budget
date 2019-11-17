@@ -23,6 +23,8 @@ import Month from '../model/Month';
 import { Form, Row, Col } from 'react-bootstrap';
 import TableButton from './template/Utilities/TableButton';
 import { useDictionary, withColumnNames } from './template/Utilities/Lang';
+import { Combobox } from './template/Utilities/Combobox';
+import { InlineFormControl } from './template/Utilities/InlineFormControl';
 
 const columns = [
   { dataField: 'title' },
@@ -103,22 +105,15 @@ function CategoriesInput({ formData }) {
               key={categoryFormData.categoryID.init() || idx}
               className="d-flex align-items-center"
             >
-              <Col>
-                <Form.Control
+              <Col sm={7}>
+                <Combobox
+                  _ref={categoryFormData.categoryID}
                   defaultValue={categoryFormData.categoryID.init()}
-                  ref={categoryFormData.categoryID}
-                  as="select"
-                  required
-                >
-                  <option disabled selected>
-                    {expenses.modal.labels.category}
-                  </option>
-                  {data.categories.map(({ id, name }) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </Form.Control>
+                  allowedValues={data.categories.map(({ id, name }) => ({
+                    id,
+                    label: name,
+                  }))}
+                />
               </Col>
               <Col>
                 <Form.Control
@@ -194,21 +189,16 @@ function ExpenseModal({ init, ...props }) {
               min={first.format()}
               max={last.format()}
             />
-            <FormControl
-              label={expenses.modal.labels.account}
-              inline={9}
-              formData={formData.accountID}
-              feedback="Provide account"
-              as="select"
-              required
-            >
-              <option></option>
-              {accountsData.accounts.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </FormControl>
+            <InlineFormControl label={expenses.modal.labels.account} size={9}>
+              <Combobox
+                _ref={formData.accountID}
+                defaultValue={formData.accountID.init()}
+                allowedValues={accountsData.accounts.map(({ id, name }) => ({
+                  id,
+                  label: name,
+                }))}
+              />
+            </InlineFormControl>
             <CategoriesInput formData={formData.categories} />
           </>
         )}
