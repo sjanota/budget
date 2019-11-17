@@ -13,6 +13,7 @@ export const Auth0Provider = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState();
   const [user, setUser] = useState();
+  const [token, setToken] = useState();
   const [auth0Client, setAuth0] = useState();
   const [loading, setLoading] = useState(true);
   const [popupOpen, setPopupOpen] = useState(false);
@@ -34,6 +35,9 @@ export const Auth0Provider = ({
       if (isAuthenticated) {
         const user = await auth0FromHook.getUser();
         setUser(user);
+
+        const token = await auth0FromHook.getTokenSilently();
+        setToken(token);
       }
 
       setLoading(false);
@@ -67,6 +71,7 @@ export const Auth0Provider = ({
   return (
     <Auth0Context.Provider
       value={{
+        token,
         isAuthenticated,
         user,
         loading,

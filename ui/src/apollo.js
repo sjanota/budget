@@ -9,7 +9,7 @@ import { setContext } from 'apollo-link-context';
 import { IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
 import introspectionQueryResultData from './fragmentTypes.json';
 import { useAuth0 } from './react-auth0-spa.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ApolloProvider } from '@apollo/react-hooks';
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
@@ -65,13 +65,7 @@ export function createClient(token) {
 }
 
 export function AuthApolloProvider({ children }) {
-  const {
-    isAuthenticated,
-    loading,
-    loginWithRedirect,
-    getTokenSilently,
-  } = useAuth0();
-  const [token, setToken] = useState();
+  const { isAuthenticated, loading, loginWithRedirect, token } = useAuth0();
 
   useEffect(() => {
     if (loading) {
@@ -81,9 +75,7 @@ export function AuthApolloProvider({ children }) {
       loginWithRedirect({});
       return;
     }
-
-    getTokenSilently().then(setToken);
-  }, [isAuthenticated, loginWithRedirect, loading, getTokenSilently]);
+  }, [isAuthenticated, loginWithRedirect, loading]);
 
   if (loading) {
     return <div>Loading...</div>;

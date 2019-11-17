@@ -9,6 +9,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { AuthApolloProvider } from './apollo';
 import { Auth0Provider, Auth0Context } from './react-auth0-spa';
 import config from './auth_config.json';
+import { Beta } from './components/Beta';
 
 // A function that routes the user to the right place
 // after login
@@ -60,9 +61,11 @@ const AuthorizationProvider =
 ReactDOM.render(
   <AuthorizationProvider>
     <AuthApolloProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <Beta>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Beta>
     </AuthApolloProvider>
   </AuthorizationProvider>,
   document.getElementById('root')
